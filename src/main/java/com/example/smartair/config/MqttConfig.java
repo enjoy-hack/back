@@ -1,5 +1,7 @@
 package com.example.smartair.config;
 
+import com.example.smartair.service.MqttService.MqttReceiveService;
+import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.messaging.MessageHandler;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,16 +53,32 @@ public class MqttConfig {
     //MQTT 구독 핸들러
     @Bean
     @ServiceActivator(inputChannel = "mqttInputChannel")
-    public MessageHandler handler() {
+    public MessageHandler handler(MqttReceiveService mqttReceiveService) {
         return message -> {
+            String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
             String payload = (String) message.getPayload();
-            System.out.println("Received MQTT payload: " + payload);
+            mqttReceiveService.handleReceiveMessage(topic, payload);
         };
     }
 
     //MQTT 구독 채널 생성
     @Bean
     public MessageChannel mqttInputChannel(){
+        return new DirectChannel();
+    }
+
+    //Spring -> MQTT Broker -> 외부 클라이언트로 메시지 전송
+    @Bean
+    @ServiceActivator(inputChannel = "mqttOutboundChannel")
+    public MessageHandler mqttOutbound(){
+        MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler(clientId + "_pub", mqttClientFactory());
+        messageHandler.setAsync(true);
+        messageHandler.setDefaultTopic(topic); //기본 발행 토픽
+        return messageHandler;
+    }
+
+    @Bean
+    public MessageChannel mqttOutboundChannel(){
         return new DirectChannel();
     }
 
