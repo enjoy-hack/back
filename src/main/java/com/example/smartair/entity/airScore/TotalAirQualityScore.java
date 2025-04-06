@@ -10,10 +10,7 @@ import java.util.List;
 public class TotalAirQualityScore {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private double score;
-
-    @OneToMany
-    private List<Room> rooms = new ArrayList<>();
 }

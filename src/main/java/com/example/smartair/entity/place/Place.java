@@ -11,10 +11,7 @@ import java.util.List;
 public class Place extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String name;
-
-    @OneToMany
-    private List<Room> rooms = new ArrayList<>();
 }

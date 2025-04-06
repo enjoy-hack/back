@@ -9,7 +9,7 @@ import jakarta.persistence.*;
 public class RoomAirQualityScore extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private double score;
 
