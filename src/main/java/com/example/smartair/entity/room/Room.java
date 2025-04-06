@@ -13,7 +13,7 @@ import java.util.List;
 public class Room extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String name;
 
@@ -24,7 +24,4 @@ public class Room extends BaseEntity {
     @ManyToOne //방과 공간 : 다대일 관계
     @JoinColumn(name = "place_id")
     private Place place;
-
-    @OneToMany(mappedBy = "room") //방과 기기 : 일대다 관계
-    private List<RoomDevice> roomDeviceList = new ArrayList<>();
 }

@@ -19,24 +19,12 @@ import java.util.List;
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String username;
     private String email;
     private String password;
 
     private String role;
-
-    @OneToMany
-    private List<Room> rooms = new ArrayList<>();
-
-    @OneToMany
-    private List<Device> devices = new ArrayList<>();
-
-    @OneToMany
-    private List<Notification> notifications = new ArrayList<>();
-
-    @OneToMany
-    private List<HvacSetting> hvacSettings = new ArrayList<>();
 }
 

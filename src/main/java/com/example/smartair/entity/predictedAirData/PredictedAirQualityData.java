@@ -8,9 +8,6 @@ import jakarta.persistence.*;
 public class PredictedAirQualityData extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "airQualityData_id")
-    private AirQualityData airQualityData;
 }
