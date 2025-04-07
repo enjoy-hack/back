@@ -1,6 +1,6 @@
 package com.example.smartair.config;
 
-import com.example.smartair.service.MqttService.MqttReceiveService;
+import com.example.smartair.service.mqttService.MqttReceiveService;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.messaging.MessageHandler;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
