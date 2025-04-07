@@ -1,4 +1,4 @@
-package com.example.smartair.service.MqttService;
+package com.example.smartair.service.mqttService;
 
 import org.springframework.stereotype.Service;
 
