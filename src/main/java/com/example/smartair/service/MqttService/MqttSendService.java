@@ -1,4 +1,4 @@
-package com.example.smartair.service.MqttService;
+package com.example.smartair.service.mqttService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
