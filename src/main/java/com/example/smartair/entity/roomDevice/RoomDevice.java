@@ -4,10 +4,16 @@ import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RoomDevice extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
