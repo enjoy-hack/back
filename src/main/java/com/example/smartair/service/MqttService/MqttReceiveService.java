@@ -24,20 +24,20 @@ public class MqttReceiveService {
 
     }
 
-    public Long extractDeviceIdFromTopic(String topic) {
-        try{
-            return Long.parseLong(topic.split("/")[1]);
-        }
-        catch (Exception e){
-            throw new IllegalArgumentException("올바르지 않은 topic 형식입니다. " + topic);
-        }
-    }
+//    public Long extractDeviceIdFromTopic(String topic) {
+//        try{
+//            return Long.parseLong(topic.split("/")[1]);
+//        }
+//        catch (Exception e){
+//            throw new IllegalArgumentException("올바르지 않은 topic 형식입니다. " + topic);
+//        }
+//    }
 
     public List<AirQualityData> getRecentMessage(){
         return List.copyOf(recentMessage);
     }
 
-    private double getValue(String keyValue){
-        return Double.parseDouble(keyValue.split("=")[1]);
-    }
+//    private double getValue(String keyValue){
+//        return Double.parseDouble(keyValue.split("=")[1]);
+//    }
 }
