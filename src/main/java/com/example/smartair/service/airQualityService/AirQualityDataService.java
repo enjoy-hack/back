@@ -75,6 +75,7 @@ public class AirQualityDataService {
         }
     }
 
+    //캐시에 저장된 데이터 조회 메서드
     public Optional<AirQualityData> getRecentAirQualityData(Long deviceId) {
         return recentAirQualityDataCache.get(deviceId);
     }
