@@ -11,7 +11,6 @@ public class RoomAirQualityScore extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private
     private double averageScore;
 
     @ManyToOne
