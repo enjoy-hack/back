@@ -1,4 +1,4 @@
-package com.example.smartair.service.MqttService;
+package com.example.smartair.service.mqttService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,7 +16,7 @@ public class MqttSendService {
     private MessageChannel mqttOutboundChannel;
 
     //Spring에서 외부로 메시지 전달
-    public void sendToMqtt(String data, String topic){
+    public void sendToMqtt(String topic, String data){
         Message<String> message = MessageBuilder
                 .withPayload(data)
                 .setHeader(MqttHeaders.TOPIC, topic)
