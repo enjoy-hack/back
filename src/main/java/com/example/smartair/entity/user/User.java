@@ -6,8 +6,7 @@ import com.example.smartair.entity.notification.Notification;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +15,9 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +28,6 @@ public class User extends BaseEntity {
     private String password;
 
     private String role;
+
 }
 

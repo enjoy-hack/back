@@ -1,6 +1,6 @@
 package com.example.smartair.service.airQualityService;
 
-import com.example.smartair.dto.airQualityDto.AirQualityPayloadDto;
+import com.example.smartair.dto.AirQualityDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.AirQualityData;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
