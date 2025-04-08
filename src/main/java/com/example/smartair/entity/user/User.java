@@ -1,5 +1,6 @@
-package com.example.smartair.entity;
+package com.example.smartair.entity.user;
 
+import com.example.smartair.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +9,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class User extends BaseTimeEntity{
+public class User extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
