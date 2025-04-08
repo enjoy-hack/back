@@ -1,6 +1,6 @@
 package com.example.smartair.service.mqttService;
 
-import com.example.smartair.dto.airQualityDto.AirQualityPayloadDto;
+import com.example.smartair.dto.AirQualityDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.AirQualityData;
 import com.example.smartair.service.airQualityService.AirQualityDataService;
 import org.springframework.stereotype.Service;
