@@ -1,5 +1,6 @@
 package com.example.smartair.entity;
 
+import com.example.smartair.entity.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
