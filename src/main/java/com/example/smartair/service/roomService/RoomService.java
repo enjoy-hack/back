@@ -5,6 +5,8 @@ import com.example.smartair.dto.roomDto.RoomDetailResponse;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.user.User;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.PlaceRepository;
 import com.example.smartair.repository.RoomRepository;
 import com.example.smartair.repository.UserRepository;
@@ -32,7 +34,7 @@ public class RoomService {
      */
     @Transactional
     public RoomDetailResponse createRoom(Long userId, CreateRoomRequestDto createRoomRequestDto) {
-        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(()->new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Room room = Room.builder()
                 .name(createRoomRequestDto.getName())
@@ -49,8 +51,8 @@ public class RoomService {
      * room 수정
      */
     public RoomDetailResponse updateRoom(Long userId, Long roomId, CreateRoomRequestDto createRoomRequestDto) {
-        Room room = roomRepository.findById(roomId).orElseThrow(()->new RuntimeException("Room not found"));
-        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
+        Room room = roomRepository.findById(roomId).orElseThrow(()->new CustomException(ErrorCode.ROOM_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(()->new CustomException(ErrorCode.USER_NOT_FOUND));
 
         room.setName(createRoomRequestDto.getName());
         room.setPlace(createRoomRequestDto.getPlace());
@@ -65,7 +67,7 @@ public class RoomService {
      * room 삭제
      */
     public void deleteRoom(Long roomId){
-        Room room = roomRepository.findById(roomId).orElseThrow(()->new RuntimeException("Room not found"));
+        Room room = roomRepository.findById(roomId).orElseThrow(()->new CustomException(ErrorCode.ROOM_NOT_FOUND));
         roomRepository.delete(room);
     }
 
@@ -73,7 +75,7 @@ public class RoomService {
      * room 상세 정보 조회
      */
     public RoomDetailResponse getRoomDetail(Long roomId){
-        Room room = roomRepository.findById(roomId).orElseThrow(()->new RuntimeException("Room not found"));
+        Room room = roomRepository.findById(roomId).orElseThrow(()->new CustomException(ErrorCode.ROOM_NOT_FOUND));
         return RoomDetailResponse.from(room);
     }
 
@@ -81,7 +83,7 @@ public class RoomService {
      * place의 모든 room 목록 조회
      */
     public List<RoomDetailResponse> getAllRoomsByPlace(Long placeId){
-        Place place = placeRepository.findById(placeId).orElseThrow(()->new RuntimeException("Place not found"));
+        Place place = placeRepository.findById(placeId).orElseThrow(()->new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
         List<Room> rooms = roomRepository.findAllByPlace(place);
 

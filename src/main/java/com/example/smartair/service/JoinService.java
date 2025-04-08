@@ -2,8 +2,8 @@ package com.example.smartair.service;
 
 import com.example.smartair.dto.JoinDTO;
 import com.example.smartair.dto.LoginDTO;
-import com.example.smartair.entity.Role;
-import com.example.smartair.entity.User;
+import com.example.smartair.entity.user.Role;
+import com.example.smartair.entity.user.User;
 import com.example.smartair.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;

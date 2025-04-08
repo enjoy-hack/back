@@ -1,6 +1,6 @@
 package com.example.smartair.jwt;
 
-import com.example.smartair.entity.Role;
+import com.example.smartair.entity.user.Role;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,4 +50,5 @@ public class JWTUtil {
                 .compact(); //JWT 문자열 반환
     }
 
+}
 }

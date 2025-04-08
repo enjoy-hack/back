@@ -1,33 +1,29 @@
 package com.example.smartair.entity.user;
 
-import com.example.smartair.entity.device.Device;
-import com.example.smartair.entity.hvacSetting.HvacSetting;
-import com.example.smartair.entity.notification.Notification;
-import com.example.smartair.entity.room.Room;
-import com.example.smartair.util.BaseEntity;
+import com.example.smartair.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 
 @Entity
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class User extends BaseEntity {
+public class User extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
+    @Column(nullable = false, unique = true)
     private String username;
-    private String email;
+
+    @Column(nullable = false)
     private String password;
 
-    private String role;
+    @Column(nullable = false, unique = true)
+    private String email;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
 

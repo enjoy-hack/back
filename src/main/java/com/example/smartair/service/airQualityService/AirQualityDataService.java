@@ -5,6 +5,8 @@ import com.example.smartair.entity.airData.AirQualityData;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomDevice.RoomDevice;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
 import com.example.smartair.repository.AirQualityDataRepository;
 import com.example.smartair.repository.DeviceRepository;
@@ -40,12 +42,12 @@ public class AirQualityDataService {
             //topic에서 deviceId parsing
             Long deviceId = Long.parseLong(topic.split("/")[1]);
             Device device = deviceRepository.findById(deviceId)
-                    .orElseThrow(()->new RuntimeException("Device not found"));
+                    .orElseThrow(()->new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
             //room 찾기
             Room room = roomDeviceRepository.findByDevice(device)
                     .map(RoomDevice::getRoom)
-                    .orElseThrow(()->new RuntimeException("Room not found"));
+                    .orElseThrow(()->new CustomException(ErrorCode.ROOM_NOT_FOUND));
 
             //entity 생성
             AirQualityData data = AirQualityData.builder()

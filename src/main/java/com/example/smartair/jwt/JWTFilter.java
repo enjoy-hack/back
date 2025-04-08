@@ -1,9 +1,12 @@
 package com.example.smartair.jwt;
 
+import com.example.smartair.entity.CustomUserDetails;
+import com.example.smartair.entity.user.Role;
+import com.example.smartair.entity.user.User;
 import ch.qos.logback.core.net.SyslogOutputStream;
 import com.example.smartair.entity.CustomUserDetails;
-import com.example.smartair.entity.Role;
-import com.example.smartair.entity.User;
+import com.example.smartair.entity.user.Role;
+import com.example.smartair.entity.user.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
