@@ -1,7 +1,6 @@
-package com.example.smartair.service;
+package com.example.smartair.service.LoginService;
 
-import com.example.smartair.dto.JoinDTO;
-import com.example.smartair.dto.LoginDTO;
+import com.example.smartair.dto.LoginDTO.JoinDTO;
 import com.example.smartair.entity.Role;
 import com.example.smartair.entity.User;
 import com.example.smartair.repository.UserRepository;

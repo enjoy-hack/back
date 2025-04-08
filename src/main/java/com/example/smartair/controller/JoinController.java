@@ -1,18 +1,12 @@
 package com.example.smartair.controller;
 
-import com.example.smartair.dto.JoinDTO;
-import com.example.smartair.dto.LoginDTO;
+import com.example.smartair.dto.LoginDTO.JoinDTO;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.service.JoinService;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
+import com.example.smartair.service.LoginService.JoinService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;

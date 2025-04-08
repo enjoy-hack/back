@@ -1,4 +1,4 @@
-package com.example.smartair.service;
+package com.example.smartair.service.LoginService;
 
 import com.example.smartair.entity.CustomUserDetails;
 import com.example.smartair.entity.User;
