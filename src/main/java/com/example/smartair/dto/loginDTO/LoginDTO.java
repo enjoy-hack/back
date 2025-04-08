@@ -1,4 +1,4 @@
-package com.example.smartair.dto.LoginDTO;
+package com.example.smartair.dto.loginDTO;
 
 import lombok.Getter;
 import lombok.Setter;
