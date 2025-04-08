@@ -1,6 +1,6 @@
 package com.example.smartair.controller;
 
-import com.example.smartair.dto.LoginDTO.JoinDTO;
+import com.example.smartair.dto.loginDTO.JoinDTO;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.service.LoginService.JoinService;
