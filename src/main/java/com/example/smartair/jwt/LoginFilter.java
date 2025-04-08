@@ -1,9 +1,8 @@
 package com.example.smartair.jwt;
 
-import com.example.smartair.dto.LoginDTO;
+import com.example.smartair.dto.LoginDTO.LoginDTO;
 import com.example.smartair.entity.CustomUserDetails;
 import com.example.smartair.entity.RefreshEntity;
-import com.example.smartair.entity.Role;
 import com.example.smartair.repository.RefreshRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
