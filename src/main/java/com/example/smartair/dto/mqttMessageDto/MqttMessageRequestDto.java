@@ -1,8 +1,10 @@
 package com.example.smartair.dto.mqttMessageDto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@NoArgsConstructor
 public class MqttMessageRequestDto {
     private String topic;
     private String payload;
