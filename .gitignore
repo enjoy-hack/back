@@ -38,3 +38,5 @@ out/
 
 ### infomation ###
 application.yml
+
+.env
