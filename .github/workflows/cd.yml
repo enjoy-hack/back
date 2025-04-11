@@ -67,8 +67,8 @@ jobs:
     - name: Set up SSH key
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/smartAir-server-key.pem
+        chmod 400 ~/.ssh/smartAir-server-key.pem
 
     - name: Add EC2 to known hosts
       run: |
@@ -76,7 +76,7 @@ jobs:
 
     - name: Start SSH Tunnel
       run: |
-        nohup ssh -N -L 3306:${{ secrets.RDS_ENDPOINT }}:3306 ubuntu@${{ secrets.EC2_HOST }} -i ~/.ssh/id_rsa &
+        nohup ssh -N -L 3306:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_HOST }} -i ~/.ssh/smartAir-server-key.pem &
         sleep 5
 
   deploy:
@@ -90,7 +90,7 @@ jobs:
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: "ubuntu"
+          username: "ec2-user"
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           port: 22
           source: "docker/docker-compose.yml,docker/scripts/docker-install.sh"
@@ -109,7 +109,7 @@ jobs:
           RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: "ubuntu"
+          username: "ec2-user"
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           port: 22
           envs: MYSQL_DB_NAME,MYSQL_DB_USERNAME,MYSQL_DB_PASSWORD,IMAGE_TAG,DOCKERHUB_USERNAME,DOCKERHUB_REPOSITORY_NAME,RDS_ENDPOINT
