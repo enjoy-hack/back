@@ -25,6 +25,9 @@ jobs:
         java-version: '17'
         distribution: 'corretto'
         
+    - name: Create resources directory
+      run: mkdir -p src/main/resources
+        
     - name: Update application.yml
       run: |
         echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
