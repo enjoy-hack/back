@@ -2,7 +2,7 @@ package com.example.smartair.jwt;
 
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.login.Role;
-import com.example.smartair.entity.login.User;
+import com.example.smartair.entity.user.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
