@@ -1,6 +1,17 @@
 version: '3'
 
 services:
+  mqtt:
+    image: eclipse-mosquitto
+    container_name: mqtt
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mqtt_data:/mosquitto/data
+    restart: always
+    networks:
+      - app-network
   app:
     container_name: app
     image: ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPOSITORY_NAME}:${IMAGE_TAG}
@@ -8,7 +19,19 @@ services:
       - "8080:8080"
     env_file:
       - .env
+    depends_on:
+      - mqtt
+    networks:
+      - app-network
     deploy:
       resources:
         limits:
           memory: 800M
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mqtt_data:
+  mysql_data:
