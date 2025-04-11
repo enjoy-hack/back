@@ -47,8 +47,8 @@ jobs:
     - name: Set up SSH key
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/smartAir-server-key.pem
+        chmod 400 ~/.ssh/smartAir-server-key.pem
 
     - name: Add EC2 to known hosts
       run: |
@@ -56,7 +56,7 @@ jobs:
 
     - name: Set up SSH tunnel to RDS
       run: |
-        ssh -i ~/.ssh/id_rsa -L 3306:${{ secrets.RDS_ENDPOINT }}:3306 -f -N ubuntu@${{ secrets.EC2_HOST }} || exit 1
+        ssh -i ~/.ssh/smartAir-server-key.pem -L 3306:${{ secrets.RDS_ENDPOINT }}:3306 -f -N ec2-user@${{ secrets.EC2_HOST }} || exit 1
       
     - name: Build with Gradle
       run: ./gradlew build
