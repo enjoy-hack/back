@@ -1,6 +1,7 @@
 package com.example.smartair.entity.user;
 
 import com.example.smartair.entity.BaseTimeEntity;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,4 +27,3 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 }
-

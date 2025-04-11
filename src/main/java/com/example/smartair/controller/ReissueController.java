@@ -1,7 +1,6 @@
 package com.example.smartair.controller;
 
-import com.example.smartair.entity.RefreshEntity;
-import com.example.smartair.entity.user.Role;
+import com.example.smartair.entity.login.RefreshEntity;
 import com.example.smartair.jwt.JWTUtil;
 import com.example.smartair.repository.RefreshRepository;
 import io.jsonwebtoken.ExpiredJwtException;
