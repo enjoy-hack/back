@@ -27,7 +27,11 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: '17'
-        distribution: 'corretto'  
+        distribution: 'corretto'
+
+    - name: Update application.yml
+      run: |
+        echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
         
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@v4
@@ -52,11 +56,7 @@ jobs:
 
     - name: Set up SSH tunnel to RDS
       run: |
-        ssh -i ~/.ssh/id_rsa -L 3306:${{ secrets.RDS_ENDPOINT }}:3306 -f -N ubuntu@${{ secrets.EC2_HOST }} -o StrictHostKeyChecking=no || exit 1
-      
-    - name: Update application.yml
-      run: |
-        echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
+        ssh -i ~/.ssh/id_rsa -L 3306:${{ secrets.RDS_ENDPOINT }}:3306 -f -N ubuntu@${{ secrets.EC2_HOST }} || exit 1
       
     - name: Build with Gradle
       run: ./gradlew build
