@@ -52,7 +52,7 @@ jobs:
 
     - name: Set up SSH tunnel to RDS
       run: |
-        ssh -i ~/.ssh/id_rsa -L 3306:${{ secrets.RDS_ENDPOINT }}:3306 -f -N ubuntu@${{ secrets.EC2_HOST }} || exit 1
+        ssh -i ~/.ssh/id_rsa -L 3306:${{ secrets.RDS_ENDPOINT }}:3306 -f -N ubuntu@${{ secrets.EC2_HOST }} -o StrictHostKeyChecking=no || exit 1
       
     - name: Update application.yml
       run: |
