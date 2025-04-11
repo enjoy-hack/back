@@ -56,7 +56,7 @@ jobs:
 
     - name: Set up SSH tunnel to RDS
       run: |
-        ssh -i ~/.ssh/smartAir-server-key.pem -L 3306:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_HOST }} || exit 1
+        ssh -i ~/.ssh/smartAir-server-key.pem -L 3307:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_HOST }} || exit 1
       
     - name: Build with Gradle
       run: ./gradlew build
