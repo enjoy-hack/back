@@ -1,4 +1,4 @@
-package com.example.smartair.entity.login;
+package com.example.smartair.entity.user;
 
 import lombok.Getter;
 
@@ -11,5 +11,4 @@ public enum Role {
         this.value = value;
     }
     private String value;
-
 }
