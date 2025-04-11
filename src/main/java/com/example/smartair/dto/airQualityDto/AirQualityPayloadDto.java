@@ -1,4 +1,4 @@
-package com.example.smartair.dto.airQualityDto;
+package com.example.smartair.dto.AirQualityDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
