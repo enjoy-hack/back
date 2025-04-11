@@ -1,6 +1,6 @@
-package com.example.smartair.service;
+package com.example.smartair.service.UserService;
 
-import com.example.smartair.entity.CustomUserDetails;
+import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;

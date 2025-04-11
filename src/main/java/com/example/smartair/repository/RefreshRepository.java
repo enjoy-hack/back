@@ -1,6 +1,6 @@
 package com.example.smartair.repository;
 
-import com.example.smartair.entity.RefreshEntity;
+import com.example.smartair.entity.login.RefreshEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
