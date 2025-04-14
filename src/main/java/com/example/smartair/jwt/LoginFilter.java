@@ -50,16 +50,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             String messageBody = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
             loginDTO = objectMapper.readValue(messageBody, LoginDTO.class);
         } catch (IOException e) {
-            // throw new BusinessException(ErrorCode.INVALID_LOGIN_CONTENTS_TYPE);
             throw new AuthenticationServiceException("로그인 요청의 형식을 읽을 수 없습니다.", e);
         }
 
-        String username = loginDTO.getUsername();
+        String email = loginDTO.getEmail();
         String password = loginDTO.getPassword();
-        System.out.println(username);
+        System.out.println(email);
 
         // 토큰은 authenticationManager이 username, password를 검증하기 위해서 발급하는 것
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, password, null);
         //검증이 잘 되면 Authentication 반환, 안되면 exception 반환
         return authenticationManager.authenticate(authToken);
     }

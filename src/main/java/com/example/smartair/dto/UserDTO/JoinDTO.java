@@ -1,12 +1,12 @@
 package com.example.smartair.dto.UserDTO;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class JoinDTO {
     private String username;
     private String password;

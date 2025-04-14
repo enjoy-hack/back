@@ -5,11 +5,9 @@ import com.example.smartair.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-
 @Entity
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends BaseTimeEntity {
@@ -20,12 +18,14 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
-    private String password;
+    private String password; // local 로그인 사용자만 저장
 
     @Column(nullable = false, unique = true)
     private String email;
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    private String loginType; //로그인 타입
+
 }
