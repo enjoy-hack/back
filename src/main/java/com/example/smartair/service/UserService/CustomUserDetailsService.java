@@ -18,11 +18,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    @Override // 사용자 정보를 불러와서 UserDetails로 반환
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("사용자 정보 확인" + username);
+    @Override // 사용자 정보를 불러와서 UserDetails로 반환, loadUserByusername은 시큐리티 식별자로 email로 변경 안한 것
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        System.out.println("사용자 정보 확인" + email);
         //DB에서 조회
-        Optional<User> userData = userRepository.findByUsername(username);
+        Optional<User> userData = userRepository.findByEmail(email);
         System.out.println("DB 조회 결과: " + userData);
         if (userData.isEmpty()) {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다");

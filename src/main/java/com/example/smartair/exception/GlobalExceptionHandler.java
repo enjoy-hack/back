@@ -10,6 +10,7 @@ import java.util.Collections;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<?> handleCustomException(CustomException e) {
         log.error("CustomException 발생: {}", e.getMessage());
@@ -22,4 +23,5 @@ public class GlobalExceptionHandler {
         log.info("RuntimeException 처리 시작");
         return "Runtime Exception 핸들링";
     }
+
 }
