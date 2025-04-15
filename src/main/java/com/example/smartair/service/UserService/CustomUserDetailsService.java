@@ -23,15 +23,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         System.out.println("사용자 정보 확인" + email);
         //DB에서 조회
         Optional<User> userData = userRepository.findByEmail(email);
-        System.out.println("DB 조회 결과: " + userData);
+
         if (userData.isEmpty()) {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다");
         }
-        System.out.println("userData");
         User user = userData.get();
         //UserDetails에 담아서 return하면 AutneticationManager가 검증 함
-
-        System.out.println("담아서 반환");
         return new CustomUserDetails(user);
     }
 }
