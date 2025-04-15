@@ -2,6 +2,7 @@ package com.example.smartair.config;
 
 import com.example.smartair.jwt.*;
 import com.example.smartair.repository.RefreshRepository;
+import com.example.smartair.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,13 +23,15 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final UserRepository userRepository;
     private final RefreshRepository refreshRepository;
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil,
-                          RefreshRepository refreshRepository) {
+                          RefreshRepository refreshRepository, UserRepository userRepository) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.refreshRepository = refreshRepository;
+        this.userRepository = userRepository;
     }
 
     @Bean
@@ -60,13 +63,13 @@ public class SecurityConfig {
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/", "/join", "/reissue", "/oauth2/**").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/login", "/join", "/reissue", "/oauth2/**").permitAll()
+                        .anyRequest().authenticated()
                 );
 
         // JWT 필터 & 커스텀 필터 설정
         http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
-        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+        http.addFilterBefore(new JWTFilter(jwtUtil, userRepository), LoginFilter.class);
         http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository),
                 UsernamePasswordAuthenticationFilter.class);
 
