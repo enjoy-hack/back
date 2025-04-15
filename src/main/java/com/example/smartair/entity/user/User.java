@@ -5,6 +5,7 @@ import com.example.smartair.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Builder
 @Entity
 @Getter
 @Setter
