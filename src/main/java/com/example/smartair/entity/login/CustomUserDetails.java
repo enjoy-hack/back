@@ -26,6 +26,10 @@ public class CustomUserDetails implements UserDetails { // 시큐리티에서 �
         });
         return authorities;
     }
+
+    public User getUser(){
+        return user;
+    }
     @Override
     public String getPassword() {
 
@@ -36,6 +40,10 @@ public class CustomUserDetails implements UserDetails { // 시큐리티에서 �
     public String getUsername() {
 
         return user.getUsername();
+    }
+    public String getEmail() {
+
+        return user.getEmail();
     }
 
     @Override

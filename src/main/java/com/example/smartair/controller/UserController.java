@@ -1,6 +1,8 @@
 package com.example.smartair.controller;
 
 import com.example.smartair.dto.UserDTO.KakaoUserInfoResponseDTO;
+import com.example.smartair.dto.UserDTO.UserInfoDTO;
+import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.login.RefreshEntity;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.jwt.JWTUtil;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -39,8 +44,8 @@ public class UserController {
 
         User user = kakaoService.findUserOrCreateUser(userInfo);
 
-        String access = jwtUtil.createJwt("access", user.getUsername(), String.valueOf(user.getRole()), 600000L);
-        String refresh = jwtUtil.createJwt("refresh", user.getUsername(), String.valueOf(user.getRole()), 86400000L);
+        String access = jwtUtil.createJwt("access", user.getUsername(), String.valueOf(user.getRole()), user.getEmail(), 600000L);
+        String refresh = jwtUtil.createJwt("refresh", user.getUsername(), String.valueOf(user.getRole()), user.getEmail(),86400000L);
 
         addRefreshEntity(user.getUsername(), refresh, 86400000L);
         return ResponseEntity.ok()
@@ -68,6 +73,23 @@ public class UserController {
         cookie.setHttpOnly(true);
 
         return cookie;
+    }
+
+    @GetMapping("/userinfo")
+    public ResponseEntity<?> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails){
+        if(userDetails == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+
+        User user =userDetails.getUser();
+        UserInfoDTO userInfo = new UserInfoDTO();
+        userInfo.setId(user.getId());
+        userInfo.setUsername(user.getUsername());
+        userInfo.setEmail(user.getEmail());
+        userInfo.setRole(String.valueOf(user.getRole()));
+        userInfo.setLoginType(user.getLoginType());
+
+        return ResponseEntity.ok(userInfo);
     }
 
 

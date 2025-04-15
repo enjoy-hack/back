@@ -5,6 +5,7 @@ import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
 
+import com.example.smartair.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,17 +18,28 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Optional;
 
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    public JWTFilter(JWTUtil jwtUtil){
+    public JWTFilter(JWTUtil jwtUtil, UserRepository userRepository){
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String accessToken = request.getHeader("access");
+        String authorizationHeader = request.getHeader("Authorization");
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String accessToken = authorizationHeader.substring(7); // "Bearer " 이후만 추출
+
 
         if (accessToken == null) {
             filterChain.doFilter(request, response);// 토큰이 없다면 다음 필터로 넘김
@@ -65,10 +77,10 @@ public class JWTFilter extends OncePerRequestFilter {
         // username, role 값을 획득
         String username = jwtUtil.getUsername(accessToken);
         String role = jwtUtil.getRole(accessToken);
+        String email = jwtUtil.getEmail(accessToken);
 
-        User user = new User();
-        user.setUsername(username);
-        user.setRole(Role.valueOf(role));
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        User user = optionalUser.get();
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
