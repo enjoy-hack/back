@@ -1,6 +1,6 @@
 package com.example.smartair.service.UserService;
 
-import com.example.smartair.dto.UserDTO.JoinDTO;
+import com.example.smartair.dto.userDto.JoinDTO;
 import com.example.smartair.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

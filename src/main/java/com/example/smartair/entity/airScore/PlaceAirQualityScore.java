@@ -1,7 +1,6 @@
 package com.example.smartair.entity.airScore;
 
 import com.example.smartair.entity.place.Place;
-import com.example.smartair.entity.room.Room;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class RoomAirQualityScore extends BaseEntity {
+public class PlaceAirQualityScore extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,10 +23,6 @@ public class RoomAirQualityScore extends BaseEntity {
     private double tvocScore;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
-    private Room room;
-
-    @ManyToOne
     @JoinColumn(name = "place_id")
     private Place place;
 }

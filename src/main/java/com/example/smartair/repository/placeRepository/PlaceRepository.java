@@ -1,4 +1,4 @@
-package com.example.smartair.repository;
+package com.example.smartair.repository.placeRepository;
 
 import com.example.smartair.entity.place.Place;
 import org.springframework.data.jpa.repository.JpaRepository;
