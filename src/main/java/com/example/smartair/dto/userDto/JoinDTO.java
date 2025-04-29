@@ -1,4 +1,4 @@
-package com.example.smartair.dto.UserDTO;
+package com.example.smartair.dto.userDto;
 
 import lombok.*;
 

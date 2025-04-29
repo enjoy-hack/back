@@ -1,22 +1,18 @@
 package com.example.smartair.entity.airData;
 
 import com.example.smartair.entity.device.Device;
-import com.example.smartair.entity.notification.Notification;
 import com.example.smartair.entity.predictedAirData.PredictedAirQualityData;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.*;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Builder
+@Setter
 public class AirQualityData extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,12 +21,12 @@ public class AirQualityData extends BaseEntity {
     private String topic;
     private String payload;
 
-    private double temperature;
-    private double humidity;
+    private double temperature; //온도
+    private double humidity; //습도
     private int pressure;
 
     private int tvoc;
-    private int ppm;
+    private int eco2;
     private int rawh2;
     private int rawethanol;
 

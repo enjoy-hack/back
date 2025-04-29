@@ -1,6 +1,6 @@
-package com.example.smartair.controller;
+package com.example.smartair.controller.mqttController;
 
-import com.example.smartair.dto.AirQualityDto.AirQualityPayloadDto;
+import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.dto.mqttMessageDto.MqttMessageRequestDto;
 import com.example.smartair.entity.airData.AirQualityData;
 import com.example.smartair.service.mqttService.MqttReceiveService;

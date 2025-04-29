@@ -1,4 +1,4 @@
-package com.example.smartair.controller;
+package com.example.smartair.controller.mqttController;
 
 import com.example.smartair.service.mqttService.MqttSendService;
 import org.springframework.http.ResponseEntity;
