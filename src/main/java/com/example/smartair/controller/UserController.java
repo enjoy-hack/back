@@ -1,7 +1,7 @@
 package com.example.smartair.controller;
 
-import com.example.smartair.dto.UserDTO.KakaoUserInfoResponseDTO;
-import com.example.smartair.dto.UserDTO.UserInfoDTO;
+import com.example.smartair.dto.userDto.KakaoUserInfoResponseDTO;
+import com.example.smartair.dto.userDto.UserInfoDTO;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.login.RefreshEntity;
 import com.example.smartair.entity.user.User;
@@ -11,19 +11,14 @@ import com.example.smartair.service.UserService.KakaoService;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
