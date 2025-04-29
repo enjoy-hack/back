@@ -1,4 +1,4 @@
-package com.example.smartair.repository;
+package com.example.smartair.repository.roomRepository;
 
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
