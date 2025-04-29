@@ -1,21 +1,17 @@
 package com.example.smartair.service.UserService;
 
-import com.example.smartair.dto.UserDTO.KakaoTokenResponseDTO;
-import com.example.smartair.dto.UserDTO.KakaoUserInfoResponseDTO;
+import com.example.smartair.dto.userDto.KakaoTokenResponseDTO;
+import com.example.smartair.dto.userDto.KakaoUserInfoResponseDTO;
 import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
-import com.example.smartair.jwt.JWTUtil;
-import com.example.smartair.jwt.LoginFilter;
 import com.example.smartair.repository.UserRepository;
 import io.netty.handler.codec.http.HttpHeaderValues;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
