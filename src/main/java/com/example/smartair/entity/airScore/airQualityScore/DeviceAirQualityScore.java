@@ -1,6 +1,6 @@
-package com.example.smartair.entity.airScore;
+package com.example.smartair.entity.airScore.airQualityScore;
 
-import com.example.smartair.entity.airData.AirQualityData;
+import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -17,8 +17,8 @@ public class DeviceAirQualityScore extends BaseEntity {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "air_quality_data_id")
-    private AirQualityData airQualityData;
+    @JoinColumn(name = "device_air_quality_data_id")
+    private DeviceAirQualityData deviceAirQualityData;
 
     private double overallScore;
 
@@ -26,6 +26,4 @@ public class DeviceAirQualityScore extends BaseEntity {
     private double pm25Score;
     private double eco2Score;
     private double tvocScore;
-
-
 }

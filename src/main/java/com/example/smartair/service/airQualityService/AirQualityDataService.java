@@ -1,8 +1,8 @@
 package com.example.smartair.service.airQualityService;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
-import com.example.smartair.entity.airData.AirQualityData;
-import com.example.smartair.entity.airData.FineParticlesData;
+import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomDevice.RoomDevice;
@@ -63,7 +63,7 @@ public class AirQualityDataService {
             FineParticlesData savedFineParticlesData = fineParticlesDataRepository.save(fineParticlesData);
 
             // 4. AirQualityData 엔티티 생성 
-            AirQualityData airQualityData = AirQualityData.builder()
+            DeviceAirQualityData airQualityData = DeviceAirQualityData.builder()
                     .topic(topic)
                     .payload(payload) // 원본 페이로드 저장
                     .temperature(dto.getTemperature())
@@ -74,12 +74,11 @@ public class AirQualityDataService {
                     .rawh2(dto.getRawh2())
                     .rawethanol(dto.getRawethanol())
                     .device(device)
-                    .room(room)
                     .fineParticlesData(savedFineParticlesData) 
                     .build();
 
             // 5. AirQualityData 저장
-            AirQualityData savedAirQualityData = airQualityDataRepository.save(airQualityData);
+            DeviceAirQualityData savedAirQualityData = airQualityDataRepository.save(airQualityData);
 
             // 6. 캐싱 
             recentAirQualityDataCache.put(device.getId(), savedAirQualityData);
@@ -92,7 +91,7 @@ public class AirQualityDataService {
     }
 
     // 캐시에 저장된 데이터 조회 메서드
-    public Optional<AirQualityData> getRecentAirQualityData(Long deviceId) {
+    public Optional<DeviceAirQualityData> getRecentAirQualityData(Long deviceId) {
         return recentAirQualityDataCache.get(deviceId);
     }
 }

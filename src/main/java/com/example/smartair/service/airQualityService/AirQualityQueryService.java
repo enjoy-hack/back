@@ -3,9 +3,9 @@ package com.example.smartair.service.airQualityService;
 import com.example.smartair.dto.airQualityScoreDto.DeviceAirQualityScoreDto;
 import com.example.smartair.dto.airQualityScoreDto.PlaceAirQualityScoreDto;
 import com.example.smartair.dto.airQualityScoreDto.RoomAirQualityScoreDto;
-import com.example.smartair.entity.airScore.DeviceAirQualityScore;
-import com.example.smartair.entity.airScore.PlaceAirQualityScore;
-import com.example.smartair.entity.airScore.RoomAirQualityScore;
+import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
+import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore;
+import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
@@ -95,7 +95,7 @@ public class AirQualityQueryService {
     public DeviceAirQualityScoreDto getLatestDeviceAirQualityScore(Long deviceId) {
         Device device = deviceRepository.findById(deviceId).orElseThrow(()-> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
-        DeviceAirQualityScore latestDeviceScore = deviceAirQualityScoreRepository.findFirstByAirQualityData_DeviceOrderByCreatedAtDesc(device).orElseThrow(
+        DeviceAirQualityScore latestDeviceScore = deviceAirQualityScoreRepository.findFirstByDeviceAirQualityData_DeviceOrderByCreatedAtDesc(device).orElseThrow(
                 ()-> new CustomException(ErrorCode.DEVICE_NOT_FOUND)
         );
 
