@@ -2,7 +2,7 @@ package com.example.smartair.controller.mqttController;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.dto.mqttMessageDto.MqttMessageRequestDto;
-import com.example.smartair.entity.airData.AirQualityData;
+import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.service.mqttService.MqttReceiveService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class MqttReceiveController {
     }
 
     @GetMapping("/recent")
-    public List<AirQualityData> getRecentMessage(){
+    public List<DeviceAirQualityData> getRecentMessage(){
         return mqttReceiveService.getRecentMessage();
     }
 

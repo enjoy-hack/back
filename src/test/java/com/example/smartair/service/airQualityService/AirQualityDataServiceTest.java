@@ -1,7 +1,7 @@
 package com.example.smartair.service.airQualityService;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
-import com.example.smartair.entity.airData.AirQualityData;
+import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomDevice.RoomDevice;
@@ -64,8 +64,8 @@ class AirQualityDataServiceTest {
 
         when(deviceRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(device));
         when(roomDeviceRepository.findByDevice(device)).thenReturn(Optional.of(roomDevice));
-        when(airQualityDataRepository.save(any(AirQualityData.class))).thenAnswer(invocation -> {
-            AirQualityData savedData = invocation.getArgument(0);
+        when(airQualityDataRepository.save(any(DeviceAirQualityData.class))).thenAnswer(invocation -> {
+            DeviceAirQualityData savedData = invocation.getArgument(0);
             savedData.setId(100L);
             return savedData;
         });
@@ -77,8 +77,8 @@ class AirQualityDataServiceTest {
         assertNotNull(data);
         assertEquals(25.5, data.getTemperature());
         assertEquals(60, data.getHumidity());
-        verify(airQualityDataRepository).save(any(AirQualityData.class));
-        verify(recentAirQualityDataCache).put(eq(device.getId()), any(AirQualityData.class));
+        verify(airQualityDataRepository).save(any(DeviceAirQualityData.class));
+        verify(recentAirQualityDataCache).put(eq(device.getId()), any(DeviceAirQualityData.class));
     }
 
     @Test
@@ -92,7 +92,7 @@ class AirQualityDataServiceTest {
 
         //then
         assertNull(data);
-        verify(airQualityDataRepository, never()).save(any(AirQualityData.class));
+        verify(airQualityDataRepository, never()).save(any(DeviceAirQualityData.class));
         verify(recentAirQualityDataCache, never()).put(any(), any());
     }
 
@@ -110,7 +110,7 @@ class AirQualityDataServiceTest {
 
         //then
         assertNull(data);
-        verify(airQualityDataRepository, never()).save(any(AirQualityData.class));
+        verify(airQualityDataRepository, never()).save(any(DeviceAirQualityData.class));
         verify(recentAirQualityDataCache, never()).put(any(), any());
     }
 
@@ -128,7 +128,7 @@ class AirQualityDataServiceTest {
 
         //then
         assertNull(data);
-        verify(airQualityDataRepository, never()).save(any(AirQualityData.class));
+        verify(airQualityDataRepository, never()).save(any(DeviceAirQualityData.class));
         verify(recentAirQualityDataCache, never()).put(any(), any());
     }
 
