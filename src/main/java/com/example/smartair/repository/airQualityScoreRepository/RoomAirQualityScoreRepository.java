@@ -1,6 +1,6 @@
 package com.example.smartair.repository.airQualityScoreRepository;
 
-import com.example.smartair.entity.airScore.RoomAirQualityScore;
+import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
 import org.springframework.data.domain.Page;
@@ -19,8 +19,7 @@ public interface RoomAirQualityScoreRepository extends JpaRepository<RoomAirQual
     Optional<RoomAirQualityScore> findFirstByRoomOrderByCreatedAtDesc(Room room); // Spring Data JPA 이름 규칙 활용
 
     // Place에 속한 모든 RoomAirQualityScore 찾기
-    List<RoomAirQualityScore> findByPlace(Place place);
-
+    List<RoomAirQualityScore> findByRoom_Place(Place place);
 
     // Room ID와 시간 범위로 RoomAirQualityScore 목록을 페이징하여 조회 
     @Query("SELECT rqs FROM RoomAirQualityScore rqs WHERE rqs.room.id = :roomId " +

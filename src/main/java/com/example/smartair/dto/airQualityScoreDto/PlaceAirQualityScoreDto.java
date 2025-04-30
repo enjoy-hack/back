@@ -1,7 +1,6 @@
 package com.example.smartair.dto.airQualityScoreDto;
 
-import com.example.smartair.entity.airScore.PlaceAirQualityScore;
-import com.example.smartair.entity.place.Place;
+import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import lombok.AllArgsConstructor;
