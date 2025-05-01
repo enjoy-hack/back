@@ -28,6 +28,7 @@ public enum ErrorCode {
     MQTT_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "MQTT 데이터 처리 중 오류 발생"),
 
     // === AirQualityScoreService 관련 오류 코드 ===
+
     ROOM_AIR_QUALITY_SCORE_IS_EMPTY(HttpStatus.NO_CONTENT, "Room 점수 데이터가 비어있습니다."),
 
     // === Satisfaction 관련 오류 코드 ===

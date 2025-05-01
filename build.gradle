@@ -46,7 +46,11 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+<<<<<<< HEAD
 	implementation 'com.google.firebase:firebase-admin:9.2.0'
+=======
+
+>>>>>>> 6c51114c1b420127a6bc8f4f6a49ae80ae865b2c
 }
 
 tasks.named('test') {

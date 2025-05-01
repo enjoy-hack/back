@@ -4,7 +4,9 @@ import com.example.smartair.dto.userDto.KakaoTokenResponseDTO;
 import com.example.smartair.dto.userDto.KakaoUserInfoResponseDTO;
 import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
+
 import com.example.smartair.repository.userRepository.UserRepository;
+
 import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

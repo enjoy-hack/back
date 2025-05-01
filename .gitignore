@@ -40,5 +40,9 @@ out/
 application.yml
 
 .env
+<<<<<<< HEAD
 mosquitto.conf
 /src/main/resources/firebase/*.json
+=======
+mosquitto.conf
+>>>>>>> 6c51114c1b420127a6bc8f4f6a49ae80ae865b2c
