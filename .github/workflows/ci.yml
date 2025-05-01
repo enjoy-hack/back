@@ -35,7 +35,7 @@ jobs:
     - name: Create resources directory
       run: mkdir -p src/main/resources
 
-   - name: Update application.yml
+    - name: Update application.yml
       run: |
         echo "${{ secrets.APPLICATION }}" | base64 -d > ./src/main/resources/application.yml
 
