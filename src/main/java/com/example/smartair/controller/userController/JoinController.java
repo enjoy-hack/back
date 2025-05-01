@@ -1,4 +1,4 @@
-package com.example.smartair.controller;
+package com.example.smartair.controller.userController;
 
 import com.example.smartair.dto.userDto.JoinDTO;
 import com.example.smartair.exception.CustomException;

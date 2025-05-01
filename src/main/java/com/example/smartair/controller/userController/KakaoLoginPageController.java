@@ -1,4 +1,4 @@
-package com.example.smartair.controller;
+package com.example.smartair.controller.userController;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;

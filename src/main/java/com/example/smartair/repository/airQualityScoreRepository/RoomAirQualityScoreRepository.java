@@ -18,6 +18,7 @@ import java.util.Optional;
 public interface RoomAirQualityScoreRepository extends JpaRepository<RoomAirQualityScore, Long> {
     Optional<RoomAirQualityScore> findFirstByRoomOrderByCreatedAtDesc(Room room); // Spring Data JPA 이름 규칙 활용
 
+    Optional<RoomAirQualityScore> findFirstByRoomIdOrderByCreatedAtDesc(Long roomId);
     // Place에 속한 모든 RoomAirQualityScore 찾기
     List<RoomAirQualityScore> findByRoom_Place(Place place);
 

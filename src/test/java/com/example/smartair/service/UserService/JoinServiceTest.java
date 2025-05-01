@@ -1,7 +1,10 @@
 package com.example.smartair.service.UserService;
 
 import com.example.smartair.dto.userDto.JoinDTO;
-import com.example.smartair.repository.UserRepository;
+
+import com.example.smartair.entity.user.Role;
+import com.example.smartair.repository.userRepository.UserRepository;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
