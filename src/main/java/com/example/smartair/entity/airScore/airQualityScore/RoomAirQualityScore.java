@@ -1,5 +1,6 @@
-package com.example.smartair.entity.airScore;
+package com.example.smartair.entity.airScore.airQualityScore;
 
+import com.example.smartair.entity.airData.airQualityData.RoomAirQualityData;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.util.BaseEntity;
@@ -27,7 +28,7 @@ public class RoomAirQualityScore extends BaseEntity {
     @JoinColumn(name = "room_id")
     private Room room;
 
-    @ManyToOne
-    @JoinColumn(name = "place_id")
-    private Place place;
+    @OneToOne
+    @JoinColumn(name = "room_air_quality_data_id")
+    private RoomAirQualityData roomAirQualityData;
 }

@@ -1,5 +1,5 @@
 package com.example.smartair.dto.airQualityScoreDto;
-import com.example.smartair.entity.airScore.DeviceAirQualityScore;
+import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import lombok.AllArgsConstructor;
@@ -24,7 +24,7 @@ public class DeviceAirQualityScoreDto {
         if (deviceAirQualityScore == null){
             throw new CustomException(ErrorCode.DEVICE_AIR_DATA_NOT_FOUND);
         }
-        Long dataId = (deviceAirQualityScore.getAirQualityData() != null) ? deviceAirQualityScore.getAirQualityData().getId() : null;
+        Long dataId = (deviceAirQualityScore.getDeviceAirQualityData()!= null) ? deviceAirQualityScore.getDeviceAirQualityData().getId() : null;
 
         return DeviceAirQualityScoreDto.builder()
                 .createdAt(deviceAirQualityScore.getCreatedAt())

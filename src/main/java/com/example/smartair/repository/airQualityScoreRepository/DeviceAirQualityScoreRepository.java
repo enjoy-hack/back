@@ -1,6 +1,6 @@
 package com.example.smartair.repository.airQualityScoreRepository;
 
-import com.example.smartair.entity.airScore.DeviceAirQualityScore;
+import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
 import com.example.smartair.entity.device.Device;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,9 +14,9 @@ import java.util.Optional;
 
 @Repository
 public interface DeviceAirQualityScoreRepository extends JpaRepository<DeviceAirQualityScore, Long> {
-    Optional<DeviceAirQualityScore> findFirstByAirQualityData_DeviceOrderByCreatedAtDesc(Device device);
+    Optional<DeviceAirQualityScore> findFirstByDeviceAirQualityData_DeviceOrderByCreatedAtDesc(Device device);
 
-    @Query("SELECT das FROM DeviceAirQualityScore das JOIN das.airQualityData aqd " +
+    @Query("SELECT das FROM DeviceAirQualityScore das JOIN das.deviceAirQualityData aqd " +
            "WHERE aqd.device.id = :deviceId " +
            "AND (:startTime IS NULL OR das.createdAt >= :startTime) " +
            "AND (:endTime IS NULL OR das.createdAt <= :endTime)")

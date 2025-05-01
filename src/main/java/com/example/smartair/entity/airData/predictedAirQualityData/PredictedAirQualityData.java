@@ -1,6 +1,5 @@
-package com.example.smartair.entity.predictedAirData;
+package com.example.smartair.entity.airData.predictedAirQualityData;
 
-import com.example.smartair.entity.airData.AirQualityData;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 
