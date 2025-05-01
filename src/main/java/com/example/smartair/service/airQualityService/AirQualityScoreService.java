@@ -1,9 +1,10 @@
 package com.example.smartair.service.airQualityService;
 
-import com.example.smartair.entity.airData.AirQualityData;
-import com.example.smartair.entity.airScore.DeviceAirQualityScore;
-import com.example.smartair.entity.airScore.RoomAirQualityScore;
-import com.example.smartair.entity.airScore.PlaceAirQualityScore;
+import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
+import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
+import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore;
+import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.exception.CustomException;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,24 +35,29 @@ public class AirQualityScoreService {
      * @param airQualityData
      */
     @Transactional
-    public void calculateAndSaveScores(AirQualityData airQualityData) {
+    public void calculateAndSaveScores(DeviceAirQualityData airQualityData) {
         if (airQualityData == null) {
            throw new CustomException(ErrorCode.INVALID_INPUT_DATA);
         }
-        if (airQualityData.getRoom() == null) {
+        Device device = airQualityData.getDevice();
+        if (device == null) {
+            throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
+        }
+        Room room = device.getRoom();
+        if (room == null) {
             throw new CustomException(ErrorCode.ROOM_NOT_FOUND);
         }
 
         // 1. 개별 DeviceAirQualityScore 계산 및 저장
         DeviceAirQualityScore calculatedDeviceScore = airQualityCalculator.calculateScore(airQualityData);
+        calculatedDeviceScore.setDeviceAirQualityData(airQualityData);
         deviceAirQualityScoreRepository.save(calculatedDeviceScore);
         log.info("DeviceAirQualityScore 저장 완료: ID {}", calculatedDeviceScore.getId());
 
-        // 2. RoomAirQualityScore 생성 (History)
-        Room room = airQualityData.getRoom();
+        // 2. RoomAirQualityScore 생성
         createRoomAirQualityScore(room, calculatedDeviceScore);
 
-        // 3. PlaceAirQualityScore 생성 (History)
+        // 3. PlaceAirQualityScore 생성
         Place place = room.getPlace();
         if (place != null) {
             createPlaceAirQualityScore(place);
@@ -65,12 +70,11 @@ public class AirQualityScoreService {
     /**
      * 특정 방의 새로운 공기질 점수 기록을 생성합니다.
      * @param room 대상 방
-     * @param calculatedDeviceScore 계산된 개별 점수 객체
+     * @param calculatedDeviceScore 계산된 개별 점수 객체 (원본 값 제공 용도)
      */
     private void createRoomAirQualityScore(Room room, DeviceAirQualityScore calculatedDeviceScore) {
         RoomAirQualityScore newRoomScore = new RoomAirQualityScore();
         newRoomScore.setRoom(room);
-        newRoomScore.setPlace(room.getPlace());
         newRoomScore.setOverallScore(calculatedDeviceScore.getOverallScore());
         newRoomScore.setPm10Score(calculatedDeviceScore.getPm10Score());
         newRoomScore.setPm25Score(calculatedDeviceScore.getPm25Score());
@@ -86,7 +90,7 @@ public class AirQualityScoreService {
      * @param place 대상 공간
      */
     private void createPlaceAirQualityScore(Place place) {
-        List<RoomAirQualityScore> roomScores = roomAirQualityScoreRepository.findByPlace(place);
+        List<RoomAirQualityScore> roomScores = roomAirQualityScoreRepository.findByRoom_Place(place);
 
         if (roomScores.isEmpty()) {
             log.warn("Place ID {}에 대한 Room 점수 데이터가 없어 PlaceAirQualityScore를 생성하지 않습니다.", place.getId());

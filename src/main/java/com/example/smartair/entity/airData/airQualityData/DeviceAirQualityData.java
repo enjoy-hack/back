@@ -1,7 +1,8 @@
-package com.example.smartair.entity.airData;
+package com.example.smartair.entity.airData.airQualityData;
 
+import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
+import com.example.smartair.entity.airData.predictedAirQualityData.PredictedAirQualityData;
 import com.example.smartair.entity.device.Device;
-import com.example.smartair.entity.predictedAirData.PredictedAirQualityData;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
@@ -13,7 +14,7 @@ import lombok.*;
 @Getter
 @Builder
 @Setter
-public class AirQualityData extends BaseEntity {
+public class DeviceAirQualityData extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,10 +34,6 @@ public class AirQualityData extends BaseEntity {
     @ManyToOne //공기질 데이터와 기기 : 다대일
     @JoinColumn(name = "device_id")
     private Device device;
-
-    @ManyToOne //공기질 데이터와 방 : 다대일
-    @JoinColumn(name = "room_id")
-    private Room room;
 
     @OneToOne
     @JoinColumn(name = "fineParticlesData_id") //공기질 데이터와 미세먼지 데이터 : 일대일

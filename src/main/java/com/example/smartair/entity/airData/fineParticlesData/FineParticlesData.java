@@ -1,4 +1,4 @@
-package com.example.smartair.entity.airData;
+package com.example.smartair.entity.airData.fineParticlesData;
 
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.util.BaseEntity;
