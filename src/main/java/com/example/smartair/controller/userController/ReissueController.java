@@ -1,8 +1,8 @@
-package com.example.smartair.controller;
+package com.example.smartair.controller.userController;
 
 import com.example.smartair.entity.login.RefreshEntity;
 import com.example.smartair.jwt.JWTUtil;
-import com.example.smartair.repository.RefreshRepository;
+import com.example.smartair.repository.userRepository.RefreshRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

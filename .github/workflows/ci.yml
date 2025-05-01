@@ -16,14 +16,22 @@ env:
   SPRING_MQTT_BROKER: tcp://mqtt:1883
   KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
   KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+<<<<<<< HEAD
+  KAKAO_REDIRECT_URI: http://localhost:8080/login/oauth2/kakao
+=======
   KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+>>>>>>> 6c51114c1b420127a6bc8f4f6a49ae80ae865b2c
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
     steps:
+<<<<<<< HEAD
+    - name : Checkout Code
+=======
     - name: Checkout Code
+>>>>>>> 6c51114c1b420127a6bc8f4f6a49ae80ae865b2c
       uses: actions/checkout@v4
     
     - name: Set up JDK 17

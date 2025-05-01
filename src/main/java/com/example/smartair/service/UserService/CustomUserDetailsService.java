@@ -2,7 +2,9 @@ package com.example.smartair.service.UserService;
 
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
-import com.example.smartair.repository.UserRepository;
+
+import com.example.smartair.repository.userRepository.UserRepository;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

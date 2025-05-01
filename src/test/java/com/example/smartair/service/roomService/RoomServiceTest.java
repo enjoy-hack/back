@@ -7,7 +7,7 @@ import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.repository.placeRepository.PlaceRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
-import com.example.smartair.repository.UserRepository;
+import com.example.smartair.repository.userRepository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

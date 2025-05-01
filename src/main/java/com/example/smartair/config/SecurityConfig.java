@@ -1,8 +1,10 @@
 package com.example.smartair.config;
 
 import com.example.smartair.jwt.*;
-import com.example.smartair.repository.RefreshRepository;
-import com.example.smartair.repository.UserRepository;
+
+import com.example.smartair.repository.userRepository.RefreshRepository;
+import com.example.smartair.repository.userRepository.UserRepository;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
