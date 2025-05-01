@@ -14,13 +14,17 @@ env:
   MYSQL_DB_NAME: ${{ secrets.MYSQL_DB_NAME }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   SPRING_MQTT_BROKER: tcp://mqtt:1883
+  KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+  KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+  KAKAO_REDIRECT_URI: http://localhost:8080/login/oauth2/kakao
+
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
     steps:
-    - name : Checkout Code
+    - name: Checkout Code
       uses: actions/checkout@v4
     
     - name: Set up JDK 17
