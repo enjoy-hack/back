@@ -1,10 +1,8 @@
 package com.example.smartair.service.UserService;
 
 import com.example.smartair.entity.user.User;
-<<<<<<< HEAD
-=======
+
 import com.example.smartair.repository.userRepository.UserRepository;
->>>>>>> 6c51114c1b420127a6bc8f4f6a49ae80ae865b2c
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,15 +33,10 @@ public class LoginTest {
     @BeforeEach
     void setUp(){
         User user = new User();
-<<<<<<< HEAD
-        user.setUsername("name");
-        user.setPassword(passwordEncoder.encode("password"));
-        user.setEmail("test");
-=======
+
         user.setUsername("test");
         user.setPassword(passwordEncoder.encode("password"));
         user.setEmail("email");
->>>>>>> 6c51114c1b420127a6bc8f4f6a49ae80ae865b2c
         userRepository.save(user);
     }
 
@@ -53,11 +46,8 @@ public class LoginTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-<<<<<<< HEAD
-                        "email":"test",        
-=======
-                        "username":"test",        
->>>>>>> 6c51114c1b420127a6bc8f4f6a49ae80ae865b2c
+
+                        "email":"email",        
                         "password" : "password"
                     }
                         """))
@@ -72,11 +62,7 @@ public class LoginTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                     {
-<<<<<<< HEAD
                       "email": "testuser",
-=======
-                      "username": "testuser",
->>>>>>> 6c51114c1b420127a6bc8f4f6a49ae80ae865b2c
                       "password": "wrongpassword"
                     }
                 """))
