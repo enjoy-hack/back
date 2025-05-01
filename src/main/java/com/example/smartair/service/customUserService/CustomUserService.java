@@ -1,6 +1,6 @@
 package com.example.smartair.service.customUserService;
 
-import com.example.smartair.dto.UserDto.CustomResponseDTO;
+import com.example.smartair.dto.userDto.CustomResponseDTO;
 import com.example.smartair.entity.user.CustomUser;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.repository.customUserRepository.CustomUserRepository;

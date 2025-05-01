@@ -25,6 +25,7 @@ public class User extends BaseTimeEntity {
     private String email;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20) // 또는 더 넉넉하게 30 정도
     private Role role;
 
     private String loginType; //로그인 타입
