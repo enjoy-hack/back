@@ -1,6 +1,5 @@
 package com.example.smartair.entity.device;
 
-import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
@@ -26,10 +25,5 @@ public class Device extends BaseEntity {
     @ManyToOne //기기와 유저 : 다대일 관계
     @JoinColumn(name = "user_id")
     private User user;
-
-    @ManyToOne //기기와 방 : 다대일 관계
-    @JoinColumn(name = "room_id")
-    private Room room;
-
 
 }
