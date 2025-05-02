@@ -16,7 +16,7 @@ env:
   SPRING_MQTT_BROKER: tcp://mqtt:1883
   KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
   KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
-  KAKAO_REDIRECT_URI: http://localhost:8080/login/oauth2/kakao
+  KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
 
 jobs:
   build-and-test:
@@ -35,7 +35,7 @@ jobs:
     - name: Create resources directory
       run: mkdir -p src/main/resources
 
-   - name: Update application.yml
+    - name: Update application.yml
       run: |
         echo "${{ secrets.APPLICATION }}" | base64 -d > ./src/main/resources/application.yml
 
