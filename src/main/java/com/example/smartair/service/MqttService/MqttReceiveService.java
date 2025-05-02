@@ -1,7 +1,7 @@
 package com.example.smartair.service.mqttService;
 
-import com.example.smartair.dto.AirQualityDto.AirQualityPayloadDto;
-import com.example.smartair.entity.airData.AirQualityData;
+import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
+import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.service.airQualityService.AirQualityDataService;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public class MqttReceiveService {
 
-    private final LinkedList<AirQualityData> recentMessage = new LinkedList<>();
+    private final LinkedList<DeviceAirQualityData> recentMessage = new LinkedList<>();
     private final AirQualityDataService airQualityDataService;
 
     public MqttReceiveService(AirQualityDataService airQualityDataService) {
@@ -33,7 +33,7 @@ public class MqttReceiveService {
 //        }
 //    }
 
-    public List<AirQualityData> getRecentMessage(){
+    public List<DeviceAirQualityData> getRecentMessage(){
         return List.copyOf(recentMessage);
     }
 
