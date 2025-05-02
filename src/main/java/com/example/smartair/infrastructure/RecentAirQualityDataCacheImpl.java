@@ -1,6 +1,6 @@
 package com.example.smartair.infrastructure;
 
-import com.example.smartair.entity.airData.AirQualityData;
+import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -9,15 +9,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class RecentAirQualityDataCacheImpl implements RecentAirQualityDataCache {
-    private final Map<Long, AirQualityData> cache = new ConcurrentHashMap<>();
+    private final Map<Long, DeviceAirQualityData> cache = new ConcurrentHashMap<>();
 
     @Override
-    public void put(Long deviceId, AirQualityData airQualityData) {
+    public void put(Long deviceId, DeviceAirQualityData airQualityData) {
         cache.put(deviceId, airQualityData);
     }
 
     @Override
-    public Optional<AirQualityData> get(Long deviceId){
+    public Optional<DeviceAirQualityData> get(Long deviceId){
         return Optional.ofNullable(cache.get(deviceId));
     }
 }
