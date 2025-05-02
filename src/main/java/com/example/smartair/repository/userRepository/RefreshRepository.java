@@ -1,4 +1,4 @@
-package com.example.smartair.repository;
+package com.example.smartair.repository.userRepository;
 
 import com.example.smartair.entity.login.RefreshEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,6 +1,6 @@
 package com.example.smartair.jwt;
 
-import com.example.smartair.repository.RefreshRepository;
+import com.example.smartair.repository.userRepository.RefreshRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

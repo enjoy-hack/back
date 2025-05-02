@@ -1,7 +1,8 @@
 package com.example.smartair.service.UserService;
 
 import com.example.smartair.entity.user.User;
-import com.example.smartair.repository.UserRepository;
+
+import com.example.smartair.repository.userRepository.UserRepository;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ public class LoginTest {
     @BeforeEach
     void setUp(){
         User user = new User();
+
         user.setUsername("test");
         user.setPassword(passwordEncoder.encode("password"));
         user.setEmail("email");
@@ -44,7 +46,8 @@ public class LoginTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                        "username":"test",        
+
+                        "email":"email",        
                         "password" : "password"
                     }
                         """))
@@ -59,7 +62,7 @@ public class LoginTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                     {
-                      "username": "testuser",
+                      "email": "testuser",
                       "password": "wrongpassword"
                     }
                 """))
