@@ -41,3 +41,5 @@ application.yml
 
 .env
 mosquitto.conf
+
+resources/firebase/smart-air-a68f7-firebase-adminsdk-fbsvc-2f6367f940.json
