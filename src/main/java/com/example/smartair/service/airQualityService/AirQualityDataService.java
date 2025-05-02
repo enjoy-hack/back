@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -45,7 +46,7 @@ public class AirQualityDataService {
                     .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
             Room room = roomDeviceRepository.findByDevice(device)
                     .map(RoomDevice::getRoom)
-                    .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+                    .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
             // 3. FineParticlesData 엔티티 생성 및 저장 (pt1 데이터 기준)
             FineParticlesData fineParticlesData = FineParticlesData.builder()
@@ -84,9 +85,15 @@ public class AirQualityDataService {
             recentAirQualityDataCache.put(device.getId(), savedAirQualityData);
 
             return dto; 
-        } catch (Exception e) {
-            log.error("MQTT Payload 처리 중 오류 발생: {}", e.getMessage(), e);
-            throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR);
+        } catch (CustomException ce) { // 발생한 CustomException은 그대로 다시 던짐
+            log.error("비즈니스 로직 오류: {}", ce.getMessage());
+            throw ce;
+        } catch (IOException | NumberFormatException | ArrayIndexOutOfBoundsException e) { // 예상되는 처리 오류
+            log.error("MQTT Payload 구문 분석 또는 처리 오류: {}", e.getMessage());
+            throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR); // 구체적인 처리 오류로 감쌈
+        } catch (Exception e) { // 그 외 모든 예상치 못한 예외
+            log.error("MQTT Payload 처리 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR); // 또는 다른 일반 오류 코드
         }
     }
 
