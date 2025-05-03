@@ -7,11 +7,13 @@ import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
+import com.example.smartair.entity.roomDevice.RoomDevice;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityScoreRepository.DeviceAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityScoreRepository.RoomAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityScoreRepository.PlaceAirQualityScoreRepository;
+import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
 import com.example.smartair.service.airQualityService.calculator.AirQualityCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ public class AirQualityScoreService {
     private final DeviceAirQualityScoreRepository deviceAirQualityScoreRepository;
     private final RoomAirQualityScoreRepository roomAirQualityScoreRepository;
     private final PlaceAirQualityScoreRepository placeAirQualityScoreRepository;
+    private final RoomDeviceRepository roomDeviceRepository;
 
     /**
      * 주어진 AirQualityData를 기반으로 점수 기록을 생성합니다.
@@ -43,10 +46,9 @@ public class AirQualityScoreService {
         if (device == null) {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
-        Room room = device.getRoom();
-        if (room == null) {
-            throw new CustomException(ErrorCode.ROOM_NOT_FOUND);
-        }
+        Room room = roomDeviceRepository.findByDevice(device)
+                .map(RoomDevice::getRoom)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
         // 1. 개별 DeviceAirQualityScore 계산 및 저장
         DeviceAirQualityScore calculatedDeviceScore = airQualityCalculator.calculateScore(airQualityData);

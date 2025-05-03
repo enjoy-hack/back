@@ -17,15 +17,12 @@ env:
   KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
   KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
   KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
-  KAKAO_REDIRECT_URI: http://localhost:8080/login/oauth2/kakao
-  KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
     steps:
-    - name : Checkout Code
     - name: Checkout Code
       uses: actions/checkout@v4
     
