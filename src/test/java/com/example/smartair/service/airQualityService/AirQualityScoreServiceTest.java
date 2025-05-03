@@ -7,11 +7,13 @@ import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
+import com.example.smartair.entity.roomDevice.RoomDevice;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityScoreRepository.DeviceAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityScoreRepository.RoomAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityScoreRepository.PlaceAirQualityScoreRepository;
+import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
 import com.example.smartair.service.airQualityService.calculator.AirQualityCalculator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +46,9 @@ class AirQualityScoreServiceTest {
     @Mock
     private PlaceAirQualityScoreRepository placeAirQualityScoreRepository;
 
+    @Mock
+    private RoomDeviceRepository roomDeviceRepository;
+
     @InjectMocks
     private AirQualityScoreService airQualityScoreService;
 
@@ -60,13 +66,17 @@ class AirQualityScoreServiceTest {
         private Place testPlace;
         private Device testDevice;
         private DeviceAirQualityScore calculatedDeviceScore;
+        private RoomDevice testRoomDevice;
 
         @BeforeEach
         void setupTestData() {
             testPlace = Place.builder().id(1L).name("Test Place").build();
             testRoom = Room.builder().id(1L).name("Test Room").place(testPlace).build();
-            testDevice = Device.builder().id(1L).room(testRoom).build();
+            testDevice = Device.builder().id(1L).build();
+            testRoomDevice = RoomDevice.builder().id(1L).room(testRoom).device(testDevice).build();
             testData = DeviceAirQualityData.builder().id(1L).device(testDevice).eco2(500).tvoc(300).build();
+
+            when(roomDeviceRepository.findByDevice(testDevice)).thenReturn(Optional.of(testRoomDevice));
 
             calculatedDeviceScore = new DeviceAirQualityScore();
             calculatedDeviceScore.setId(100L);
@@ -85,10 +95,8 @@ class AirQualityScoreServiceTest {
             when(airQualityCalculator.calculateScore(testData)).thenReturn(calculatedDeviceScore);
             when(deviceAirQualityScoreRepository.save(any(DeviceAirQualityScore.class))).thenReturn(calculatedDeviceScore);
 
-            // createPlaceAirQualityScore 내부에서 findByPlace 호출 시뮬레이션
-            RoomAirQualityScore roomScoreForAvg = new RoomAirQualityScore(); // 평균 계산에 사용될 객체 가정
+            RoomAirQualityScore roomScoreForAvg = new RoomAirQualityScore();
             roomScoreForAvg.setOverallScore(calculatedDeviceScore.getOverallScore());
-            // ... 다른 점수들도 설정 ...
             when(roomAirQualityScoreRepository.findByRoom_Place(testPlace)).thenReturn(Collections.singletonList(roomScoreForAvg));
             when(roomAirQualityScoreRepository.save(any(RoomAirQualityScore.class))).thenAnswer(inv -> inv.getArgument(0));
             when(placeAirQualityScoreRepository.save(any(PlaceAirQualityScore.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -99,8 +107,8 @@ class AirQualityScoreServiceTest {
             // Then
             verify(airQualityCalculator).calculateScore(eq(testData));
             verify(deviceAirQualityScoreRepository).save(eq(calculatedDeviceScore));
+            verify(roomDeviceRepository).findByDevice(eq(testDevice));
 
-            // RoomAirQualityScore 생성 검증
             ArgumentCaptor<RoomAirQualityScore> roomScoreCaptor = ArgumentCaptor.forClass(RoomAirQualityScore.class);
             verify(roomAirQualityScoreRepository).save(roomScoreCaptor.capture());
             RoomAirQualityScore capturedRoomScore = roomScoreCaptor.getValue();
@@ -109,7 +117,6 @@ class AirQualityScoreServiceTest {
             assertThat(capturedRoomScore.getOverallScore()).isEqualTo(calculatedDeviceScore.getOverallScore());
             assertThat(capturedRoomScore.getPm10Score()).isEqualTo(calculatedDeviceScore.getPm10Score());
 
-            // PlaceAirQualityScore 생성 검증
             ArgumentCaptor<PlaceAirQualityScore> placeScoreCaptor = ArgumentCaptor.forClass(PlaceAirQualityScore.class);
             verify(roomAirQualityScoreRepository).findByRoom_Place(eq(testPlace));
             verify(placeAirQualityScoreRepository).save(placeScoreCaptor.capture());
@@ -138,30 +145,28 @@ class AirQualityScoreServiceTest {
         }
 
         @Test
-        @DisplayName("AirQualityData의 Device 또는 Device의 Room이 null일 때 CustomException 발생")
-        void calculateAndSaveScores_NullDeviceOrRoom_ShouldThrowException() {
+        @DisplayName("AirQualityData의 Device가 null이거나 Room-Device 매핑이 없을 때 CustomException 발생")
+        void calculateAndSaveScores_NullDeviceOrMappingNotFound_ShouldThrowException() {
             // Given
             // Case 1: Device is null
             DeviceAirQualityData dataWithNullDevice = DeviceAirQualityData.builder().id(1L).device(null).build();
 
-            // Case 2: Device's Room is null
-            Device deviceWithNullRoom = Device.builder().id(1L).room(null).build(); // Room이 null인 Device
-            DeviceAirQualityData dataWithNullRoom = DeviceAirQualityData.builder().id(1L).device(deviceWithNullRoom).build();
+            // Case 2: Room-Device Mapping Not Found
+            Device testDevice = Device.builder().id(1L).build(); // Room 정보 없는 Device
+            DeviceAirQualityData dataWithNoMapping = DeviceAirQualityData.builder().id(1L).device(testDevice).build();
+            when(roomDeviceRepository.findByDevice(testDevice)).thenReturn(Optional.empty()); // 매핑 없음 Mocking
 
-
-            // When & Then for Case 1
+            // When & Then for Case 1 (DEVICE_NOT_FOUND)
             CustomException exception1 = assertThrows(CustomException.class, () -> {
                 airQualityScoreService.calculateAndSaveScores(dataWithNullDevice);
             });
-            // DEVICE_NOT_FOUND 같은 별도 에러 코드 정의 및 사용 권장
-            assertThat(exception1.getErrorCode()).isEqualTo(ErrorCode.DEVICE_NOT_FOUND);
+            assertEquals(ErrorCode.DEVICE_NOT_FOUND, exception1.getErrorCode());
 
-
-             // When & Then for Case 2
+             // When & Then for Case 2 (ROOM_DEVICE_MAPPING_NOT_FOUND)
             CustomException exception2 = assertThrows(CustomException.class, () -> {
-                airQualityScoreService.calculateAndSaveScores(dataWithNullRoom);
+                airQualityScoreService.calculateAndSaveScores(dataWithNoMapping);
             });
-            assertThat(exception2.getErrorCode()).isEqualTo(ErrorCode.ROOM_NOT_FOUND);
+            assertEquals(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND, exception2.getErrorCode());
 
             verifyNoInteractions(airQualityCalculator, deviceAirQualityScoreRepository, roomAirQualityScoreRepository, placeAirQualityScoreRepository);
         }
@@ -170,19 +175,19 @@ class AirQualityScoreServiceTest {
         @DisplayName("Room의 Place가 null일 때 Place 점수 생성 안 함")
         void calculateAndSaveScores_NullPlace_ShouldLogWarningAndSkipPlaceScore() {
             // Given
-            // Room의 Place가 null인 경우
             Room roomWithNullPlace = Room.builder().id(1L).place(null).build();
-            Device deviceInRoomWithNullPlace = Device.builder().id(1L).room(roomWithNullPlace).build();
-            // data 생성 시 device 사용
+            Device deviceInRoomWithNullPlace = Device.builder().id(1L).build(); // Room 정보 없음
+            RoomDevice roomDeviceMapping = RoomDevice.builder().room(roomWithNullPlace).device(deviceInRoomWithNullPlace).build();
             DeviceAirQualityData dataWithNullPlace = DeviceAirQualityData.builder().id(1L).device(deviceInRoomWithNullPlace).build();
             DeviceAirQualityScore mockDeviceScore = new DeviceAirQualityScore();
 
+            // Mocking 설정
+            when(roomDeviceRepository.findByDevice(deviceInRoomWithNullPlace)).thenReturn(Optional.of(roomDeviceMapping)); // RoomDevice 반환
             when(airQualityCalculator.calculateScore(dataWithNullPlace)).thenReturn(mockDeviceScore);
             when(deviceAirQualityScoreRepository.save(any(DeviceAirQualityScore.class))).thenReturn(mockDeviceScore);
             when(roomAirQualityScoreRepository.save(any(RoomAirQualityScore.class))).thenAnswer(inv -> inv.getArgument(0));
-            // place 점수 계산에 필요한 room 점수 조회 로직 mocking 필요 (findByRoom_Place 등)
-            when(roomAirQualityScoreRepository.findByRoom_Place(any())).thenReturn(Collections.emptyList());
-
+            // Place 점수 계산에 필요한 room 점수 조회 로직 mocking 필요
+            when(roomAirQualityScoreRepository.findByRoom_Place(null)).thenReturn(Collections.emptyList()); // findByRoom_Place(null) 호출 예상
 
             // When
             airQualityScoreService.calculateAndSaveScores(dataWithNullPlace);
@@ -190,8 +195,9 @@ class AirQualityScoreServiceTest {
             // Then
             verify(airQualityCalculator).calculateScore(eq(dataWithNullPlace));
             verify(deviceAirQualityScoreRepository).save(any(DeviceAirQualityScore.class));
+            verify(roomDeviceRepository).findByDevice(eq(deviceInRoomWithNullPlace)); // RoomDeviceRepository 호출 검증
             verify(roomAirQualityScoreRepository).save(any(RoomAirQualityScore.class));
-            verify(placeAirQualityScoreRepository, never()).save(any(PlaceAirQualityScore.class)); // Place 점수는 저장 안 됨
+            verify(placeAirQualityScoreRepository, never()).save(any(PlaceAirQualityScore.class));
         }
     }
 }
