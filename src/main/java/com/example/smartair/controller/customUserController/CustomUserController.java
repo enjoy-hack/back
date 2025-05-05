@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class CustomUserController {
+public class CustomUserController implements CustomUserControllerDocs{
 
     private final CustomUserService customUserService;
 

@@ -14,7 +14,7 @@ import java.util.Collections;
 
 @Slf4j
 @RestController
-public class JoinController {
+public class JoinController implements JoinControllerDocs {
     private final  JoinService joinService;
 
     public  JoinController(JoinService joinService){
@@ -23,9 +23,7 @@ public class JoinController {
 
     @PostMapping("/join")
     public ResponseEntity<?> joinProcess(@RequestBody JoinDTO joinDTO){
-        log.info("여기인가");
         boolean success = joinService.joinProcess(joinDTO);
-        log.info("여기?");
         if (success) {
             return ResponseEntity.ok(Collections.singletonMap("message", "success"));
         } else {

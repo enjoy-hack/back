@@ -17,7 +17,7 @@ import java.util.Date;
 
 @Controller
 @ResponseBody
-public class ReissueController {
+public class ReissueController implements ReissueControllerDocs {
 
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;

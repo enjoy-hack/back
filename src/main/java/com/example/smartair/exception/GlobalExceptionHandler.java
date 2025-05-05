@@ -1,6 +1,7 @@
 package com.example.smartair.exception;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,9 +20,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public String handleRuntimeException() {
-        log.info("RuntimeException 처리 시작");
-        return "Runtime Exception 핸들링";
+    public ResponseEntity<?> handleRuntimeException(RuntimeException e) {
+        log.info("RuntimeException 발생: {}", e.getMessage(), e);
+        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(Collections.singletonMap("error", errorCode.getMessage()));
     }
 
 }

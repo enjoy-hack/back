@@ -1,6 +1,5 @@
 package com.example.smartair.controller.mqttController;
-
-import com.example.smartair.service.mqttService.MqttSendService;
+import com.example.smartair.service.MqttService.MqttSendService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

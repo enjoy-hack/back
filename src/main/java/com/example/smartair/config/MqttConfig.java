@@ -1,6 +1,8 @@
 package com.example.smartair.config;
 
-import com.example.smartair.service.mqttService.MqttReceiveService;
+import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
+
+import com.example.smartair.service.MqttService.MqttReceiveService;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.messaging.MessageHandler;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -56,8 +58,8 @@ public class MqttConfig {
     public MessageHandler handler(MqttReceiveService mqttReceiveService) {
         return message -> {
             String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
-            String payload = (String) message.getPayload();
-            mqttReceiveService.handleReceiveMessage(topic, payload);
+            AirQualityPayloadDto payloadDto = (AirQualityPayloadDto) message.getPayload();
+            mqttReceiveService.handleReceiveMessage(topic, payloadDto);
         };
     }
 
