@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping("/mqtt/receive")
-public class MqttReceiveController {
+public class MqttReceiveController implements MqttReceiveControllerDocs{
 
     private final MqttReceiveService mqttReceiveService;
 
