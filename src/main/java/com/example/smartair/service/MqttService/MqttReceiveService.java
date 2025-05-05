@@ -2,26 +2,32 @@ package com.example.smartair.service.mqttService;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.service.airQualityService.AirQualityDataService;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.LinkedList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class MqttReceiveService {
 
     private final LinkedList<DeviceAirQualityData> recentMessage = new LinkedList<>();
     private final AirQualityDataService airQualityDataService;
 
-    public MqttReceiveService(AirQualityDataService airQualityDataService) {
-        this.airQualityDataService = airQualityDataService;
-    }
-
-
-    public AirQualityPayloadDto handleReceiveMessage(String topic, String payload){
-        return airQualityDataService.processAirQualityData(topic, payload);
-
+    public AirQualityPayloadDto handleReceiveMessage(String topic, AirQualityPayloadDto dto) {
+        try {
+            log.info("Received message on topic '{}'", topic);
+            return airQualityDataService.processAirQualityData(topic, dto);
+        } catch (Exception e) {
+            log.error("Error handling MQTT message: Topic={}, Payload={}", topic, dto, e);
+            throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR);
+        }
     }
 
 //    public Long extractDeviceIdFromTopic(String topic) {

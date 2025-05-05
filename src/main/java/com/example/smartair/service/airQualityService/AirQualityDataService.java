@@ -3,6 +3,7 @@ package com.example.smartair.service.airQualityService;
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
+import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomDevice.RoomDevice;
@@ -10,10 +11,10 @@ import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
 import com.example.smartair.repository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityDataRepository.FineParticlesDataPt2Repository;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.repository.airQualityDataRepository.FineParticlesDataRepository;
 import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,28 +28,36 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AirQualityDataService {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final DeviceRepository deviceRepository;
     private final RoomDeviceRepository roomDeviceRepository;
     private final AirQualityDataRepository airQualityDataRepository;
     private final FineParticlesDataRepository fineParticlesDataRepository;
     private final RecentAirQualityDataCache recentAirQualityDataCache;
+    private final FineParticlesDataPt2Repository fineParticlesDataPt2Repository;
 
     @Transactional
-    public AirQualityPayloadDto processAirQualityData(String topic, String payload) {
+    public AirQualityPayloadDto processAirQualityData(String topic, AirQualityPayloadDto dto) {
         try {
-            // 1. JSON 파싱 
-            AirQualityPayloadDto dto = objectMapper.readValue(payload, AirQualityPayloadDto.class);
-
-            // 2. Device 및 Room 찾기
+            String[] parts = topic.split("/");
+            if (parts.length < 3){
+                log.error("잘못된 토픽 형식 수신 : {}", topic);
+                throw new CustomException(ErrorCode.MQTT_INVALID_TOPIC_ERROR);
+            }
+            // 2. Device 추출
             Long deviceId = Long.parseLong(topic.split("/")[1]);
             Device device = deviceRepository.findById(deviceId)
                     .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
+
+            // 3. Room 추출
+            Long roomIdFromTopic = Long.parseLong(topic.split("/")[2]);
             Room room = roomDeviceRepository.findByDevice(device)
                     .map(RoomDevice::getRoom)
                     .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
+            if (!room.getId().equals(roomIdFromTopic)){
+                log.warn("토픽의 Room ID({})와 실제 Device({})가 매핑된 Room ID({}) 불일치", roomIdFromTopic, deviceId, room.getId());
+            }
 
-            // 3. FineParticlesData 엔티티 생성 및 저장 (pt1 데이터 기준)
+            // 4. FineParticlesData 엔티티 생성 및 저장 (pt1 데이터 기준)
             FineParticlesData fineParticlesData = FineParticlesData.builder()
                     .pm10_standard(dto.getPt1Pm10Standard()) 
                     .pm25_standard(dto.getPt1Pm25Standard())
@@ -63,10 +72,23 @@ public class AirQualityDataService {
                     .build();
             FineParticlesData savedFineParticlesData = fineParticlesDataRepository.save(fineParticlesData);
 
-            // 4. AirQualityData 엔티티 생성 
+            FineParticlesDataPt2 fineParticlesDataPt2 = FineParticlesDataPt2.builder()
+                    .pm10_standard(dto.getPt2Pm10Standard())
+                    .pm25_standard(dto.getPt2Pm25Standard())
+                    .pm100_standard(dto.getPt2Pm100Standard())
+                    .particle_03(dto.getPt2Particles03um())
+                    .particle_05(dto.getPt2Particles05um())
+                    .particle_10(dto.getPt2Particles10um())
+                    .particle_25(dto.getPt2Particles25um())
+                    .particle_50(dto.getPt2Particles50um())
+                    .particle_100(dto.getPt2Particles100um())
+                    .device(device) // Device 연결
+                    .build();
+            FineParticlesDataPt2 savedFineParticlesDataPt2 = fineParticlesDataPt2Repository.save(fineParticlesDataPt2);
+
+            // 5. AirQualityData 엔티티 생성
             DeviceAirQualityData airQualityData = DeviceAirQualityData.builder()
                     .topic(topic)
-                    .payload(payload) // 원본 페이로드 저장
                     .temperature(dto.getTemperature())
                     .humidity(dto.getHumidity())
                     .pressure(dto.getPressure())
@@ -75,25 +97,26 @@ public class AirQualityDataService {
                     .rawh2(dto.getRawh2())
                     .rawethanol(dto.getRawethanol())
                     .device(device)
-                    .fineParticlesData(savedFineParticlesData) 
+                    .fineParticlesData(savedFineParticlesData)
+                    .fineParticlesDataPt2(savedFineParticlesDataPt2)
                     .build();
 
-            // 5. AirQualityData 저장
+            // 6. AirQualityData 저장
             DeviceAirQualityData savedAirQualityData = airQualityDataRepository.save(airQualityData);
 
-            // 6. 캐싱 
+            // 7. 캐싱
             recentAirQualityDataCache.put(device.getId(), savedAirQualityData);
 
             return dto; 
-        } catch (CustomException ce) { // 발생한 CustomException은 그대로 다시 던짐
+        } catch (CustomException ce) {
             log.error("비즈니스 로직 오류: {}", ce.getMessage());
             throw ce;
-        } catch (IOException | NumberFormatException | ArrayIndexOutOfBoundsException e) { // 예상되는 처리 오류
-            log.error("MQTT Payload 구문 분석 또는 처리 오류: {}", e.getMessage());
-            throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR); // 구체적인 처리 오류로 감쌈
-        } catch (Exception e) { // 그 외 모든 예상치 못한 예외
-            log.error("MQTT Payload 처리 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR); // 또는 다른 일반 오류 코드
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            log.error("MQTT 토픽 구문 분석 또는 처리 오류: {}", e.getMessage());
+            throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR);
+        } catch (Exception e) {
+            log.error("MQTT 데이터 처리 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
