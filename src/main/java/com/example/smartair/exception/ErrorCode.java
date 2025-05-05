@@ -28,6 +28,7 @@ public enum ErrorCode {
 
     // === mqtt 관련 오류 코드 ===
     MQTT_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "MQTT 데이터 처리 중 오류 발생"),
+    MQTT_INVALID_TOPIC_ERROR(HttpStatus.BAD_REQUEST, "MQTT 토픽 형식이 유효하지 않습니다."),
 
     // === AirQualityScoreService 관련 오류 코드 ===
 
