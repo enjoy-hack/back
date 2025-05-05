@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RoomAirQualityDataRepository extends JpaRepository<RoomAirQualityData, Integer> {
+public interface RoomAirQualityDataRepository extends JpaRepository<RoomAirQualityData, Long> {
 }
