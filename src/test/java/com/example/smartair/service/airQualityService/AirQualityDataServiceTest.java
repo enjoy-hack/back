@@ -3,11 +3,13 @@ package com.example.smartair.service.airQualityService;
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
+import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomDevice.RoomDevice;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
 import com.example.smartair.repository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityDataRepository.FineParticlesDataPt2Repository;
 import com.example.smartair.repository.airQualityDataRepository.FineParticlesDataRepository;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
@@ -19,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Optional;
 
@@ -45,16 +49,36 @@ class AirQualityDataServiceTest {
     @Mock
     private FineParticlesDataRepository fineParticlesDataRepository;
 
+    @Mock
+    private FineParticlesDataPt2Repository fineParticlesDataPt2Repository;
+
     @InjectMocks
     private AirQualityDataService airQualityDataService;
 
-    private static final String TEST_PAYLOAD = "{\"temperature\":25.5,\"humidity\":60,\"pressure\":1000,\"tvoc\":50,\"ppm\":450,\"rawh2\":10,\"rawethanol\":5}";
     private static final Long TEST_DEVICE_ID = 1L;
-    private static final String TEST_TOPIC = "iot/" + TEST_DEVICE_ID;
+    private static final Long TEST_ROOM_ID = 1L;
+    private static final String TEST_TOPIC = "smartair/" +  + TEST_DEVICE_ID + "/" + TEST_ROOM_ID;
+    private AirQualityPayloadDto testPayloadDto;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    void setUp(){
+    void setUp() throws JsonProcessingException {
         MockitoAnnotations.openMocks(this);
+        testPayloadDto = AirQualityPayloadDto.builder()
+                .temperature(25.5)
+                .humidity(60.0)
+                .pressure(100)
+                .tvoc(50)
+                .ppm(450)
+                .rawh2(10)
+                .rawethanol(5)
+                .pt1Pm10Standard(10.0).pt1Pm25Standard(20.0).pt1Pm100Standard(30.0)
+                .pt1Particles03um(100).pt1Particles05um(200).pt1Particles10um(300)
+                .pt1Particles25um(400).pt1Particles50um(500).pt1Particles100um(600)
+                .pt2Pm10Standard(11.0).pt2Pm25Standard(21.0).pt2Pm100Standard(31.0)
+                .pt2Particles03um(101).pt2Particles05um(201).pt2Particles10um(301)
+                .pt2Particles25um(401).pt2Particles50um(501).pt2Particles100um(601)
+                .build();
     }
 
     @Test
@@ -62,7 +86,7 @@ class AirQualityDataServiceTest {
     void processAirQualityData(){
         //given
         Device device = Device.builder().id(TEST_DEVICE_ID).build();
-        Room room  = Room.builder().id(1L).build();
+        Room room  = Room.builder().id(TEST_ROOM_ID).build();
         RoomDevice roomDevice = RoomDevice.builder()
                 .id(1L)
                 .room(room)
@@ -80,7 +104,7 @@ class AirQualityDataServiceTest {
         });
 
         //when
-        AirQualityPayloadDto data = airQualityDataService.processAirQualityData(TEST_TOPIC, TEST_PAYLOAD);
+        AirQualityPayloadDto data = airQualityDataService.processAirQualityData(TEST_TOPIC, testPayloadDto);
 
         //then
         assertNotNull(data);
@@ -99,7 +123,7 @@ class AirQualityDataServiceTest {
 
         //when & then
         CustomException exception = assertThrows(CustomException.class, () -> {
-            airQualityDataService.processAirQualityData(TEST_TOPIC, TEST_PAYLOAD);
+            airQualityDataService.processAirQualityData(TEST_TOPIC, testPayloadDto);
         });
         assertEquals(ErrorCode.DEVICE_NOT_FOUND, exception.getErrorCode());
 
@@ -120,7 +144,7 @@ class AirQualityDataServiceTest {
         //when & then: 예외 발생 및 내용을 명확히 검증
         CustomException thrownException = assertThrows(
                 CustomException.class,
-                () -> airQualityDataService.processAirQualityData(TEST_TOPIC, TEST_PAYLOAD),
+                () -> airQualityDataService.processAirQualityData(TEST_TOPIC, testPayloadDto),
                 "ROOM_DEVICE_MAPPING_NOT_FOUND 예외가 발생해야 합니다."
         );
 

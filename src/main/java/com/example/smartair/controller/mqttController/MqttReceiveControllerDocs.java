@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 public interface MqttReceiveControllerDocs {
     @Operation(
-            summary = "MQTT 메시지 수신 및 처리", // 요약을 좀 더 명확하게
+            summary = "MQTT 메시지 수신 및 처리", 
             description = """
                     **MQTT 메시지 수신 및 처리**
 
@@ -17,7 +17,7 @@ public interface MqttReceiveControllerDocs {
 
                     **입력 파라미터 (`RequestBody`)**
                     - `topic` (String): 메시지가 발행된 MQTT 토픽 문자열입니다. 일반적으로 `/`로 구분된 계층 구조를 가지며, 메시지 출처(디바이스 ID, 방 ID)를 식별하는 데 사용됩니다. (예: `smartair/1/1/airquality`)
-                    - `payload` (AirQualityPayloadDto): 측정된 공기질 센서 데이터 객체입니다. 온도, 습도, 미세먼지 농도, 입자 개수 등 다양한 측정값을 포함합니다. 상세 구조는 아래 **Schema**를 참조하세요.
+                    - `payload` (String): 측정된 공기질 센서 데이터를 나타내는 JSON 형식의 문자열입니다. 온도, 습도, 미세먼지 농도, 입자 개수 등 다양한 측정값을 포함합니다.
 
                     **반환값**
                     - 성공 시 (HTTP 200 OK): 메시지 처리 완료를 나타내는 확인 문자열입니다. (예: "테스트 메시지 처리 완료 ...") 
