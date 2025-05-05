@@ -58,8 +58,8 @@ public class MqttConfig {
     public MessageHandler handler(MqttReceiveService mqttReceiveService) {
         return message -> {
             String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
-            AirQualityPayloadDto payloadDto = (AirQualityPayloadDto) message.getPayload();
-            mqttReceiveService.handleReceiveMessage(topic, payloadDto);
+            String payload = (String) message.getPayload();
+            mqttReceiveService.handleReceiveMessage(topic, payload);
         };
     }
 
