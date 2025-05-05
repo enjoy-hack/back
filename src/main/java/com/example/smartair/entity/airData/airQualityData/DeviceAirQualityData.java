@@ -1,6 +1,7 @@
 package com.example.smartair.entity.airData.airQualityData;
 
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
+import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
 import com.example.smartair.entity.airData.predictedAirQualityData.PredictedAirQualityData;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
@@ -13,14 +14,13 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Builder
-@Setter
+@Table(name = "device_air_quality_data")
 public class DeviceAirQualityData extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String topic;
-    private String payload;
 
     private double temperature; //온도
     private double humidity; //습도
@@ -31,15 +31,19 @@ public class DeviceAirQualityData extends BaseEntity {
     private int rawh2;
     private int rawethanol;
 
-    @ManyToOne //공기질 데이터와 기기 : 다대일
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id")
     private Device device;
 
-    @OneToOne
-    @JoinColumn(name = "fineParticlesData_id") //공기질 데이터와 미세먼지 데이터 : 일대일
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "fine_particles_data_id") // 외래 키 컬럼명 지정
     private FineParticlesData fineParticlesData;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "fine_particles_data_pt2_id") // 외래 키 컬럼명 지정
+    private FineParticlesDataPt2 fineParticlesDataPt2;
+
     @OneToOne
-    @JoinColumn(name = "predictedAirQuality_id")
+    @JoinColumn(name = "predictedAirQuality_data_id")
     private PredictedAirQualityData predictedAirQualityData;
 }
