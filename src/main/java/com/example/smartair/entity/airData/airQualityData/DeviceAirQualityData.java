@@ -13,6 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Setter
 @Builder
 @Table(name = "device_air_quality_data")
 public class DeviceAirQualityData extends BaseEntity {

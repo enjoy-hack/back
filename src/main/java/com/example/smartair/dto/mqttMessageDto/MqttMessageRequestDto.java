@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MqttMessageRequestDto {
     private String topic;
-    private AirQualityPayloadDto payload;
+    private String payload;
 }

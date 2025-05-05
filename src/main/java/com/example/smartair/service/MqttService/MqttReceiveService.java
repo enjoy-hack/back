@@ -8,6 +8,7 @@ import com.example.smartair.service.airQualityService.AirQualityDataService;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,14 +20,18 @@ public class MqttReceiveService {
 
     private final LinkedList<DeviceAirQualityData> recentMessage = new LinkedList<>();
     private final AirQualityDataService airQualityDataService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AirQualityPayloadDto handleReceiveMessage(String topic, AirQualityPayloadDto dto) {
+    public AirQualityPayloadDto handleReceiveMessage(String topic, String payload) {
         try {
-            log.info("Received message on topic '{}'", topic);
+
+            log.info("Received message on topic '{}', payload: {}", topic, payload);
+            //String payload를 JSON으로 파싱 -> AirQualityPayloadDto로 변환
+            AirQualityPayloadDto dto = objectMapper.readValue(payload, AirQualityPayloadDto.class);
 
             return airQualityDataService.processAirQualityData(topic, dto);
         } catch (Exception e) {
-            log.error("Error handling MQTT message: Topic={}, Payload={}", topic, dto, e);
+            log.error("Error handling MQTT message: Topic={}, Payload={}", topic, payload, e);
             throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR);
         }
     }
