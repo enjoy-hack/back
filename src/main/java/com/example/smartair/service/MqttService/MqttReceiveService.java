@@ -5,6 +5,7 @@ import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.service.airQualityService.AirQualityDataService;
+import com.example.smartair.service.awsFileService.S3Service;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +21,19 @@ public class MqttReceiveService {
 
     private final LinkedList<DeviceAirQualityData> recentMessage = new LinkedList<>();
     private final AirQualityDataService airQualityDataService;
+    private final S3Service s3Service;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AirQualityPayloadDto handleReceiveMessage(String topic, String payload) {
         try {
 
             log.info("Received message on topic '{}', payload: {}", topic, payload);
+
+            /*
+            S3 사용시, 지금은 local로 테스트하니 주석처리.. 나중에 서버 쓸때 사용
+            String deviceId = topic.split("/")[1];
+            s3Service.uploadJson(deviceId, payload);
+            */
             //String payload를 JSON으로 파싱 -> AirQualityPayloadDto로 변환
             AirQualityPayloadDto dto = objectMapper.readValue(payload, AirQualityPayloadDto.class);
 
