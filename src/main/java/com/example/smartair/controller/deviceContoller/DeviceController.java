@@ -1,0 +1,48 @@
+package com.example.smartair.controller.deviceContoller;
+
+import com.example.smartair.dto.deviceDto.DeviceRequestDto;
+import com.example.smartair.entity.login.CustomUserDetails;
+import com.example.smartair.entity.user.User;
+import com.example.smartair.service.deviceService.DeviceService;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@AllArgsConstructor
+@Slf4j
+public class DeviceController {
+    private final DeviceService deviceService;
+
+    @PostMapping("/device")
+    public ResponseEntity<?> setDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                       @RequestBody DeviceRequestDto deviceRequestDto) throws Exception {
+        if(userDetails == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+        User user = userDetails.getUser();
+
+        deviceService.setDevice(user, deviceRequestDto);
+
+        return ResponseEntity.ok("success");
+    }
+
+//    @DeleteMapping("/device")
+//    public ResponseEntity<?> deleteDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
+//                                          @RequestBody Long deviceSerialNumber){
+//        if(userDetails == null){
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+//        }
+//        User user = userDetails.getUser();
+//
+//        deviceService.deleteDevice(user, deviceSerialNumber);
+//
+//        return ResponseEntity.ok("success");
+//    }
+}

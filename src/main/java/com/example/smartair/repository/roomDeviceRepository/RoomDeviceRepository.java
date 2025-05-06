@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface RoomDeviceRepository extends JpaRepository<RoomDevice, Long> {
     Optional<RoomDevice> findByDevice(Device device);
+
+    Optional<RoomDevice> findByDevice_SerialNumberAndRoom_Id(Long deviceSerialNumber, Long roomId);
 }
