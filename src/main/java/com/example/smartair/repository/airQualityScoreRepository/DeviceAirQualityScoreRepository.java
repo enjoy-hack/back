@@ -27,4 +27,6 @@ public interface DeviceAirQualityScoreRepository extends JpaRepository<DeviceAir
             Pageable pageable
     );
 
+    Optional<DeviceAirQualityScore> findTopByDeviceAirQualityData_DeviceOrderByCreatedAtDesc(Device device);
+
 } 
