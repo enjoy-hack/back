@@ -13,10 +13,6 @@ public enum ErrorCode {
     DEVICE_NOT_FOUND(HttpStatus.NOT_FOUND, "기기를 찾을 수 없습니다."),
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "등록되지 않은 방입니다."),
     PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "등록되지 않은 공간입니다."),
-    DEVICE_AIR_DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "기기의 공기질 데이터를 찾을 수 없습니다."),
-    ROOM_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 방의 공기질 점수 정보를 찾을 수 없습니다."),
-    PLACE_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 공간의 공기질 점수 정보를 찾을 수 없습니다."),
-    DEVICE_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 기기의 공기질 점수 정보를 찾을 수 없습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     ROOM_DEVICE_MAPPING_NOT_FOUND(HttpStatus.NOT_FOUND, "방과 디바이스의 매핑 정보를 찾을 수 없습니다."),
     
@@ -31,8 +27,13 @@ public enum ErrorCode {
     MQTT_INVALID_TOPIC_ERROR(HttpStatus.BAD_REQUEST, "MQTT 토픽 형식이 유효하지 않습니다."),
 
     // === AirQualityScoreService 관련 오류 코드 ===
-
     ROOM_AIR_QUALITY_SCORE_IS_EMPTY(HttpStatus.NO_CONTENT, "Room 점수 데이터가 비어있습니다."),
+    ROOM_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 방의 공기질 점수 정보를 찾을 수 없습니다."),
+    PLACE_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 공간의 공기질 점수 정보를 찾을 수 없습니다."),
+    DEVICE_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 기기의 공기질 점수 정보를 찾을 수 없습니다."),
+
+    // === AirQualityData 관련 오류 코드 ===
+    DEVICE_AIR_DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "기기의 공기질 데이터를 찾을 수 없습니다."),
 
     // === Satisfaction 관련 오류 코드 ===
 
