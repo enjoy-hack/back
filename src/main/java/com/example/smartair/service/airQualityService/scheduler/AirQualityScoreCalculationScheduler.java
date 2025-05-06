@@ -25,7 +25,7 @@ public class AirQualityScoreCalculationScheduler {
     private final AirQualityDataRepository airQualityDataRepository;
     private final AirQualityScoreService airQualityScoreService;
 
-    @Scheduled(fixedRate = 1800000) //30분 간격
+    @Scheduled(fixedRate = 3600000) //60분 간격
     public void calculateAirQualityScoresPeriodically() {
         LocalDateTime startTime = LocalDateTime.now();
         log.info("===Started Calculating air quality score periodically at {}===", startTime);
