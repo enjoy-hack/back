@@ -3,7 +3,7 @@ package com.example.smartair.controller.mqttController;
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.dto.mqttMessageDto.MqttMessageRequestDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
-import com.example.smartair.service.mqttService.MqttReceiveService;
+import com.example.smartair.service.MqttService.MqttReceiveService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

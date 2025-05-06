@@ -25,7 +25,7 @@ import static com.example.smartair.exception.ErrorCode.SATISFACTION_NOT_FOUND;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class UserSatisfactionController {
+public class UserSatisfactionController implements UserSatisfactionControllerDocs{
 
     private final UserSatisfactionService userSatisfactionService;
     private final UserSatisfactionRepository userSatisfactionRepository;

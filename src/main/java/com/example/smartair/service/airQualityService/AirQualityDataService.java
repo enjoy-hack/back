@@ -53,9 +53,11 @@ public class AirQualityDataService {
             Room room = roomDeviceRepository.findByDevice(device)
                     .map(RoomDevice::getRoom)
                     .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
+
             if (!room.getId().equals(roomIdFromTopic)){
                 log.warn("토픽의 Room ID({})와 실제 Device({})가 매핑된 Room ID({}) 불일치", roomIdFromTopic, deviceId, room.getId());
             }
+
 
             // 4. FineParticlesData 엔티티 생성 및 저장 (pt1 데이터 기준)
             FineParticlesData fineParticlesData = FineParticlesData.builder()
@@ -107,7 +109,8 @@ public class AirQualityDataService {
             // 7. 캐싱
             recentAirQualityDataCache.put(device.getId(), savedAirQualityData);
 
-            return dto; 
+            return dto;
+
         } catch (CustomException ce) {
             log.error("비즈니스 로직 오류: {}", ce.getMessage());
             throw ce;
@@ -117,6 +120,7 @@ public class AirQualityDataService {
         } catch (Exception e) {
             log.error("MQTT 데이터 처리 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+
         }
     }
 

@@ -23,7 +23,7 @@ import java.util.Date;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserControllerDocs{
 
     private final KakaoService kakaoService;
     private final JWTUtil jwtUtil;

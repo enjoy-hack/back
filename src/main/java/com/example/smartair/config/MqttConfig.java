@@ -1,8 +1,8 @@
 package com.example.smartair.config;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
-import com.example.smartair.dto.mqttMessageDto.MqttMessageRequestDto;
-import com.example.smartair.service.mqttService.MqttReceiveService;
+
+import com.example.smartair.service.MqttService.MqttReceiveService;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.messaging.MessageHandler;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
