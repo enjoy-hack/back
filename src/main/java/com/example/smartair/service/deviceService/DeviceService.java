@@ -1,12 +1,18 @@
 package com.example.smartair.service.deviceService;
 
 import com.example.smartair.dto.deviceDto.DeviceRequestDto;
+import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
+import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomDevice.RoomDevice;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
+import com.example.smartair.repository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityDataRepository.FineParticlesDataPt2Repository;
+import com.example.smartair.repository.airQualityDataRepository.FineParticlesDataRepository;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
@@ -24,6 +30,9 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final RoomRepository roomRepository;
     private final RoomDeviceRepository roomDeviceRepository;
+    private final AirQualityDataRepository airQualityDataRepository;
+    private final FineParticlesDataRepository fineParticlesDataRepository;
+    private final FineParticlesDataPt2Repository fineParticlesDataPt2Repository;
 
     public void setDevice(User user, DeviceRequestDto.setDeviceDto deviceRequestDto) throws Exception {
 
@@ -67,8 +76,16 @@ public class DeviceService {
         Device device = roomDevice.getDevice();
 
         //실시간 데이터 삭제
+        Optional<FineParticlesData> optionalFine = fineParticlesDataRepository.findByDevice_Id(device.getId());
+        optionalFine.ifPresent(fineParticlesDataRepository::delete);
 
-        //일주일 평균 데이터 삭제
+        Optional<FineParticlesDataPt2> optionalFine2 = fineParticlesDataPt2Repository.findByDevice_Id(device.getId());
+        optionalFine2.ifPresent(fineParticlesDataPt2Repository::delete);
+
+        Optional<DeviceAirQualityData> qualityDataOptional = airQualityDataRepository.findByDevice_Id(device.getId());
+        qualityDataOptional.ifPresent(airQualityDataRepository::delete);
+
+        //추후, 일주일 평균 데이터 삭제
 
         deviceRepository.delete(device);
         roomDeviceRepository.delete(roomDevice);
