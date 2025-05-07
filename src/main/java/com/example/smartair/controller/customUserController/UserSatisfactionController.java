@@ -1,13 +1,9 @@
 package com.example.smartair.controller.customUserController;
 
-import com.example.smartair.dto.customUserDto.UserSatisfactionDto;
+import com.example.smartair.dto.customUserDto.UserSatisfactionResponseDto;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
-import com.example.smartair.entity.user.UserSatisfaction;
-import com.example.smartair.exception.CustomException;
-import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.customUserRepository.UserSatisfactionRepository;
-import com.example.smartair.service.customUserService.CustomUserService;
 import com.example.smartair.service.customUserService.UserSatisfactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-
-import static com.example.smartair.exception.ErrorCode.INVALID_REQUEST;
-import static com.example.smartair.exception.ErrorCode.SATISFACTION_NOT_FOUND;
 
 @Slf4j
 @RestController
@@ -59,7 +51,7 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
         if(user.getRole().equals("ROLE_USER")){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
         }
-        List<UserSatisfactionDto> list = userSatisfactionService.getUserSatisfaction(user, roomId);
+        List<UserSatisfactionResponseDto> list = userSatisfactionService.getUserSatisfaction(user, roomId);
         return ResponseEntity.ok(list);
     }
 

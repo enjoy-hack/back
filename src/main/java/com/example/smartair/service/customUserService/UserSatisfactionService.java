@@ -1,7 +1,6 @@
 package com.example.smartair.service.customUserService;
 
-import com.example.smartair.dto.airQualityScoreDto.RoomAirQualityScoreDto;
-import com.example.smartair.dto.customUserDto.UserSatisfactionDto;
+import com.example.smartair.dto.customUserDto.UserSatisfactionResponseDto;
 import com.example.smartair.entity.airData.airQualityData.RoomAirQualityData;
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.user.User;
@@ -55,7 +54,7 @@ public class UserSatisfactionService {
     }
 
     //최대 7개의 데이터 반환
-    public List<UserSatisfactionDto> getUserSatisfaction(User user, Long roomId) throws Exception {
+    public List<UserSatisfactionResponseDto> getUserSatisfaction(User user, Long roomId) throws Exception {
 
         List<UserSatisfaction> allByRoom = userSatisfactionRepository.findTop7ByRoomIdOrderByCreatedAtDesc(roomId);
 
@@ -66,7 +65,7 @@ public class UserSatisfactionService {
         return allByRoom.stream().map(us -> {
             RoomAirQualityScore score = us.getRoomAirQualityScore();
             RoomAirQualityData data = us.getRoomAirQualityData();
-            return UserSatisfactionDto.builder()
+            return UserSatisfactionResponseDto.builder()
                     .id(us.getId())                                 // 사용자 만족도 id// 사용자 id
                     .satisfaction(us.getSatisfaction())             // 만족도 점수
                     .createdAt(us.getCreatedAt())                   // 생성 시간

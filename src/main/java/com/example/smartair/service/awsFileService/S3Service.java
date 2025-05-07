@@ -27,10 +27,10 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
     // JSON 데이터 업로드
-    public String uploadJson(String deviceId, String jsonPayload) throws Exception {
+    public String uploadJson(String deviceId, String roomId, String jsonPayload) throws Exception {
         try{
         String today = LocalDate.now().toString(); // ex: 2025-05-04
-        String key = String.format("airQuality/%s/%s.json", today, deviceId);
+        String key = String.format("airQuality/%s/%s/%s.json", roomId, deviceId, today);
 
         InputStream inputStream = new ByteArrayInputStream(jsonPayload.getBytes(StandardCharsets.UTF_8));
 
