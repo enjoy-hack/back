@@ -13,7 +13,9 @@ import com.example.smartair.repository.roomRepository.RoomRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -68,6 +70,15 @@ public class DeviceService {
         roomDeviceRepository.delete(roomDevice);
     }
 
+    public List<Device> getDevices(Long roomId){
+
+        List<RoomDevice> roomDevices = roomDeviceRepository.findByRoomId(roomId);
+
+        // RoomDevice → Device 추출
+        return roomDevices.stream()
+                .map(RoomDevice::getDevice)
+                .collect(Collectors.toList());
+    }
 
 
 

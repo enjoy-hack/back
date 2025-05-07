@@ -1,6 +1,7 @@
 package com.example.smartair.controller.deviceContoller;
 
 import com.example.smartair.dto.deviceDto.DeviceRequestDto;
+import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.service.deviceService.DeviceService;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -44,5 +47,15 @@ public class DeviceController {
     }
 
     @GetMapping
-    public ResponseEntity<?>getDeviceList(@AuthenticationPrincipal CustomUserDetails userDetails)
+    public ResponseEntity<?>getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                          @RequestBody Long roomId){
+        if(userDetails == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+        User user = userDetails.getUser();
+
+        List<Device> deviceList = deviceService.getDevices(roomId);
+
+        return ResponseEntity.ok(deviceList);
+    }
 }
