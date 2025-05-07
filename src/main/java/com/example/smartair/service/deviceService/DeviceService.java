@@ -33,10 +33,14 @@ public class DeviceService {
 
         Room room = optionalRoom.get();
 
-        Optional<RoomDevice> optionalRoomDevice = roomDeviceRepository.findByDevice_SerialNumberAndRoom_Id(
+        Optional<RoomDevice>  optionalRoomDevice = roomDeviceRepository.findByDevice_SerialNumberAndRoom_Id(
                 deviceRequestDto.serialNumber(),room.getId());
         if(optionalRoomDevice.isPresent()) throw new Exception(new CustomException(ErrorCode.DEVICE_ALREADY_EXIST_IN_ROOM));
         //이미 디바이스가 방에 연결되어 있는 경우
+
+        optionalRoomDevice = roomDeviceRepository.findByDevice_SerialNumber(deviceRequestDto.serialNumber());
+        if(optionalRoomDevice.isPresent()) throw new Exception(new CustomException(ErrorCode.DEVICE_ALREADY_EXIST_IN_ANOTHER_ROOM));
+        // 다른 방에 연결되어있는 경우
 
         Device device = Device.builder()
                 .name(deviceRequestDto.name())
@@ -80,6 +84,12 @@ public class DeviceService {
                 .collect(Collectors.toList());
     }
 
+    public boolean getDeviceStatus(Long serialNumber) throws Exception {
+        Optional<Device> optionalDevice = deviceRepository.findBySerialNumber(serialNumber);
 
+        if(optionalDevice.isEmpty()) throw new Exception(new CustomException(ErrorCode.INVALID_REQUEST));
+
+        return optionalDevice.get().isRunningStatus();
+    }
 
 }

@@ -46,7 +46,7 @@ public class DeviceController {
         return ResponseEntity.ok("success");
     }
 
-    @GetMapping
+    @GetMapping("/devices")
     public ResponseEntity<?>getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
                                           @RequestBody Long roomId){
         if(userDetails == null){
@@ -58,4 +58,19 @@ public class DeviceController {
 
         return ResponseEntity.ok(deviceList);
     }
+
+    @GetMapping("/deviceStatus")
+    public ResponseEntity<?> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @RequestBody Long deviceSerialNumber) throws Exception {
+        if(userDetails == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+        User user = userDetails.getUser();
+
+        Boolean status = deviceService.getDeviceStatus(deviceSerialNumber);
+
+        return ResponseEntity.ok("device"+ deviceSerialNumber + " running state: " + status);
+    }
+
 }
+
