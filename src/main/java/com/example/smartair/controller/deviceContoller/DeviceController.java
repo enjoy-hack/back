@@ -22,27 +22,29 @@ public class DeviceController {
 
     @PostMapping("/device")
     public ResponseEntity<?> setDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                       @RequestBody DeviceRequestDto deviceRequestDto) throws Exception {
+                                       @RequestBody DeviceRequestDto.setDeviceDto deviceDto) throws Exception {
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
         User user = userDetails.getUser();
 
-        deviceService.setDevice(user, deviceRequestDto);
+        deviceService.setDevice(user, deviceDto);
 
         return ResponseEntity.ok("success");
     }
 
-//    @DeleteMapping("/device")
-//    public ResponseEntity<?> deleteDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
-//                                          @RequestBody Long deviceSerialNumber){
-//        if(userDetails == null){
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
-//        }
-//        User user = userDetails.getUser();
-//
-//        deviceService.deleteDevice(user, deviceSerialNumber);
-//
-//        return ResponseEntity.ok("success");
-//    }
+    @DeleteMapping("/device")
+    public ResponseEntity<?> deleteDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                          @RequestBody DeviceRequestDto.deleteDeviceDto deviceDto) throws Exception {
+        if(userDetails == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+        User user = userDetails.getUser();
+
+        deviceService.deleteDevice(user, deviceDto);
+
+        return ResponseEntity.ok("success");
+    }
+
+
 }

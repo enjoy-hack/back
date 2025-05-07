@@ -23,22 +23,22 @@ public class DeviceService {
     private final RoomRepository roomRepository;
     private final RoomDeviceRepository roomDeviceRepository;
 
-    public void setDevice(User user, DeviceRequestDto deviceRequestDto) throws Exception {
+    public void setDevice(User user, DeviceRequestDto.setDeviceDto deviceRequestDto) throws Exception {
 
-        Optional<Room> optionalRoom = roomRepository.findRoomById(deviceRequestDto.getRoomId());
+        Optional<Room> optionalRoom = roomRepository.findRoomById(deviceRequestDto.roomId());
         if(optionalRoom.isEmpty()) throw new Exception(new CustomException(ErrorCode.ROOM_NOT_FOUND));
         //방이 존재하지 않은 경우
 
         Room room = optionalRoom.get();
 
         Optional<RoomDevice> optionalRoomDevice = roomDeviceRepository.findByDevice_SerialNumberAndRoom_Id(
-                deviceRequestDto.getSerialNumber(),room.getId());
+                deviceRequestDto.serialNumber(),room.getId());
         if(optionalRoomDevice.isPresent()) throw new Exception(new CustomException(ErrorCode.DEVICE_ALREADY_EXIST_IN_ROOM));
         //이미 디바이스가 방에 연결되어 있는 경우
 
         Device device = Device.builder()
-                .name(deviceRequestDto.getName())
-                .serialNumber(deviceRequestDto.getSerialNumber())
+                .name(deviceRequestDto.name())
+                .serialNumber(deviceRequestDto.serialNumber())
                 .user(user)
                 .runningStatus(false)
                 .build();
@@ -53,8 +53,21 @@ public class DeviceService {
         roomDeviceRepository.save(roomDevice);
     }
 
-//    public void deleteDevice(User user, Long deviceSerialNumber){
-//        deviceRepository.
-//    }
+    public void deleteDevice(User user, DeviceRequestDto.deleteDeviceDto deviceDto) throws Exception {
+        Optional<RoomDevice> optionalRoomDevice = roomDeviceRepository.findByDevice_SerialNumberAndRoom_Id(deviceDto.serialNumber(), deviceDto.roomId());
+        if(optionalRoomDevice.isEmpty()) throw new Exception(new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
+
+        RoomDevice roomDevice = optionalRoomDevice.get();
+        Device device = roomDevice.getDevice();
+
+        //실시간 데이터 삭제
+
+        //일주일 평균 데이터 삭제
+
+        deviceRepository.delete(device);
+        roomDeviceRepository.delete(roomDevice);
+    }
+
+
 
 }

@@ -8,7 +8,16 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class DeviceRequestDto {
-    private Long serialNumber;
-    private String name;
-    private Long roomId;
+
+    public record setDeviceDto(
+            Long serialNumber,
+            String name,
+            Long roomId
+    ){}
+
+    public record deleteDeviceDto(
+            Long serialNumber,
+            Long roomId
+    ){}
+
 }
