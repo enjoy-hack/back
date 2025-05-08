@@ -13,6 +13,14 @@ public enum ErrorCode {
     DEVICE_NOT_FOUND(HttpStatus.NOT_FOUND, "기기를 찾을 수 없습니다."),
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "등록되지 않은 방입니다."),
     PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "등록되지 않은 공간입니다."),
+
+    DEVICE_ALREADY_EXIST_IN_ROOM(HttpStatus.CONFLICT, "이미 해당 방에 디바이스가 등록되어있습니다."),
+    DEVICE_ALREADY_EXIST_IN_ANOTHER_ROOM(HttpStatus.CONFLICT, "이미 해당 기기가 다른 방에 등록되어있습니다."),
+    DEVICE_AIR_DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "기기의 공기질 데이터를 찾을 수 없습니다."),
+    ROOM_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 방의 공기질 점수 정보를 찾을 수 없습니다."),
+    PLACE_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 공간의 공기질 점수 정보를 찾을 수 없습니다."),
+    DEVICE_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 기기의 공기질 점수 정보를 찾을 수 없습니다."),
+
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     ROOM_DEVICE_MAPPING_NOT_FOUND(HttpStatus.NOT_FOUND, "방과 디바이스의 매핑 정보를 찾을 수 없습니다."),
     
