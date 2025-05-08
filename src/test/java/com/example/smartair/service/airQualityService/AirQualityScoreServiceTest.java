@@ -102,7 +102,7 @@ class AirQualityScoreServiceTest {
             when(placeAirQualityScoreRepository.save(any(PlaceAirQualityScore.class))).thenAnswer(inv -> inv.getArgument(0));
 
             // When
-            airQualityScoreService.calculateAndSaveScores(testData);
+            airQualityScoreService.calculateAndSaveDeviceScore(testData);
 
             // Then
             verify(airQualityCalculator).calculateScore(eq(testData));
@@ -138,7 +138,7 @@ class AirQualityScoreServiceTest {
 
             // When & Then
             CustomException exception = assertThrows(CustomException.class, () -> {
-                airQualityScoreService.calculateAndSaveScores(nullData);
+                airQualityScoreService.calculateAndSaveDeviceScore(nullData);
             });
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT_DATA);
             verifyNoInteractions(airQualityCalculator, deviceAirQualityScoreRepository, roomAirQualityScoreRepository, placeAirQualityScoreRepository);
@@ -158,13 +158,13 @@ class AirQualityScoreServiceTest {
 
             // When & Then for Case 1 (DEVICE_NOT_FOUND)
             CustomException exception1 = assertThrows(CustomException.class, () -> {
-                airQualityScoreService.calculateAndSaveScores(dataWithNullDevice);
+                airQualityScoreService.calculateAndSaveDeviceScore(dataWithNullDevice);
             });
             assertEquals(ErrorCode.DEVICE_NOT_FOUND, exception1.getErrorCode());
 
              // When & Then for Case 2 (ROOM_DEVICE_MAPPING_NOT_FOUND)
             CustomException exception2 = assertThrows(CustomException.class, () -> {
-                airQualityScoreService.calculateAndSaveScores(dataWithNoMapping);
+                airQualityScoreService.calculateAndSaveDeviceScore(dataWithNoMapping);
             });
             assertEquals(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND, exception2.getErrorCode());
 
@@ -190,7 +190,7 @@ class AirQualityScoreServiceTest {
             when(roomAirQualityScoreRepository.findByRoom_Place(null)).thenReturn(Collections.emptyList()); // findByRoom_Place(null) 호출 예상
 
             // When
-            airQualityScoreService.calculateAndSaveScores(dataWithNullPlace);
+            airQualityScoreService.calculateAndSaveDeviceScore(dataWithNullPlace);
 
             // Then
             verify(airQualityCalculator).calculateScore(eq(dataWithNullPlace));

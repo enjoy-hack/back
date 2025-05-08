@@ -4,6 +4,7 @@ import com.example.smartair.dto.airQualityScoreDto.DeviceAirQualityScoreDto;
 import com.example.smartair.dto.airQualityScoreDto.PlaceAirQualityScoreDto;
 import com.example.smartair.dto.airQualityScoreDto.RoomAirQualityScoreDto;
 import com.example.smartair.service.airQualityService.AirQualityQueryService;
+import com.example.smartair.service.airQualityService.AirQualityScoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/airquality/scores")
+@RequestMapping("/airquality/scores")
 public class AirQualityScoreController {
 
     private final AirQualityQueryService airQualityQueryService;
@@ -116,4 +117,5 @@ public class AirQualityScoreController {
         PlaceAirQualityScoreDto score = airQualityQueryService.getLatestPlaceAirQualityScore(placeId);
         return ResponseEntity.ok(score);
     }
+
 }
