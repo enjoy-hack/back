@@ -39,6 +39,7 @@ out/
 ### infomation ###
 application.yml
 application-aws.yml
+application-ci.yml
 
 .env
 mosquitto.conf
