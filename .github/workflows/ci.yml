@@ -61,7 +61,14 @@ jobs:
     - name: Set up SSH tunnel to RDS
       run: |
         ssh -i ~/.ssh/smartAir-server-key.pem -o StrictHostKeyChecking=no -f -N -L 3307:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_HOST }} || exit 1
-      
+
+    - name: Check Secrets Availability
+      run: |
+        if [ -z "${{ secrets.MYSQL_DB_NAME }}" ]; then echo "Error: MYSQL_DB_NAME is not set or is empty."; else echo "MYSQL_DB_NAME is set."; fi
+        if [ -z "${{ secrets.MYSQL_DB_USERNAME }}" ]; then echo "Error: MYSQL_DB_USERNAME is not set or is empty."; else echo "MYSQL_DB_USERNAME is set."; fi
+        if [ -z "${{ secrets.MYSQL_DB_PASSWORD }}" ]; then echo "Error: MYSQL_DB_PASSWORD is not set or is empty."; else echo "MYSQL_DB_PASSWORD is set."; fi
+        # 필요한 다른 secrets들도 유사하게 확인 가능
+
     - name: Build with Gradle
       env:
         SPRING_PROFILES_ACTIVE: ci
