@@ -6,7 +6,7 @@ import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.entity.user.UserSatisfaction;
-import com.example.smartair.repository.airQualityScoreRepository.RoomAirQualityScoreRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
 import com.example.smartair.repository.customUserRepository.UserSatisfactionRepository;
 import com.example.smartair.service.airQualityService.AirQualityQueryService;
 import com.example.smartair.service.customUserService.UserSatisfactionService;
@@ -17,7 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 

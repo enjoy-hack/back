@@ -3,13 +3,12 @@ package com.example.smartair.service.airQualityService.scheduler;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.repository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.service.airQualityService.AirQualityScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Duration;

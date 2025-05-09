@@ -1,13 +1,12 @@
 package com.example.smartair.service.customUserService;
 
-import com.example.smartair.dto.airQualityScoreDto.RoomAirQualityScoreDto;
 import com.example.smartair.dto.customUserDto.UserSatisfactionDto;
 import com.example.smartair.entity.airData.airQualityData.RoomAirQualityData;
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.entity.user.UserSatisfaction;
 import com.example.smartair.exception.CustomException;
-import com.example.smartair.repository.airQualityScoreRepository.RoomAirQualityScoreRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
 import com.example.smartair.repository.customUserRepository.UserSatisfactionRepository;
 import com.example.smartair.service.airQualityService.AirQualityQueryService;
 import org.springframework.beans.factory.annotation.Autowired;

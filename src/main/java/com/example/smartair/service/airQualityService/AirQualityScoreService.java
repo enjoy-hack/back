@@ -1,8 +1,6 @@
 package com.example.smartair.service.airQualityService;
 
 import com.example.smartair.dto.airQualityScoreDto.AverageScoreDto;
-import com.example.smartair.dto.airQualityScoreDto.DeviceAirQualityScoreDto;
-import com.example.smartair.dto.airQualityScoreDto.RoomAirQualityScoreDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
@@ -13,10 +11,9 @@ import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomDevice.RoomDevice;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.repository.airQualityScoreRepository.DeviceAirQualityScoreRepository;
-import com.example.smartair.repository.airQualityScoreRepository.RoomAirQualityScoreRepository;
-import com.example.smartair.repository.airQualityScoreRepository.PlaceAirQualityScoreRepository;
-import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.DeviceAirQualityScoreRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.PlaceAirQualityScoreRepository;
 import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
 import com.example.smartair.service.airQualityService.calculator.AirQualityCalculator;
