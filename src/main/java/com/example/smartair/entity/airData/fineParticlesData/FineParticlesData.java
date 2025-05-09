@@ -11,6 +11,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "fine_particles_data")
 public class FineParticlesData extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

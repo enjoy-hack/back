@@ -16,10 +16,6 @@ public enum ErrorCode {
 
     DEVICE_ALREADY_EXIST_IN_ROOM(HttpStatus.CONFLICT, "이미 해당 방에 디바이스가 등록되어있습니다."),
     DEVICE_ALREADY_EXIST_IN_ANOTHER_ROOM(HttpStatus.CONFLICT, "이미 해당 기기가 다른 방에 등록되어있습니다."),
-    DEVICE_AIR_DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "기기의 공기질 데이터를 찾을 수 없습니다."),
-    ROOM_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 방의 공기질 점수 정보를 찾을 수 없습니다."),
-    PLACE_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 공간의 공기질 점수 정보를 찾을 수 없습니다."),
-    DEVICE_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 기기의 공기질 점수 정보를 찾을 수 없습니다."),
 
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     ROOM_DEVICE_MAPPING_NOT_FOUND(HttpStatus.NOT_FOUND, "방과 디바이스의 매핑 정보를 찾을 수 없습니다."),
@@ -42,6 +38,14 @@ public enum ErrorCode {
 
     // === AirQualityData 관련 오류 코드 ===
     DEVICE_AIR_DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "기기의 공기질 데이터를 찾을 수 없습니다."),
+
+    // === Snapshot 관련 오류 코드 ===
+    SNAPSHOT_NOT_FOUND(HttpStatus.NOT_FOUND, "스냅샷을 찾을 수 없습니다."),
+
+    // === Report 관련 오류 코드 ===
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "보고서를 찾을 수 없습니다."),
+    INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "유효하지 않은 날짜 범위입니다."),
+    NO_DAILY_REPORTS_FOUND(HttpStatus.NO_CONTENT, "해당 날짜에 대한 일일 보고서가 없습니다."),
 
     // === Satisfaction 관련 오류 코드 ===
 

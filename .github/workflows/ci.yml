@@ -17,6 +17,8 @@ env:
   KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
   KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
   KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+  FIREBASE_CONFIG_PATH: ${{ secrets.FIREBASE_CONFIG_PATH }}
+  FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
 
 jobs:
   build-and-test:
@@ -38,6 +40,15 @@ jobs:
     - name: Update application.yml
       run: |
         echo "${{ secrets.APPLICATION }}" | base64 -d > ./src/main/resources/application.yml
+
+    - name: Create Firebase Service Account Key File
+      if: env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 != '' && env.FIREBASE_CONFIG_PATH != ''
+      run: |
+        mkdir -p "$(dirname "$FIREBASE_CONFIG_PATH")"
+        echo "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" | base64 --decode > "$FIREBASE_CONFIG_PATH"
+      env:
+        FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
+        FIREBASE_CONFIG_PATH: ${{ env.FIREBASE_CONFIG_PATH }}
 
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@v4

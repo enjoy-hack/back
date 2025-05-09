@@ -3,13 +3,12 @@ package com.example.smartair.service.airQualityService.scheduler;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.repository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.service.airQualityService.AirQualityScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Duration;
@@ -25,7 +24,7 @@ public class AirQualityScoreCalculationScheduler {
     private final AirQualityDataRepository airQualityDataRepository;
     private final AirQualityScoreService airQualityScoreService;
 
-    @Scheduled(fixedRate = 1800000) //30분 간격
+    @Scheduled(fixedRate = 3600000) //60분 간격
     public void calculateAirQualityScoresPeriodically() {
         LocalDateTime startTime = LocalDateTime.now();
         log.info("===Started Calculating air quality score periodically at {}===", startTime);
