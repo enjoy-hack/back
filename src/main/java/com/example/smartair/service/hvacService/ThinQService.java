@@ -22,6 +22,7 @@ public class ThinQService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final PATRepository patRepository;
+    private final EncryptionUtil encryptionUtil;
 
     @Value("${thinq.api.base-url}")
     private String baseUrl;
@@ -37,11 +38,13 @@ public class ThinQService {
 
     private final String clientId;
 
-    public ThinQService(RestTemplate restTemplate, ObjectMapper objectMapper, PATRepository patRepository) {
+    public ThinQService(RestTemplate restTemplate, ObjectMapper objectMapper, PATRepository patRepository,
+                        EncryptionUtil encryptionUtil) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.patRepository = patRepository;
         this.clientId = clientIdPrefix + UUID.randomUUID();
+        this.encryptionUtil = encryptionUtil;
     }
 
     /** 사용자 디바이스 목록 조회 */
@@ -82,7 +85,7 @@ public class ThinQService {
         return patRepository.findByUserId(user.getId())
                 .map(pat -> {
                     try {
-                        return EncryptionUtil.decrypt(pat.getEncryptedPat());
+                        return encryptionUtil.decrypt(pat.getEncryptedPat());
                     } catch (Exception e) {
                         throw new RuntimeException("PAT 복호화 실패", e);
                     }

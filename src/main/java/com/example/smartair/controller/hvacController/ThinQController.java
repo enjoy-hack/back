@@ -34,7 +34,7 @@ public class ThinQController {
      */
     @GetMapping("/{deviceId}/status")
     public ResponseEntity<String> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                  @PathVariable String deviceId) throws Exception {
+                                                  @PathVariable("deviceId") String deviceId) throws Exception {
         return handleRequestWithPat(userDetails, user -> thinQService.getDeviceStatus(user, deviceId));
     }
 
@@ -43,7 +43,7 @@ public class ThinQController {
      */
     @PostMapping("/{deviceId}/power")
     public ResponseEntity<String> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                               @PathVariable String deviceId) throws Exception {
+                                               @PathVariable("deviceId") String deviceId) throws Exception {
         return handleRequestWithPat(userDetails, user -> thinQService.controlAirPurifierPower(user, deviceId));
     }
 

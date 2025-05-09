@@ -20,9 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class PATController {
 
     private final PATRepository patRepository;
+    private final EncryptionUtil encryptionUtil;
 
-    public PATController(PATRepository patRepository) {
+    public PATController(PATRepository patRepository, EncryptionUtil encryptionUtil) {
         this.patRepository = patRepository;
+        this.encryptionUtil = encryptionUtil;
     }
 
     @PostMapping
@@ -37,7 +39,7 @@ public class PATController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("PAT 토큰이 유효하지 않습니다.");
             }
 
-            String encryptedToken = EncryptionUtil.encrypt(request.getPatToken());
+            String encryptedToken = encryptionUtil.encrypt(request.getPatToken());
             patRepository.save(new PATEntity(userDetails.getUser().getId(), encryptedToken));
             return ResponseEntity.ok("PAT를 암호화하여 저장하였습니다.");
         } catch (Exception e) {
