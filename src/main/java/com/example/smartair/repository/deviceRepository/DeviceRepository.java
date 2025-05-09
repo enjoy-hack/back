@@ -15,4 +15,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
 
     @Query("SELECT das.id FROM Device das WHERE das.runningStatus = true")
     List<Long> findAllRunningDeviceIds();
+
+    Optional<Device> findBySerialNumber(Long serialNumber);
 }

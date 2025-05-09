@@ -1,6 +1,6 @@
 package com.example.smartair.service.userSatisfactionService;
 
-import com.example.smartair.dto.customUserDto.UserSatisfactionDto;
+import com.example.smartair.dto.customUserDto.UserSatisfactionResponseDto;
 import com.example.smartair.entity.airData.airQualityData.RoomAirQualityData;
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.user.Role;
@@ -96,7 +96,7 @@ class UserSatisfactionServiceTest {
         when(userSatisfactionRepository.findTop7ByRoomIdOrderByCreatedAtDesc(1L))
                 .thenReturn(List.of(us));
 
-        List<UserSatisfactionDto> result = userSatisfactionService.getUserSatisfaction(testUser, 1L);
+        List<UserSatisfactionResponseDto> result = userSatisfactionService.getUserSatisfaction(testUser, 1L);
 
         assertEquals(1, result.size());
         assertEquals(4.5, result.get(0).getSatisfaction());

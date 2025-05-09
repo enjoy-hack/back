@@ -19,7 +19,7 @@ public class Device extends BaseEntity {
     private Long id;
 
     private String name;
-    private String serialNumber;
+    private Long serialNumber;
     private boolean runningStatus;
 
     @ManyToOne //기기와 유저 : 다대일 관계
