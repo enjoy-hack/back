@@ -69,7 +69,7 @@ public class SecurityConfig {
                                 "/login", "/join", "/reissue", "/oauth2/**",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() //개발 중
                 );
 
         // JWT 필터 & 커스텀 필터 설정

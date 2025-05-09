@@ -86,6 +86,7 @@ public class DeviceService {
         qualityDataOptional.ifPresent(airQualityDataRepository::delete);
 
         //추후, 일주일 평균 데이터 삭제
+        
 
         deviceRepository.delete(device);
         roomDeviceRepository.delete(roomDevice);
