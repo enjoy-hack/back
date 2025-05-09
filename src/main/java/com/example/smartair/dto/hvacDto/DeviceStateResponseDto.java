@@ -1,4 +1,4 @@
-package com.example.smartair.dto.thinQDto;
+package com.example.smartair.dto.hvacDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
