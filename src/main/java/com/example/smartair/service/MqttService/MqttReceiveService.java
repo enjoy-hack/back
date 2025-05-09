@@ -1,4 +1,4 @@
-package com.example.smartair.service.MqttService;
+package com.example.smartair.service.mqttService;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
