@@ -62,6 +62,13 @@ jobs:
       run: |
         ssh -i ~/.ssh/smartAir-server-key.pem -o StrictHostKeyChecking=no -f -N -L 3307:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_HOST }} || exit 1
 
+    - name: Verify application-ci.yml
+      run: |
+        echo "Checking for application-ci.yml..."
+        ls -l src/main/resources/application-ci.yml
+        echo "Contents of application-ci.yml:"
+        cat src/main/resources/application-ci.yml
+
     - name: Check Secrets Availability
       run: |
         if [ -z "${{ secrets.MYSQL_DB_NAME }}" ]; then echo "Error: MYSQL_DB_NAME is not set or is empty."; else echo "MYSQL_DB_NAME is set."; fi
