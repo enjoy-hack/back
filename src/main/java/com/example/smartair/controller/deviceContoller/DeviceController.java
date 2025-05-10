@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @Slf4j
-public class DeviceController {
+public class DeviceController implements DeviceControllerDocs {
     private final DeviceService deviceService;
 
     @PostMapping("/device")
@@ -47,8 +47,8 @@ public class DeviceController {
     }
 
     @GetMapping("/devices")
-    public ResponseEntity<?>getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                          @RequestBody Long roomId){
+    public ResponseEntity<String> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @RequestBody Long roomId){
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
@@ -56,7 +56,7 @@ public class DeviceController {
 
         List<Device> deviceList = deviceService.getDevices(roomId);
 
-        return ResponseEntity.ok(deviceList);
+        return ResponseEntity.ok(deviceList.toString());
     }
 
     @GetMapping("/deviceStatus")

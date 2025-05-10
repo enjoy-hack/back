@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/thinq")
-public class ThinQController {
+public class ThinQController implements ThinQControllerDocs {
 
     private final ThinQService thinQService;
     private final PATRepository patRepository;
