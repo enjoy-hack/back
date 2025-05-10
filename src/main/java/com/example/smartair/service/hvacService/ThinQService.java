@@ -1,6 +1,7 @@
 package com.example.smartair.service.hvacService;
 
 import com.example.smartair.dto.hvacDto.DeviceStateResponseDto;
+import com.example.smartair.entity.hvacSetting.PATEntity;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.repository.hvacRepository.PATRepository;
 import com.example.smartair.util.EncryptionUtil;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -48,52 +50,50 @@ public class ThinQService {
     }
 
     /** 사용자 디바이스 목록 조회 */
-    public ResponseEntity<String> getDeviceList(User user) throws Exception {
-        String patToken = getDecryptedToken(user);
-        return sendRequest("/devices", HttpMethod.GET, null, patToken);
-    }
-
-    /** 특정 디바이스 상태 조회 */
-    public ResponseEntity<String> getDeviceStatus(User user, String deviceId) throws Exception {
-        String patToken = getDecryptedToken(user);
-        return sendRequest("/devices/" + deviceId + "/state", HttpMethod.GET, null, patToken);
-    }
-
-    /** 공기청정기 전원 제어 */
-    public ResponseEntity<String> controlAirPurifierPower(User user, String deviceId) throws Exception {
-        String patToken = getDecryptedToken(user);
-
-        ResponseEntity<String> deviceStatusResponse = getDeviceStatus(user, deviceId);
-        if (!deviceStatusResponse.getStatusCode().is2xxSuccessful()) {
-            log.warn("디바이스 상태를 가져오는 데 실패했습니다. 응답: {}", deviceStatusResponse);
-            throw new IllegalStateException("디바이스 상태 조회 실패");
+    public ResponseEntity<String> getDeviceList(User user, Long roomId) throws Exception {
+        Optional<PATEntity> patEntity = patRepository.findByRoomId(roomId);
+        if (patEntity.isEmpty()) {
+            log.warn("방 ID에 해당하는 PAT를 찾을 수 없습니다. 방 ID: {}", roomId);
+            throw new IllegalStateException("PAT를 찾을 수 없습니다.");
         }
 
-        DeviceStateResponseDto state = objectMapper.readValue(deviceStatusResponse.getBody(), DeviceStateResponseDto.class);
-        String currentMode = state.getResponse().getOperation().getAirFanOperationMode();
-        String newMode = currentMode.equals("POWER_ON") ? "POWER_OFF" : "POWER_ON";
+        String patToken = encryptionUtil.decrypt(patEntity.get().getEncryptedPat());
 
-        Map<String, Object> requestBody = Map.of(
-                "operation", Map.of("airFanOperationMode", newMode)
-        );
+        String response = sendRequest("/devices", HttpMethod.GET, null, patToken).getBody();
 
-        return sendRequest("/devices/" + deviceId + "/control", HttpMethod.POST, requestBody, patToken);
+        return ResponseEntity.ok(response);
     }
+//
+//    /** 특정 디바이스 상태 조회 */
+//    public ResponseEntity<String> getDeviceStatus(User user, String deviceId) throws Exception {
+//        String patToken = getDecryptedToken(user);
+//        return sendRequest("/devices/" + deviceId + "/state", HttpMethod.GET, null, patToken);
+//    }
+//
+//    /** 공기청정기 전원 제어 */
+//    public ResponseEntity<String> controlAirPurifierPower(User user, String deviceId) throws Exception {
+//        String patToken = getDecryptedToken(user);
+//
+//        ResponseEntity<String> deviceStatusResponse = getDeviceStatus(user, deviceId);
+//        if (!deviceStatusResponse.getStatusCode().is2xxSuccessful()) {
+//            log.warn("디바이스 상태를 가져오는 데 실패했습니다. 응답: {}", deviceStatusResponse);
+//            throw new IllegalStateException("디바이스 상태 조회 실패");
+//        }
+//
+//        DeviceStateResponseDto state = objectMapper.readValue(deviceStatusResponse.getBody(), DeviceStateResponseDto.class);
+//        String currentMode = state.getResponse().getOperation().getAirFanOperationMode();
+//        String newMode = currentMode.equals("POWER_ON") ? "POWER_OFF" : "POWER_ON";
+//
+//        Map<String, Object> requestBody = Map.of(
+//                "operation", Map.of("airFanOperationMode", newMode)
+//        );
+//
+//        return sendRequest("/devices/" + deviceId + "/control", HttpMethod.POST, requestBody, patToken);
+//    }
 
-    /** 사용자 PAT 복호화 */
-    private String getDecryptedToken(User user) throws Exception {
-        return patRepository.findByUserId(user.getId())
-                .map(pat -> {
-                    try {
-                        return encryptionUtil.decrypt(pat.getEncryptedPat());
-                    } catch (Exception e) {
-                        throw new RuntimeException("PAT 복호화 실패", e);
-                    }
-                })//
-                .orElseThrow(() -> new RuntimeException("PAT 토큰을 찾을 수 없습니다. 사용자 ID: " + user.getId()));
-    }
-
-    /** 공통 API 요청 처리 */
+    /**
+     * 공통 API 요청 처리
+     */
     private ResponseEntity<String> sendRequest(String endpoint, HttpMethod method, Object body, String patToken) {
         HttpHeaders headers = generateHeaders(patToken);
         HttpEntity<Object> request = new HttpEntity<>(body, headers);

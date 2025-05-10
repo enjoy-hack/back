@@ -19,7 +19,7 @@ public class PATService {
     private final PATRepository patRepository;
     private final EncryptionUtil encryptionUtil;
 
-    public ResponseEntity<?> savePAT(User user, PATRequestDto request) throws Exception {
+    public ResponseEntity<String> savePAT(User user, PATRequestDto request) throws Exception {
         // PAT 토큰을 암호화하여 저장
         String encryptedPatToken = encryptionUtil.encrypt(request.getPatToken());
 
@@ -35,7 +35,7 @@ public class PATService {
         return ResponseEntity.ok("PAT 토큰이 암호화되어 저장되었습니다.");
     }
 
-    public ResponseEntity<?> updatePATSetting(User user) throws Exception {
+    public ResponseEntity<String> updatePATSetting(User user) throws Exception {
         // PAT 토큰 유효성 검사
         Optional<PATEntity> OptionalPatEntity = patRepository.findByUserId(user.getId());
         if(OptionalPatEntity.isEmpty()) {

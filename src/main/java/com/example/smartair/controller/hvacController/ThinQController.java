@@ -21,31 +21,30 @@ public class ThinQController implements ThinQControllerDocs {
         this.patRepository = patRepository;
     }
 
-    /**
-     * 사용자 디바이스 목록 조회
-     */
+    // 방 ID를 통해 디바이스 목록 조회
     @GetMapping("/devices")
-    public ResponseEntity<String> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails) throws Exception {
-        return handleRequestWithPat(userDetails, user -> thinQService.getDeviceList(user));
+    public ResponseEntity<String> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @RequestBody Long roomId) throws Exception {
+        return handleRequestWithPat(userDetails, user -> thinQService.getDeviceList(user, roomId));
     }
 
-    /**
-     * 특정 디바이스의 상태 조회
-     */
-    @GetMapping("/{deviceId}/status")
-    public ResponseEntity<String> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                  @PathVariable("deviceId") String deviceId) throws Exception {
-        return handleRequestWithPat(userDetails, user -> thinQService.getDeviceStatus(user, deviceId));
-    }
-
-    /**
-     * 공기청정기 전원 제어
-     */
-    @PostMapping("/{deviceId}/power")
-    public ResponseEntity<String> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                               @PathVariable("deviceId") String deviceId) throws Exception {
-        return handleRequestWithPat(userDetails, user -> thinQService.controlAirPurifierPower(user, deviceId));
-    }
+//    /**
+//     * 특정 디바이스의 상태 조회
+//     */
+//    @GetMapping("/{deviceId}/status")
+//    public ResponseEntity<String> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
+//                                                  @PathVariable("deviceId") String deviceId) throws Exception {
+//        return handleRequestWithPat(userDetails, user -> thinQService.getDeviceStatus(user, deviceId));
+//    }
+//
+//    /**
+//     * 공기청정기 전원 제어
+//     */
+//    @PostMapping("/{deviceId}/power")
+//    public ResponseEntity<String> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
+//                                               @PathVariable("deviceId") String deviceId) throws Exception {
+//        return handleRequestWithPat(userDetails, user -> thinQService.controlAirPurifierPower(user, deviceId));
+//    }
 
     /**
      * PAT 존재 여부 확인 및 공통 처리 핸들러

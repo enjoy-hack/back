@@ -59,7 +59,7 @@ public class DeviceController implements DeviceControllerDocs {
         return ResponseEntity.ok(deviceList.toString());
     }
 
-    @GetMapping("/deviceStatus")
+    @GetMapping("/device/status")
     public ResponseEntity<?> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                              @RequestBody Long deviceSerialNumber) throws Exception {
         if(userDetails == null){
