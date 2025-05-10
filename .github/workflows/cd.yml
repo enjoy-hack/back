@@ -97,7 +97,7 @@ jobs:
           username: "ec2-user"
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} # EC2 접속용 SSH 키 
           port: 22
-          source: "docker/docker-compose.yml" # 복사할 파일 목록
+          source: "docker/docker-compose.yml,docker/mosquitto.conf" # 복사할 파일 목록에 mosquitto.conf 추가
           target: 'compose' # EC2 내 대상 디렉토리
           rm: true # 복사 전 대상 디렉토리 내용 삭제
 
