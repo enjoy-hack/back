@@ -166,6 +166,12 @@ jobs:
             AWS_S3_ACCESS_KEY_ID=$AWS_S3_ACCESS_KEY_ID
             AWS_S3_SECRET_ACCESS_KEY=$AWS_S3_SECRET_ACCESS_KEY
             SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE
+            SPRING_DATASOURCE_URL=jdbc:mysql://${RDS_ENDPOINT}:3306/${MYSQL_DB_NAME}
+            SPRING_DATASOURCE_USERNAME=${MYSQL_DB_USERNAME}
+            SPRING_DATASOURCE_PASSWORD=${MYSQL_DB_PASSWORD}
+            LOGGING_LEVEL_ORG_HIBERNATE_SQL=DEBUG
+            LOGGING_LEVEL_ORG_HIBERNATE_TYPE_DESCRIPTOR_SQL=TRACE
+            LOGGING_LEVEL_COM_ZAXXER_HIKARI=DEBUG
             " > .env # 현재 디렉토리(~/compose/docker/docker/)에 .env 생성
             chmod 644 .env
             echo "--- .env file created, content of $(pwd): ---"
