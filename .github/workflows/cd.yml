@@ -120,8 +120,8 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }} # EC2_USERNAME Secret 사용
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} 
           port: 22
-          source: "docker/docker-compose.yml,docker/mosquitto.conf" 
-          target: 'compose/docker'
+          source: "docker/docker-compose.yml,docker/mosquitto.conf" # 로컬의 docker 폴더 기준
+          target: 'compose/docker' # EC2의 ~/compose/docker/ 경로로 복사되어야 함
           rm: true 
 
       - name: SSH remote and Run Docker Compose # EC2에 SSH로 접속하여 Docker Compose 명령을 실행합니다.
@@ -133,18 +133,20 @@ jobs:
           port: 22
           envs: AWS_REGION,MYSQL_DB_NAME,MYSQL_DB_USERNAME,MYSQL_DB_PASSWORD,IMAGE_TAG,ECR_REGISTRY_URI,RDS_ENDPOINT,JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI_EC2_PROD,MQTT_URL_EC2_PROD,MQTT_USERNAME_EC2_PROD,MQTT_PASSWORD_EC2_PROD,FIREBASE_CONFIG_PATH,S3_BUCKET_NAME,AWS_S3_ACCESS_KEY_ID,AWS_S3_SECRET_ACCESS_KEY,SPRING_PROFILES_ACTIVE
           script: |
-            echo "--- Current directory before cd ---"
+            echo "--- Initial directory before cd ---"
             pwd
+            # 혹시 모를 compose 디렉토리 생성
+            mkdir -p ~/compose/docker 
             cd ~/compose/docker/
-            echo "--- Current directory after cd ---"
+            echo "--- Current directory after cd (should be ~/compose/docker/) ---"
             pwd
-            echo "--- Listing files in current directory ---"
+            echo "--- Listing files in current directory (should show docker-compose.yml, mosquitto.conf if scp worked) ---"
             ls -la
 
             ECR_ACCOUNT_ID=$(echo $ECR_REGISTRY_URI | cut -d'.' -f1)
             aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin $ECR_ACCOUNT_ID.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-            echo "--- Creating .env file ---"
+            echo "--- Creating .env file in $(pwd) ---"
             echo "
             MYSQL_DB_NAME=$MYSQL_DB_NAME
             MYSQL_DB_USERNAME=$MYSQL_DB_USERNAME
@@ -164,19 +166,22 @@ jobs:
             AWS_S3_ACCESS_KEY_ID=$AWS_S3_ACCESS_KEY_ID
             AWS_S3_SECRET_ACCESS_KEY=$AWS_S3_SECRET_ACCESS_KEY
             SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE
-            " > .env
+            " > .env # 현재 디렉토리(~/compose/docker/)에 .env 생성
             chmod 644 .env
-            echo "--- .env file created ---"
-            ls -la .env # .env 파일 생성 확인
+            echo "--- .env file created, content of $(pwd): ---"
+            ls -la
+
+            echo "--- Checking for docker-compose.yml before execution ---"
+            ls -la ./docker-compose.yml # ./docker-compose.yml이 존재하는지 확인
 
             echo "--- Pulling Docker image ---"
             docker pull $ECR_REGISTRY_URI:$IMAGE_TAG
             
-            echo "--- Running docker-compose down ---"
-            docker-compose -f ./docker-compose.yml down # 현재 디렉토리의 docker-compose.yml 명시
+            echo "--- Running docker-compose down (using ./docker-compose.yml in $(pwd)) ---"
+            docker-compose -f ./docker-compose.yml down
             
-            echo "--- Running docker-compose up -d ---"
-            docker-compose -f ./docker-compose.yml up -d # 현재 디렉토리의 docker-compose.yml 명시
+            echo "--- Running docker-compose up -d (using ./docker-compose.yml in $(pwd)) ---"
+            docker-compose -f ./docker-compose.yml up -d
             
             echo "--- Docker ps ---"
             docker ps -a   
