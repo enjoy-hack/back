@@ -43,6 +43,12 @@ jobs:
       run: |
         echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application-prod.yml
 
+    - name: Create firebase.json from Secret
+      run: |
+        mkdir -p src/main/resources
+        echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}" | base64 --decode > src/main/resources/firebase.json
+        echo "firebase.json created from Secret in src/main/resources/"
+        
     - name: Set up Gradle # Gradle 빌드 환경을 설정합니다.
       uses: gradle/actions/setup-gradle@v4
       
