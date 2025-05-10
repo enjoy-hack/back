@@ -133,10 +133,10 @@ jobs:
           port: 22
           envs: AWS_REGION,MYSQL_DB_NAME,MYSQL_DB_USERNAME,MYSQL_DB_PASSWORD,IMAGE_TAG,ECR_REGISTRY_URI,RDS_ENDPOINT,JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI_EC2_PROD,MQTT_URL_EC2_PROD,MQTT_USERNAME_EC2_PROD,MQTT_PASSWORD_EC2_PROD,FIREBASE_CONFIG_PATH,S3_BUCKET_NAME,AWS_S3_ACCESS_KEY_ID,AWS_S3_SECRET_ACCESS_KEY,SPRING_PROFILES_ACTIVE
           script: |
-            cd ~/compose/docker/docker/
+            cd ~/compose/docker/
 
             ECR_ACCOUNT_ID=$(echo $ECR_REGISTRY_URI | cut -d'.' -f1)
-            aws ecr get-login-password --region ${AWS_REGION} | sudo docker login --username AWS --password-stdin $ECR_ACCOUNT_ID.dkr.ecr.${AWS_REGION}.amazonaws.com
+            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin $ECR_ACCOUNT_ID.dkr.ecr.${AWS_REGION}.amazonaws.com
 
             echo "
             MYSQL_DB_NAME=$MYSQL_DB_NAME
@@ -160,6 +160,6 @@ jobs:
             " > .env
             chmod 644 .env
 
-            sudo docker pull $ECR_REGISTRY_URI:$IMAGE_TAG
-            sudo /usr/local/bin/docker-compose -f docker-compose.yml down
-            sudo /usr/local/bin/docker-compose -f docker-compose.yml up -d   
+            docker pull $ECR_REGISTRY_URI:$IMAGE_TAG
+            docker-compose -f docker-compose.yml down
+            docker-compose -f docker-compose.yml up -d   
