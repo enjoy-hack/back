@@ -80,7 +80,7 @@ class AirQualityScoreServiceTest {
             testRoomDevice = RoomDevice.builder().id(1L).room(testRoom).sensor(testSensor).build();
             testData = DeviceAirQualityData.builder().id(1L).sensor(testSensor).eco2(500).tvoc(300).build();
 
-            when(roomSensorRepository.findByDevice(testSensor)).thenReturn(Optional.of(testRoomDevice));
+            when(roomSensorRepository.findBySensor(testSensor)).thenReturn(Optional.of(testRoomDevice));
 
             calculatedDeviceScore = new DeviceAirQualityScore();
             calculatedDeviceScore.setId(100L);
@@ -135,7 +135,7 @@ class AirQualityScoreServiceTest {
             // Then
             verify(airQualityCalculator).calculateScore(eq(testData));
             verify(deviceAirQualityScoreRepository).save(any(DeviceAirQualityScore.class)); // any() 또는 구체적인 객체
-            verify(roomSensorRepository).findByDevice(eq(testSensor));
+            verify(roomSensorRepository).findBySensor(eq(testSensor));
             verify(roomSensorRepository).findAllDeviceByRoom(eq(testRoom)); // 호출 검증 추가
             verify(deviceAirQualityScoreRepository).findTopByDeviceAirQualityData_SensorOrderByCreatedAtDesc(eq(testSensor)); // 호출 검증 추가
 
@@ -183,7 +183,7 @@ class AirQualityScoreServiceTest {
                 // Case 2: Room-Device Mapping Not Found
                 Sensor testSensor = Sensor.builder().id(1L).build(); // Room 정보 없는 Device
                 DeviceAirQualityData dataWithNoMapping = DeviceAirQualityData.builder().id(1L).sensor(testSensor).build();
-                when(roomSensorRepository.findByDevice(testSensor)).thenReturn(Optional.empty()); // 매핑 없음 Mocking
+                when(roomSensorRepository.findBySensor(testSensor)).thenReturn(Optional.empty()); // 매핑 없음 Mocking
 
                 // When & Then for Case 1 (DEVICE_NOT_FOUND)
                 CustomException exception1 = assertThrows(CustomException.class, () -> {
@@ -212,7 +212,7 @@ class AirQualityScoreServiceTest {
                 mockDeviceScore.setOverallScore(70); // 예시 점수
 
                 // Mocking 설정
-                when(roomSensorRepository.findByDevice(sensorInRoomWithNullPlace)).thenReturn(Optional.of(roomDeviceMapping));
+                when(roomSensorRepository.findBySensor(sensorInRoomWithNullPlace)).thenReturn(Optional.of(roomDeviceMapping));
                 when(airQualityCalculator.calculateScore(dataWithNullPlace)).thenReturn(mockDeviceScore);
                 when(deviceAirQualityScoreRepository.save(any(DeviceAirQualityScore.class))).thenReturn(mockDeviceScore);
 
@@ -234,7 +234,7 @@ class AirQualityScoreServiceTest {
                 // Then
                 verify(airQualityCalculator).calculateScore(eq(dataWithNullPlace));
                 verify(deviceAirQualityScoreRepository).save(any(DeviceAirQualityScore.class));
-                verify(roomSensorRepository).findByDevice(eq(sensorInRoomWithNullPlace));
+                verify(roomSensorRepository).findBySensor(eq(sensorInRoomWithNullPlace));
                 verify(roomSensorRepository).findAllDeviceByRoom(eq(roomWithNullPlace)); // 호출 검증
                 verify(deviceAirQualityScoreRepository).findTopByDeviceAirQualityData_SensorOrderByCreatedAtDesc(eq(sensorInRoomWithNullPlace)); // 호출 검증
 

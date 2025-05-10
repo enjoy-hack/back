@@ -95,7 +95,7 @@ class AirQualityDataServiceTest {
         when(fineParticlesDataRepository.save(any(FineParticlesData.class))).thenReturn(mockSavedFineParticles);
 
         when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(sensor));
-        when(roomSensorRepository.findByDevice(sensor)).thenReturn(Optional.of(roomDevice));
+        when(roomSensorRepository.findBySensor(sensor)).thenReturn(Optional.of(roomDevice));
         when(airQualityDataRepository.save(any(DeviceAirQualityData.class))).thenAnswer(invocation -> {
             DeviceAirQualityData savedData = invocation.getArgument(0);
             savedData.setId(100L);
@@ -138,7 +138,7 @@ class AirQualityDataServiceTest {
         Sensor sensor = Sensor.builder().id(TEST_DEVICE_ID).build();
 
         when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(sensor));
-        when(roomSensorRepository.findByDevice(sensor)).thenReturn(Optional.empty());
+        when(roomSensorRepository.findBySensor(sensor)).thenReturn(Optional.empty());
 
         //when & then: 예외 발생 및 내용을 명확히 검증
         CustomException thrownException = assertThrows(
