@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +30,8 @@ public class S3Service {
     // JSON 데이터 업로드
     public String uploadJson(String deviceId, String roomId, String jsonPayload) throws Exception {
         try{
-        String today = LocalDate.now().toString(); // ex: 2025-05-04
-        String key = String.format("airQuality/%s/%s/%s.json", roomId, deviceId, today);
+            String now = LocalDateTime.now().toString();  // "2025-05-10T21:36:00.123"
+            String key = String.format("airQuality/%s/%s/%s.json", roomId, deviceId, now);
 
         InputStream inputStream = new ByteArrayInputStream(jsonPayload.getBytes(StandardCharsets.UTF_8));
 

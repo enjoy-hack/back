@@ -1,7 +1,7 @@
 package com.example.smartair.entity.airData.report;
 
 import com.example.smartair.entity.airScore.AirQualityGrade;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,7 +21,7 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uq_device_year_week",
-                        columnNames = {"device_id", "year_of_week", "week_of_year"}
+                        columnNames = {"sensor_id", "year_of_week", "week_of_year"}
                 )
         }
 )
@@ -31,8 +31,8 @@ public class WeeklyDeviceAirQualityReport extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "device_id", nullable = false)
-    private Device device;
+    @JoinColumn(name = "sensor_id", nullable = false)
+    private Sensor sensor;
 
     @Column(name = "year_of_week", nullable = false)
     private Integer yearOfWeek; // 예: 2023

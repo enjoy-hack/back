@@ -4,7 +4,7 @@ import com.example.smartair.dto.sensorDto.SensorRequestDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomDevice;
 import com.example.smartair.entity.user.User;
@@ -42,26 +42,26 @@ public class SensorService {
 
         Room room = optionalRoom.get();
 
-        Optional<RoomDevice>  optionalRoomDevice = roomSensorRepository.findByDevice_SerialNumberAndRoom_Id(
+        Optional<RoomDevice>  optionalRoomDevice = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(
                 deviceRequestDto.serialNumber(),room.getId());
         if(optionalRoomDevice.isPresent()) throw new Exception(new CustomException(ErrorCode.DEVICE_ALREADY_EXIST_IN_ROOM));
         //이미 디바이스가 방에 연결되어 있는 경우
 
-        optionalRoomDevice = roomSensorRepository.findByDevice_SerialNumber(deviceRequestDto.serialNumber());
+        optionalRoomDevice = roomSensorRepository.findBySensor_SerialNumber(deviceRequestDto.serialNumber());
         if(optionalRoomDevice.isPresent()) throw new Exception(new CustomException(ErrorCode.DEVICE_ALREADY_EXIST_IN_ANOTHER_ROOM));
         // 다른 방에 연결되어있는 경우
 
-        Device device = Device.builder()
+        Sensor sensor = Sensor.builder()
                 .name(deviceRequestDto.name())
                 .serialNumber(deviceRequestDto.serialNumber())
                 .user(user)
                 .runningStatus(false)
                 .build();
 
-        sensorRepository.save(device);
+        sensorRepository.save(sensor);
 
         RoomDevice roomDevice = RoomDevice.builder()
-                .device(device)
+                .sensor(sensor)
                 .room(optionalRoom.get())
                 .build();
 
@@ -69,41 +69,41 @@ public class SensorService {
     }
 
     public void deleteDevice(User user, SensorRequestDto.deleteDeviceDto deviceDto) throws Exception {
-        Optional<RoomDevice> optionalRoomDevice = roomSensorRepository.findByDevice_SerialNumberAndRoom_Id(deviceDto.serialNumber(), deviceDto.roomId());
+        Optional<RoomDevice> optionalRoomDevice = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(deviceDto.serialNumber(), deviceDto.roomId());
         if(optionalRoomDevice.isEmpty()) throw new Exception(new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
         RoomDevice roomDevice = optionalRoomDevice.get();
-        Device device = roomDevice.getDevice();
+        Sensor sensor = roomDevice.getSensor();
 
         //실시간 데이터 삭제
-        Optional<FineParticlesData> optionalFine = fineParticlesDataRepository.findByDevice_Id(device.getId());
+        Optional<FineParticlesData> optionalFine = fineParticlesDataRepository.findBySensor_Id(sensor.getId());
         optionalFine.ifPresent(fineParticlesDataRepository::delete);
 
-        Optional<FineParticlesDataPt2> optionalFine2 = fineParticlesDataPt2Repository.findByDevice_Id(device.getId());
+        Optional<FineParticlesDataPt2> optionalFine2 = fineParticlesDataPt2Repository.findBySensor_Id(sensor.getId());
         optionalFine2.ifPresent(fineParticlesDataPt2Repository::delete);
 
-        Optional<DeviceAirQualityData> qualityDataOptional = airQualityDataRepository.findByDevice_Id(device.getId());
+        Optional<DeviceAirQualityData> qualityDataOptional = airQualityDataRepository.findBySensor_Id(sensor.getId());
         qualityDataOptional.ifPresent(airQualityDataRepository::delete);
 
         //추후, 일주일 평균 데이터 삭제
         
 
-        sensorRepository.delete(device);
+        sensorRepository.delete(sensor);
         roomSensorRepository.delete(roomDevice);
     }
 
-    public List<Device> getDevices(Long roomId){
+    public List<Sensor> getDevices(Long roomId){
 
         List<RoomDevice> roomDevices = roomSensorRepository.findByRoomId(roomId);
 
         // RoomDevice → Device 추출
         return roomDevices.stream()
-                .map(RoomDevice::getDevice)
+                .map(RoomDevice::getSensor)
                 .collect(Collectors.toList());
     }
 
     public boolean getDeviceStatus(Long serialNumber) throws Exception {
-        Optional<Device> optionalDevice = sensorRepository.findBySerialNumber(serialNumber);
+        Optional<Sensor> optionalDevice = sensorRepository.findBySerialNumber(serialNumber);
 
         if(optionalDevice.isEmpty()) throw new Exception(new CustomException(ErrorCode.INVALID_REQUEST));
 

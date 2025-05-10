@@ -1,6 +1,6 @@
 package com.example.smartair.entity.airData.snapshot;
 
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uq_device_snapshot_hour",
-                        columnNames = {"device_id", "snapshot_hour"}
+                        columnNames = {"sensor_id", "snapshot_hour"}
                 )
         }
 )
@@ -28,8 +28,8 @@ public class HourlyDeviceAirQualitySnapshot extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "device_id", nullable = false)
-    private Device device;
+    @JoinColumn(name = "sensor_id", nullable = false)
+    private Sensor sensor;
 
     @Column(name = "snapshot_hour", nullable = false) // 컬럼명을 명시적으로 지정
     private LocalDateTime snapshotHour; // 해당 시간대의 시작 시각 (예: 2023-10-27 13:00:00)

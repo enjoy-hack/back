@@ -3,7 +3,7 @@ package com.example.smartair.entity.airData.airQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
 import com.example.smartair.entity.airData.predictedAirQualityData.PredictedAirQualityData;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,8 +32,8 @@ public class DeviceAirQualityData extends BaseEntity {
     private int rawethanol;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "device_id")
-    private Device device;
+    @JoinColumn(name = "sensor_id")
+    private Sensor sensor;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "fine_particles_data_id") // 외래 키 컬럼명 지정

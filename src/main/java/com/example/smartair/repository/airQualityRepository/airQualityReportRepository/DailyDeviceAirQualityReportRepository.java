@@ -1,7 +1,7 @@
 package com.example.smartair.repository.airQualityRepository.airQualityReportRepository;
 
 import com.example.smartair.entity.airData.report.DailyDeviceAirQualityReport;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,8 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface DailyDeviceAirQualityReportRepository extends JpaRepository<DailyDeviceAirQualityReport, Long> {
-    Optional<DailyDeviceAirQualityReport> findByDeviceAndReportDate(Device device, LocalDate date);
-    List<DailyDeviceAirQualityReport> findByDeviceAndReportDateBetweenOrderByReportDateAsc(Device device, LocalDate startDate, LocalDate endDate);
+    Optional<DailyDeviceAirQualityReport> findBySensorAndReportDate(Sensor sensor, LocalDate date);
+    List<DailyDeviceAirQualityReport> findBySensorAndReportDateBetweenOrderByReportDateAsc(Sensor sensor, LocalDate startDate, LocalDate endDate);
     List<DailyDeviceAirQualityReport> findByReportDateBefore(LocalDate date);
-    List<DailyDeviceAirQualityReport> findAllByDeviceId(Long deviceId);
+    List<DailyDeviceAirQualityReport> findAllBySensorId(Long sensorId);
 }

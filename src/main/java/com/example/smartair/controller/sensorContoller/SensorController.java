@@ -1,7 +1,7 @@
 package com.example.smartair.controller.sensorContoller;
 
 import com.example.smartair.dto.sensorDto.SensorRequestDto;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.service.sensorService.SensorService;
@@ -54,9 +54,9 @@ public class SensorController implements SensorControllerDocs {
         }
         User user = userDetails.getUser();
 
-        List<Device> deviceList = sensorService.getDevices(roomId);
+        List<Sensor> sensorList = sensorService.getDevices(roomId);
 
-        return ResponseEntity.ok(deviceList.toString());
+        return ResponseEntity.ok(sensorList.toString());
     }
 
     @GetMapping("/device/status")

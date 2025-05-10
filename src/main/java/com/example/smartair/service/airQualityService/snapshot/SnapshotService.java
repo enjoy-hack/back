@@ -4,7 +4,7 @@ import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
 import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
@@ -35,7 +35,7 @@ public class SnapshotService {
      */
     @Transactional
     public HourlyDeviceAirQualitySnapshot createHourlySnapshot(Long deviceId, LocalDateTime snapshotHourBase) {
-        Device device = sensorRepository.findById(deviceId)
+        Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         // 정시 기준으로 시간 설정 (예: 2023-10-28 13:00:00)
@@ -44,7 +44,7 @@ public class SnapshotService {
 
         // 이미 해당 시간에 대한 스냅샷이 있는지 확인
         Optional<HourlyDeviceAirQualitySnapshot> existingSnapshot =
-                snapshotRepository.findByDeviceAndSnapshotHour(device, snapshotHour);
+                snapshotRepository.findBySensorAndSnapshotHour(sensor, snapshotHour);
 
         if (existingSnapshot.isPresent()) {
             log.info("Device ID: {} 의 {} 시간 스냅샷이 이미 존재합니다. 기존 스냅샷을 업데이트합니다.",
@@ -54,7 +54,7 @@ public class SnapshotService {
 
         // 해당 시간대의 모든 DeviceAirQualityData 조회
         List<DeviceAirQualityData> hourlyRawDataList = airQualityDataRepository
-                .findByDeviceAndCreatedAtBetweenOrderByCreatedAtAsc(device, snapshotHour, nextHour);
+                .findBySensorAndCreatedAtBetweenOrderByCreatedAtAsc(sensor, snapshotHour, nextHour);
 
         if (hourlyRawDataList.isEmpty()) {
             log.warn("Device ID: {} 에 대해 {} ~ {} 시간대에 데이터가 없어 스냅샷을 생성하지 않습니다.",
@@ -74,14 +74,14 @@ public class SnapshotService {
 
         // 점수 계산을 위한 대표 데이터 생성
         DeviceAirQualityData representativeData = createRepresentativeData(
-                device, avgTemperature, avgHumidity, avgPressure, avgTvoc, avgEco2, avgPm10, avgPm25);
+                sensor, avgTemperature, avgHumidity, avgPressure, avgTvoc, avgEco2, avgPm10, avgPm25);
 
         // 모든 점수를 한 번에 계산
         DeviceAirQualityScore calculatedScores = airQualityCalculator.calculateScore(representativeData);
 
         // 스냅샷 생성
         HourlyDeviceAirQualitySnapshot snapshot = HourlyDeviceAirQualitySnapshot.builder()
-                .device(device)
+                .sensor(sensor)
                 .snapshotHour(snapshotHour)
                 .hourlyAvgTemperature(avgTemperature)
                 .hourlyAvgHumidity(avgHumidity)
@@ -104,11 +104,11 @@ public class SnapshotService {
      * 특정 장치의 특정 시간에 대한 시간별 스냅샷을 조회합니다.
      */
     @Transactional(readOnly = true)
-    public HourlyDeviceAirQualitySnapshot getHourlySnapshot(Long deviceId, LocalDateTime snapshotHour) {
-        Device device = sensorRepository.findById(deviceId)
+    public HourlyDeviceAirQualitySnapshot getHourlySnapshot(Long sensorId, LocalDateTime snapshotHour) {
+        Sensor sensor = sensorRepository.findById(sensorId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
-        return snapshotRepository.findByDeviceAndSnapshotHour(device, snapshotHour)
+        return snapshotRepository.findBySensorAndSnapshotHour(sensor, snapshotHour)
                 .orElseThrow(() -> new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND));
     }
 
@@ -119,12 +119,12 @@ public class SnapshotService {
     public HourlyDeviceAirQualitySnapshot updateHourlySnapshot(HourlyDeviceAirQualitySnapshot snapshot) {
         // 기존 스냅샷의 시간 범위에 해당하는 DeviceAirQualityData 리스트 조회
         List<DeviceAirQualityData> dataList = airQualityDataRepository
-                .findByDeviceAndCreatedAtBetweenOrderByCreatedAtAsc(snapshot.getDevice(),
+                .findBySensorAndCreatedAtBetweenOrderByCreatedAtAsc(snapshot.getSensor(),
                         snapshot.getSnapshotHour(), snapshot.getSnapshotHour().plusHours(1));
 
         if (dataList.isEmpty()) {
             log.warn("Device ID: {} 의 {} 시간 스냅샷에 대한 데이터가 없어 업데이트하지 않습니다.",
-                    snapshot.getDevice().getId(), snapshot.getSnapshotHour());
+                    snapshot.getSensor().getId(), snapshot.getSnapshotHour());
             throw new CustomException(ErrorCode.DEVICE_AIR_DATA_NOT_FOUND);
         }
 
@@ -139,7 +139,7 @@ public class SnapshotService {
 
         // 점수 계산을 위한 대표 데이터 생성
         DeviceAirQualityData representativeData = createRepresentativeData(
-                snapshot.getDevice(), avgTemperature, avgHumidity, avgPressure, avgTvoc, avgEco2, avgPm10, avgPm25);
+                snapshot.getSensor(), avgTemperature, avgHumidity, avgPressure, avgTvoc, avgEco2, avgPm10, avgPm25);
 
         // 모든 점수를 한 번에 계산
         DeviceAirQualityScore calculatedScores = airQualityCalculator.calculateScore(representativeData);
@@ -160,7 +160,7 @@ public class SnapshotService {
 
         // 업데이트된 스냅샷 저장 및 반환
         log.info("Device ID: {} 의 {} 시간 스냅샷 업데이트 완료",
-                snapshot.getDevice().getId(), snapshot.getSnapshotHour());
+                snapshot.getSensor().getId(), snapshot.getSnapshotHour());
         return snapshotRepository.save(snapshot);
     }
 
@@ -194,7 +194,7 @@ public class SnapshotService {
     /**
      * 점수 계산을 위한 대표 DeviceAirQualityData 객체를 생성합니다.
      */
-    private DeviceAirQualityData createRepresentativeData(Device device, Double avgTemperature,
+    private DeviceAirQualityData createRepresentativeData(Sensor sensor, Double avgTemperature,
                                                           Double avgHumidity, Integer avgPressure, Integer avgTvoc, Integer avgEco2, Double avgPm10, Double avgPm25) {
 
         // 미세먼지 데이터 객체 생성
@@ -204,7 +204,7 @@ public class SnapshotService {
 
         // 대표 데이터 객체 생성
         return DeviceAirQualityData.builder()
-                .device(device)
+                .sensor(sensor)
                 .temperature(avgTemperature)
                 .humidity(avgHumidity)
                 .pressure(avgPressure)

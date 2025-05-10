@@ -1,6 +1,6 @@
 package com.example.smartair.entity.airData.fineParticlesData;
 
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +29,6 @@ public class FineParticlesData extends BaseEntity {
     private int particle_100;
 
     @ManyToOne
-    @JoinColumn(name = "device_id")
-    private Device device;
+    @JoinColumn(name = "sensor_id")
+    private Sensor sensor;
 }

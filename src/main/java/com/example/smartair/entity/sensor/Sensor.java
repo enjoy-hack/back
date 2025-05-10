@@ -1,4 +1,4 @@
-package com.example.smartair.entity.Sensor;
+package com.example.smartair.entity.sensor;
 
 import com.example.smartair.entity.user.User;
 import com.example.smartair.util.BaseEntity;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Device extends BaseEntity {
+public class Sensor extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -1,7 +1,7 @@
 package com.example.smartair.service.sensorService;
 
 import com.example.smartair.dto.sensorDto.SensorRequestDto;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
@@ -68,10 +68,10 @@ public class SensorServiceTest {
         sensorService.setDevice(testUser, dto);
 
         // then
-        List<Device> devices = sensorService.getDevices(testRoom.getId());
-        assertThat(devices).hasSize(1);
-        assertThat(devices.get(0).getSerialNumber()).isEqualTo(1001L);
-        assertThat(devices.get(0).getName()).isEqualTo("TestDevice");
+        List<Sensor> sensors = sensorService.getDevices(testRoom.getId());
+        assertThat(sensors).hasSize(1);
+        assertThat(sensors.get(0).getSerialNumber()).isEqualTo(1001L);
+        assertThat(sensors.get(0).getName()).isEqualTo("TestDevice");
     }
 
     @Test
@@ -86,8 +86,8 @@ public class SensorServiceTest {
         sensorService.deleteDevice(testUser, deleteDto);
 
         // then
-        List<Device> devices = sensorService.getDevices(testRoom.getId());
-        assertThat(devices).isEmpty();
+        List<Sensor> sensors = sensorService.getDevices(testRoom.getId());
+        assertThat(sensors).isEmpty();
     }
 
     @Test

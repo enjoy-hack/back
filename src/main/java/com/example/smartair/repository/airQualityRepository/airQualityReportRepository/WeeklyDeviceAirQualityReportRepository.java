@@ -1,7 +1,7 @@
 package com.example.smartair.repository.airQualityRepository.airQualityReportRepository;
 
 import com.example.smartair.entity.airData.report.WeeklyDeviceAirQualityReport;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,19 +13,19 @@ import java.util.Optional;
 
 @Repository
 public interface WeeklyDeviceAirQualityReportRepository extends JpaRepository<WeeklyDeviceAirQualityReport, Long> {
-    Optional<WeeklyDeviceAirQualityReport> findByDeviceAndYearOfWeekAndWeekOfYear(Device device, int year, int weekOfYear);
-    List<WeeklyDeviceAirQualityReport> findAllByDeviceId(Long deviceId);
+    Optional<WeeklyDeviceAirQualityReport> findBySensorAndYearOfWeekAndWeekOfYear(Sensor sensor, int year, int weekOfYear);
+    List<WeeklyDeviceAirQualityReport> findAllBySensorId(Long sensorId);
     List<WeeklyDeviceAirQualityReport> findByStartDateOfWeekBefore(LocalDate date);
 
     // 특정 장치에 대해 주어진 기간과 겹치는 모든 주간 보고서 조회
     // 조건: (리포트의 시작일 <= 기간의 종료일) AND (리포트의 종료일 >= 기간의 시작일)
     @Query("SELECT w FROM WeeklyDeviceAirQualityReport w " +
-            "WHERE w.device = :device " +
+            "WHERE w.sensor = :sensor " +
             "AND w.startDateOfWeek <= :periodEnd " +
             "AND w.endDateOfWeek >= :periodStart " +
             "ORDER BY w.startDateOfWeek ASC")
     List<WeeklyDeviceAirQualityReport> findOverlappingWeeklyReports(
-            @Param("device") Device device,
+            @Param("device") Sensor sensor,
             @Param("periodStart") LocalDate periodStart,
             @Param("periodEnd") LocalDate periodEnd
     );

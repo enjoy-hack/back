@@ -22,28 +22,28 @@ public class AirQualityScoreController {
 
     /**
      * 디바이스별 공기질 점수 기록을 조회합니다 (페이징 및 시간 필터링)
-     * @param deviceId
+     * @param sensorId
      * @param startTime (선택) 조회 시작 시간
      * @param endTime (선택) 조회 종료 시간
      * @param pageable 페이징 및 정렬 정보
      * @return
      */
-    @GetMapping("/device/{deviceId}")
+    @GetMapping("/device/{sensorId}")
     public ResponseEntity<Page<DeviceAirQualityScoreDto>> getDeviceAirQualityScores(
-            @PathVariable Long deviceId,
+            @PathVariable Long sensorId,
             @RequestParam(required = false) LocalDateTime startTime,
             @RequestParam(required = false) LocalDateTime endTime,
             Pageable pageable
     ) {
         Page<DeviceAirQualityScoreDto> scorePage = airQualityQueryService.getDeviceAirQualityScores(
-                deviceId, startTime, endTime, pageable
+                sensorId, startTime, endTime, pageable
         );
         return ResponseEntity.ok(scorePage);
     }
 
     /**
      * 방 별 공기질 점수 기록을 조회합니다 (페이징)
-     * @param roomId
+     * @param sensorId
      * @param startTime (선택) 조회 시작 시간
      * @param endTime (선택) 조회 종료 시간
      * @param pageable 페이징 및 정렬 정보
@@ -51,12 +51,12 @@ public class AirQualityScoreController {
      */
     @GetMapping("/room/{roomId}")
     public ResponseEntity<Page<RoomAirQualityScoreDto>> getRoomAirQualityScores(
-            @PathVariable Long roomId,
+            @PathVariable Long sensorId,
             @RequestParam(required = false) LocalDateTime startTime,
             @RequestParam(required = false) LocalDateTime endTime,
             Pageable pageable
     ) {
-        Page<RoomAirQualityScoreDto> scorePage = airQualityQueryService.getRoomAirQualityScores(roomId, startTime, endTime, pageable);
+        Page<RoomAirQualityScoreDto> scorePage = airQualityQueryService.getRoomAirQualityScores(sensorId, startTime, endTime, pageable);
         return ResponseEntity.ok(scorePage);
     }
 
@@ -81,27 +81,27 @@ public class AirQualityScoreController {
 
     /**
      * 디바이스의 가장 최신 공기질 점수 기록 한 건을 조회합니다
-     * @param deviceId
+     * @param sensorId
      * @return
      */
     @GetMapping("/device")
     public ResponseEntity<DeviceAirQualityScoreDto> getLatestDeviceAirQualityScore(
-            @PathVariable Long deviceId
+            @PathVariable Long sensorId
     ) {
-        DeviceAirQualityScoreDto score = airQualityQueryService.getLatestDeviceAirQualityScore(deviceId);
+        DeviceAirQualityScoreDto score = airQualityQueryService.getLatestDeviceAirQualityScore(sensorId);
         return ResponseEntity.ok(score);
     }
 
     /**
      * 방의 가장 최신 공기질 점수 기록 한 건을 조회합니다
-     * @param roomId
+     * @param sensorId
      * @return
      */
     @GetMapping("/room")
     public ResponseEntity<RoomAirQualityScoreDto> getLatestRoomAirQualityScore(
-            @PathVariable Long roomId
+            @PathVariable Long sensorId
     ){
-        RoomAirQualityScoreDto score = airQualityQueryService.getLatestRoomAirQualityScore(roomId);
+        RoomAirQualityScoreDto score = airQualityQueryService.getLatestRoomAirQualityScore(sensorId);
         return ResponseEntity.ok(score);
     }
 

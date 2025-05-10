@@ -4,7 +4,7 @@ import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomDevice;
 import com.example.smartair.exception.CustomException;
@@ -44,12 +44,12 @@ public class AirQualityDataService {
             }
             // 2. Device 추출
             Long deviceId = Long.parseLong(topic.split("/")[1]);
-            Device device = sensorRepository.findById(deviceId)
+            Sensor sensor = sensorRepository.findById(deviceId)
                     .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
             // 3. Room 추출
             Long roomIdFromTopic = Long.parseLong(topic.split("/")[2]);
-            Room room = roomSensorRepository.findByDevice(device)
+            Room room = roomSensorRepository.findBySensor(sensor)
                     .map(RoomDevice::getRoom)
                     .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
@@ -69,7 +69,7 @@ public class AirQualityDataService {
                     .particle_25(dto.getPt1Particles25um())
                     .particle_50(dto.getPt1Particles50um())
                     .particle_100(dto.getPt1Particles100um())
-                    .device(device) // Device 연결
+                    .sensor(sensor) // Device 연결
                     .build();
             FineParticlesData savedFineParticlesData = fineParticlesDataRepository.save(fineParticlesData);
 
@@ -83,7 +83,7 @@ public class AirQualityDataService {
                     .particle_25(dto.getPt2Particles25um())
                     .particle_50(dto.getPt2Particles50um())
                     .particle_100(dto.getPt2Particles100um())
-                    .device(device) // Device 연결
+                    .sensor(sensor) // Device 연결
                     .build();
             FineParticlesDataPt2 savedFineParticlesDataPt2 = fineParticlesDataPt2Repository.save(fineParticlesDataPt2);
 
@@ -97,7 +97,7 @@ public class AirQualityDataService {
                     .eco2(dto.getPpm()) 
                     .rawh2(dto.getRawh2())
                     .rawethanol(dto.getRawethanol())
-                    .device(device)
+                    .sensor(sensor)
                     .fineParticlesData(savedFineParticlesData)
                     .fineParticlesDataPt2(savedFineParticlesDataPt2)
                     .build();
@@ -106,7 +106,7 @@ public class AirQualityDataService {
             DeviceAirQualityData savedAirQualityData = airQualityDataRepository.save(airQualityData);
 
             // 7. 캐싱
-            recentAirQualityDataCache.put(device.getId(), savedAirQualityData);
+            recentAirQualityDataCache.put(sensor.getId(), savedAirQualityData);
 
             return dto;
 

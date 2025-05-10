@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface FineParticlesDataRepository extends JpaRepository<FineParticlesData, Long> {
-    Optional<FineParticlesData> findByDevice_Id(Long device_id);
+    Optional<FineParticlesData> findBySensor_Id(Long sensor_id);
 }
