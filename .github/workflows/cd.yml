@@ -86,6 +86,25 @@ jobs:
   deploy:
     needs: build-and-docker-operations # 'build-and-docker-operations' 작업이 성공해야 실행됩니다.
     runs-on: ubuntu-latest
+    env: # 여기에 모든 필요한 변수들을 secrets에서 가져오도록 정의
+      MYSQL_DB_NAME: ${{ secrets.MYSQL_DB_NAME }}
+      MYSQL_DB_USERNAME: ${{ secrets.MYSQL_DB_USERNAME }}
+      MYSQL_DB_PASSWORD: ${{ secrets.MYSQL_DB_PASSWORD }}
+      IMAGE_TAG: ${{ needs.build-and-docker-operations.outputs.image_tag }}
+      ECR_REGISTRY_URI: ${{ secrets.ECR_REGISTRY_URI }}
+      AWS_REGION: ${{ env.AWS_REGION }} 
+      RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+      KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+      KAKAO_REDIRECT_URI_EC2_PROD: ${{ secrets.KAKAO_REDIRECT_URI }} # KAKAO_REDIRECT_URI Secret 사용
+      MQTT_URL_EC2_PROD: ${{ secrets.MQTT_URL }} # MQTT_URL Secret 사용
+      MQTT_USERNAME_EC2_PROD: ${{ secrets.MQTT_USERNAME_EC2_PROD }} # Secret 필요시 생성
+      MQTT_PASSWORD_EC2_PROD: ${{ secrets.MQTT_PASSWORD_EC2_PROD }} # Secret 필요시 생성
+      FIREBASE_CONFIG_PATH: "classpath:firebase.json" # JAR 내 firebase.json 사용 가정
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
+      AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
+      AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
     steps:
       - name: Checkout code # deploy 작업에서도 코드가 필요할 수 있으므로 checkout (docker-compose.yml 등)
         uses: actions/checkout@v3
@@ -94,39 +113,25 @@ jobs:
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: "ec2-user"
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} # EC2 접속용 SSH 키 
+          username: ${{ secrets.EC2_USERNAME }} # EC2_USERNAME Secret 사용
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} 
           port: 22
-          source: "docker/docker-compose.yml,docker/mosquitto.conf" # 복사할 파일 목록에 mosquitto.conf 추가
-          target: 'compose' # EC2 내 대상 디렉토리
-          rm: true # 복사 전 대상 디렉토리 내용 삭제
+          source: "docker/docker-compose.yml,docker/mosquitto.conf" 
+          target: 'compose' 
+          rm: true 
 
       - name: SSH remote and Run Docker Compose # EC2에 SSH로 접속하여 Docker Compose 명령을 실행합니다.
         uses: appleboy/ssh-action@master
-        env: # EC2에서 실행될 스크립트에 전달할 환경 변수들
-          MYSQL_DB_NAME: ${{ secrets.MYSQL_DB_NAME }}       
-          MYSQL_DB_USERNAME: ${{ secrets.MYSQL_DB_USERNAME }}  
-          MYSQL_DB_PASSWORD: ${{ secrets.MYSQL_DB_PASSWORD }} 
-          IMAGE_TAG: ${{ needs.build-and-docker-operations.outputs.image_tag }} # 이전 작업에서 생성된 이미지 태그
-          ECR_REGISTRY_URI: ${{ secrets.ECR_REGISTRY_URI }} # ECR 리포지토리 전체 URI
-          AWS_REGION: ${{ env.AWS_REGION }} # EC2에서 AWS CLI 사용 위해 전달
-          RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: "ec2-user"
+          username: ${{ secrets.EC2_USERNAME }} # EC2_USERNAME Secret 사용
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} 
           port: 22
-          envs: MYSQL_DB_NAME,MYSQL_DB_USERNAME,MYSQL_DB_PASSWORD,IMAGE_TAG,ECR_REGISTRY_URI,AWS_REGION,RDS_ENDPOINT # 스크립트에 전달할 환경변수 목록
+          envs: MYSQL_DB_NAME,MYSQL_DB_USERNAME,MYSQL_DB_PASSWORD,IMAGE_TAG,ECR_REGISTRY_URI,AWS_REGION,RDS_ENDPOINT,JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI_EC2_PROD,MQTT_URL_EC2_PROD,MQTT_USERNAME_EC2_PROD,MQTT_PASSWORD_EC2_PROD,FIREBASE_CONFIG_PATH,S3_BUCKET_NAME,AWS_S3_ACCESS_KEY_ID,AWS_S3_SECRET_ACCESS_KEY
           script: |
             cd ~/compose/docker/ 
-            
-            # EC2 인스턴스에서 ECR에 로그인 (AWS CLI 필요)
-            # aws-cli가 설치되어 있다고 가정합니다. Amazon Linux 2에는 기본 설치되어 있습니다.
-            # ECR_REGISTRY_URI에서 레지스트리 ID(AWS 계정 ID) 추출
             ECR_ACCOUNT_ID=$(echo $ECR_REGISTRY_URI | cut -d'.' -f1)
             aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-
-            # .env 파일 생성 또는 업데이트
             sudo touch .env
             sudo echo "
             MYSQL_DB_NAME=$MYSQL_DB_NAME
@@ -134,15 +139,20 @@ jobs:
             MYSQL_DB_PASSWORD=$MYSQL_DB_PASSWORD
             IMAGE_TAG=$IMAGE_TAG
             RDS_ENDPOINT=$RDS_ENDPOINT
-            ECR_REGISTRY_URI=$ECR_REGISTRY_URI 
-            AWS_REGION=$AWS_REGION" | sudo tee .env # docker-compose.yml에서 참조할 환경변수들
-            
-            # Docker 설치 스크립트 실행 (필요한 경우) - 주석 처리
-            # sh ./scripts/docker-install.sh 
-
-            # 최신 이미지 pull
+            ECR_REGISTRY_URI=$ECR_REGISTRY_URI
+            AWS_REGION=$AWS_REGION
+            JWT_SECRET=$JWT_SECRET
+            KAKAO_CLIENT_ID=$KAKAO_CLIENT_ID
+            KAKAO_CLIENT_SECRET=$KAKAO_CLIENT_SECRET
+            KAKAO_REDIRECT_URI_EC2_PROD=$KAKAO_REDIRECT_URI_EC2_PROD
+            MQTT_URL_EC2_PROD=$MQTT_URL_EC2_PROD
+            MQTT_USERNAME_EC2_PROD=$MQTT_USERNAME_EC2_PROD
+            MQTT_PASSWORD_EC2_PROD=$MQTT_PASSWORD_EC2_PROD
+            FIREBASE_CONFIG_PATH=$FIREBASE_CONFIG_PATH
+            S3_BUCKET_NAME=$S3_BUCKET_NAME
+            AWS_S3_ACCESS_KEY_ID=$AWS_S3_ACCESS_KEY_ID
+            AWS_S3_SECRET_ACCESS_KEY=$AWS_S3_SECRET_ACCESS_KEY
+            " | sudo tee .env 
             sudo docker pull $ECR_REGISTRY_URI:$IMAGE_TAG 
-            
-            # Docker Compose로 애플리케이션 재시작
             sudo /usr/local/bin/docker-compose down  
             sudo /usr/local/bin/docker-compose up -d   
