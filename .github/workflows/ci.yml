@@ -20,6 +20,8 @@ env:
   MQTT_URL: ${{ secrets.MQTT_URL }}
   CI_FIREBASE_KEY_FILE_NAME_IN_RESOURCES: firebase.json # src/main/resources 에 생성될 파일 이름
   CI_FIREBASE_CONFIG_PATH_FOR_SPRING: classpath:firebase.json # Spring 에서 사용할 경로
+  MY_CI_AWS_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY_ID_CI }}
+  MY_CI_AWS_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_CI }}
 
 jobs:
   build-and-test:
@@ -87,11 +89,16 @@ jobs:
         if [ -z "${{ secrets.MYSQL_DB_USERNAME }}" ]; then echo "Error: MYSQL_DB_USERNAME is not set or is empty."; else echo "MYSQL_DB_USERNAME is set."; fi
         if [ -z "${{ secrets.MYSQL_DB_PASSWORD }}" ]; then echo "Error: MYSQL_DB_PASSWORD is not set or is empty."; else echo "MYSQL_DB_PASSWORD is set."; fi
         if [ -z "${{ env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}" ]; then echo "Error: FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 is not set or is empty."; else echo "FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 is (partially) set."; fi
+        if [ -z "${{ secrets.AWS_S3_ACCESS_KEY_ID_FOR_CI }}" ]; then echo "Error: AWS_S3_ACCESS_KEY_ID_FOR_CI is not set or is empty."; else echo "AWS_S3_ACCESS_KEY_ID_FOR_CI is set."; fi
+        if [ -z "${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }}" ]; then echo "Error: AWS_S3_SECRET_ACCESS_KEY_FOR_CI is not set or is empty."; else echo "AWS_S3_SECRET_ACCESS_KEY_FOR_CI is set."; fi
 
     - name: Build and Test with Gradle
       env:
         SPRING_PROFILES_ACTIVE: ci
         FIREBASE_CONFIG_PATH: ${{ env.CI_FIREBASE_CONFIG_PATH_FOR_SPRING }} # application-ci.yml 에서 이 이름으로 참조
+        ENV_AWS_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY_ID_FOR_CI }}
+        ENV_AWS_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }}
+        ENV_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME_FOR_CI }}
       run: ./gradlew build
       
     # 'Run tests' 단계는 './gradlew build'에 포함되므로 제거합니다.
