@@ -39,6 +39,11 @@ jobs:
       run: |
         echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
         
+    - name: Create application-prod.yml for prod profile # GitHub Secret에 저장된 application-prod.yml 파일 내용을 실제 파일로 생성합니다.
+      if: secrets.APPLICATION != '' # APPLICATION Secret이 존재할 경우에만 실행. APPLICATION_PROD 대신 APPLICATION 사용
+      run: |
+        echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application-prod.yml # APPLICATION_PROD 대신 APPLICATION 사용
+
     - name: Set up Gradle # Gradle 빌드 환경을 설정합니다.
       uses: gradle/actions/setup-gradle@v4
       
@@ -104,6 +109,7 @@ jobs:
       S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
       AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
       AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
+      SPRING_PROFILES_ACTIVE: prod # prod 프로파일 활성화
     steps:
       - name: Checkout code # deploy 작업에서도 코드가 필요할 수 있으므로 checkout (docker-compose.yml 등)
         uses: actions/checkout@v3
@@ -126,7 +132,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }} # EC2_USERNAME Secret 사용
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} 
           port: 22
-          envs: MYSQL_DB_NAME,MYSQL_DB_USERNAME,MYSQL_DB_PASSWORD,IMAGE_TAG,ECR_REGISTRY_URI,RDS_ENDPOINT,JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI_EC2_PROD,MQTT_URL_EC2_PROD,MQTT_USERNAME_EC2_PROD,MQTT_PASSWORD_EC2_PROD,FIREBASE_CONFIG_PATH,S3_BUCKET_NAME,AWS_S3_ACCESS_KEY_ID,AWS_S3_SECRET_ACCESS_KEY
+          envs: MYSQL_DB_NAME,MYSQL_DB_USERNAME,MYSQL_DB_PASSWORD,IMAGE_TAG,ECR_REGISTRY_URI,RDS_ENDPOINT,JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI_EC2_PROD,MQTT_URL_EC2_PROD,MQTT_USERNAME_EC2_PROD,MQTT_PASSWORD_EC2_PROD,FIREBASE_CONFIG_PATH,S3_BUCKET_NAME,AWS_S3_ACCESS_KEY_ID,AWS_S3_SECRET_ACCESS_KEY,SPRING_PROFILES_ACTIVE
           script: |
             cd ~/compose/docker/ 
             ECR_ACCOUNT_ID=$(echo $ECR_REGISTRY_URI | cut -d'.' -f1)
@@ -150,6 +156,7 @@ jobs:
             S3_BUCKET_NAME=$S3_BUCKET_NAME
             AWS_S3_ACCESS_KEY_ID=$AWS_S3_ACCESS_KEY_ID
             AWS_S3_SECRET_ACCESS_KEY=$AWS_S3_SECRET_ACCESS_KEY
+            SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE
             " | sudo tee .env 
             sudo docker pull $ECR_REGISTRY_URI:$IMAGE_TAG 
             sudo /usr/local/bin/docker-compose down  
