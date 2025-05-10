@@ -10,17 +10,16 @@ import com.example.smartair.entity.roomDevice.RoomDevice;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
-import com.example.smartair.repository.airQualityDataRepository.AirQualityDataRepository;
-import com.example.smartair.repository.airQualityDataRepository.FineParticlesDataPt2Repository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataPt2Repository;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
-import com.example.smartair.repository.airQualityDataRepository.FineParticlesDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataRepository;
 import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @Service

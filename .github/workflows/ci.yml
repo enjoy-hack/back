@@ -13,10 +13,15 @@ env:
   MYSQL_DB_PASSWORD: ${{ secrets.MYSQL_DB_PASSWORD }}
   MYSQL_DB_NAME: ${{ secrets.MYSQL_DB_NAME }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
-  SPRING_MQTT_BROKER: tcp://mqtt:1883
   KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
   KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
   KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+  FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
+  MQTT_URL: ${{ secrets.MQTT_URL }}
+  CI_FIREBASE_KEY_FILE_NAME_IN_RESOURCES: firebase.json # src/main/resources 에 생성될 파일 이름
+  CI_FIREBASE_CONFIG_PATH_FOR_SPRING: classpath:firebase.json # Spring 에서 사용할 경로
+  MY_CI_AWS_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY_ID_CI }}
+  MY_CI_AWS_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_CI }}
 
 jobs:
   build-and-test:
@@ -32,17 +37,15 @@ jobs:
         java-version: '17'
         distribution: 'corretto'
 
-    - name: Create resources directory
-      run: mkdir -p src/main/resources
-
-    - name: Update application.yml
+    - name: Create Firebase Service Account Key File in resources
+      if: env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 != ''
       run: |
-        echo "${{ secrets.APPLICATION }}" | base64 -d > ./src/main/resources/application.yml
-
+        mkdir -p src/main/resources 
+        echo "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" | base64 --decode > "src/main/resources/$CI_FIREBASE_KEY_FILE_NAME_IN_RESOURCES"
+        echo "Firebase key file created at src/main/resources/$CI_FIREBASE_KEY_FILE_NAME_IN_RESOURCES for CI"
+        
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@v4
-      with:
-        cache-write-only: true
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -60,9 +63,46 @@ jobs:
     - name: Set up SSH tunnel to RDS
       run: |
         ssh -i ~/.ssh/smartAir-server-key.pem -o StrictHostKeyChecking=no -f -N -L 3307:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_HOST }} || exit 1
-      
-    - name: Build with Gradle
+
+    - name: Verify Files (Minimal Log)
+      run: |
+        echo "Checking for application-ci.yml..."
+        if [ -f "src/main/resources/application-ci.yml" ]; then echo "application-ci.yml FOUND."; else echo "ERROR: application-ci.yml NOT FOUND."; exit 1; fi
+        
+        echo "Checking for Firebase key file in resources..."
+        if [ -f "src/main/resources/$CI_FIREBASE_KEY_FILE_NAME_IN_RESOURCES" ]; then
+          echo "Firebase key file FOUND at src/main/resources/$CI_FIREBASE_KEY_FILE_NAME_IN_RESOURCES"
+          FILE_SIZE=$(stat -c%s "src/main/resources/$CI_FIREBASE_KEY_FILE_NAME_IN_RESOURCES")
+          echo "Firebase key file size: $FILE_SIZE bytes"
+          if [ "$FILE_SIZE" -eq "0" ]; then
+            echo "ERROR: Firebase key file is empty."
+            exit 1
+          fi
+        else
+          echo "ERROR: Firebase key file NOT FOUND at src/main/resources/$CI_FIREBASE_KEY_FILE_NAME_IN_RESOURCES"
+          exit 1
+        fi
+
+    - name: Check Secrets Availability
+      run: |
+        if [ -z "${{ secrets.MYSQL_DB_NAME }}" ]; then echo "Error: MYSQL_DB_NAME is not set or is empty."; else echo "MYSQL_DB_NAME is set."; fi
+        if [ -z "${{ secrets.MYSQL_DB_USERNAME }}" ]; then echo "Error: MYSQL_DB_USERNAME is not set or is empty."; else echo "MYSQL_DB_USERNAME is set."; fi
+        if [ -z "${{ secrets.MYSQL_DB_PASSWORD }}" ]; then echo "Error: MYSQL_DB_PASSWORD is not set or is empty."; else echo "MYSQL_DB_PASSWORD is set."; fi
+        if [ -z "${{ env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}" ]; then echo "Error: FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 is not set or is empty."; else echo "FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 is (partially) set."; fi
+        if [ -z "${{ secrets.AWS_S3_ACCESS_KEY_ID_FOR_CI }}" ]; then echo "Error: AWS_S3_ACCESS_KEY_ID_FOR_CI is not set or is empty."; else echo "AWS_S3_ACCESS_KEY_ID_FOR_CI is set."; fi
+        if [ -z "${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }}" ]; then echo "Error: AWS_S3_SECRET_ACCESS_KEY_FOR_CI is not set or is empty."; else echo "AWS_S3_SECRET_ACCESS_KEY_FOR_CI is set."; fi
+
+    - name: Build and Test with Gradle
+      env:
+        SPRING_PROFILES_ACTIVE: ci
+        FIREBASE_CONFIG_PATH: ${{ env.CI_FIREBASE_CONFIG_PATH_FOR_SPRING }} # application-ci.yml 에서 이 이름으로 참조
+        ENV_AWS_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY_ID_FOR_CI }}
+        ENV_AWS_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }}
+        ENV_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME_FOR_CI }}
       run: ./gradlew build
       
-    - name: Run tests
-      run: ./gradlew test 
+    # 'Run tests' 단계는 './gradlew build'에 포함되므로 제거합니다.
+    # - name: Run tests
+    #   env:
+    #     SPRING_PROFILES_ACTIVE: ci
+    #   run: ./gradlew test 

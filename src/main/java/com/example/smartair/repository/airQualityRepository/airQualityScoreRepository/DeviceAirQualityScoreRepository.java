@@ -1,4 +1,4 @@
-package com.example.smartair.repository.airQualityScoreRepository;
+package com.example.smartair.repository.airQualityRepository.airQualityScoreRepository;
 
 import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
 import com.example.smartair.entity.device.Device;
@@ -26,5 +26,7 @@ public interface DeviceAirQualityScoreRepository extends JpaRepository<DeviceAir
             @Param("endTime") LocalDateTime endTime,
             Pageable pageable
     );
+
+    Optional<DeviceAirQualityScore> findTopByDeviceAirQualityData_DeviceOrderByCreatedAtDesc(Device device);
 
 } 

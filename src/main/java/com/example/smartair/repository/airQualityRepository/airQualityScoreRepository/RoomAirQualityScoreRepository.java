@@ -1,4 +1,4 @@
-package com.example.smartair.repository.airQualityScoreRepository;
+package com.example.smartair.repository.airQualityRepository.airQualityScoreRepository;
 
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.place.Place;

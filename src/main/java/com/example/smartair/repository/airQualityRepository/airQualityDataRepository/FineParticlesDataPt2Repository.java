@@ -1,4 +1,4 @@
-package com.example.smartair.repository.airQualityDataRepository;
+package com.example.smartair.repository.airQualityRepository.airQualityDataRepository;
 
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;

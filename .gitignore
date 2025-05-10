@@ -41,7 +41,7 @@ application.yml
 application-aws.yml
 
 .env
-mosquitto.conf
+docker/mosquitto.conf
 
 
 /src/main/resources/firebase/

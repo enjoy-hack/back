@@ -15,6 +15,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "place_air_quality_data")
 public class PlaceAirQualityData extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -6,7 +6,7 @@ import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.entity.user.UserSatisfaction;
 import com.example.smartair.exception.CustomException;
-import com.example.smartair.repository.airQualityScoreRepository.RoomAirQualityScoreRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
 import com.example.smartair.repository.customUserRepository.UserSatisfactionRepository;
 import com.example.smartair.service.airQualityService.AirQualityQueryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class UserSatisfactionService {
     private final RoomAirQualityScoreRepository roomAirQualityScoreRepository;
     @Autowired
     public UserSatisfactionService(UserSatisfactionRepository userSatisfactionRepository,
-                                      AirQualityQueryService airQualityQueryService,
+                                   AirQualityQueryService airQualityQueryService,
                                    RoomAirQualityScoreRepository roomAirQualityScoreRepository){
         this.userSatisfactionRepository = userSatisfactionRepository;
         this.airQualityQueryService = airQualityQueryService;
