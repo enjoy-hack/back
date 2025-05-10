@@ -121,7 +121,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} 
           port: 22
           source: "docker/docker-compose.yml,docker/mosquitto.conf" # 로컬의 docker 폴더 기준
-          target: 'compose/docker' # EC2의 ~/compose/docker/ 경로로 복사되어야 함
+          target: 'compose/docker/docker' # EC2의 ~/compose/docker/docker/ 경로로 복사되어야 함
           rm: true 
 
       - name: SSH remote and Run Docker Compose # EC2에 SSH로 접속하여 Docker Compose 명령을 실행합니다.
@@ -136,9 +136,9 @@ jobs:
             echo "--- Initial directory before cd ---"
             pwd
             # 혹시 모를 compose 디렉토리 생성
-            mkdir -p ~/compose/docker 
-            cd ~/compose/docker/
-            echo "--- Current directory after cd (should be ~/compose/docker/) ---"
+            mkdir -p ~/compose/docker/docker 
+            cd ~/compose/docker/docker/
+            echo "--- Current directory after cd (should be ~/compose/docker/docker/) ---"
             pwd
             echo "--- Listing files in current directory (should show docker-compose.yml, mosquitto.conf if scp worked) ---"
             ls -la
@@ -166,12 +166,12 @@ jobs:
             AWS_S3_ACCESS_KEY_ID=$AWS_S3_ACCESS_KEY_ID
             AWS_S3_SECRET_ACCESS_KEY=$AWS_S3_SECRET_ACCESS_KEY
             SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE
-            " > .env # 현재 디렉토리(~/compose/docker/)에 .env 생성
+            " > .env # 현재 디렉토리(~/compose/docker/docker/)에 .env 생성
             chmod 644 .env
             echo "--- .env file created, content of $(pwd): ---"
             ls -la
 
-            echo "--- Checking for docker-compose.yml before execution ---"
+            echo "--- Checking for docker-compose.yml before execution in $(pwd) ---"
             ls -la ./docker-compose.yml # ./docker-compose.yml이 존재하는지 확인
 
             echo "--- Pulling Docker image ---"
