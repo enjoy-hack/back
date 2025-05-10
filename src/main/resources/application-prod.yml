@@ -7,7 +7,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: validate # EC2/운영 환경에서는 validate 또는 none 권장
+      ddl-auto: create # validate에서 create로 변경
     show-sql: false      # EC2/운영 환경에서는 false 권장
     properties:
       hibernate:
