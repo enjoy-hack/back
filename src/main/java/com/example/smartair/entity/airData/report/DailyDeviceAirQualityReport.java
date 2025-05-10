@@ -1,7 +1,7 @@
 package com.example.smartair.entity.airData.report;
 
 import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

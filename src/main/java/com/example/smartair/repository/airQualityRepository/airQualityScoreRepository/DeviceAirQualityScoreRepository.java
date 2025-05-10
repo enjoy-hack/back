@@ -1,7 +1,7 @@
 package com.example.smartair.repository.airQualityRepository.airQualityScoreRepository;
 
 import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

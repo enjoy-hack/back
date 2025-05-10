@@ -1,4 +1,4 @@
-package com.example.smartair.dto.deviceDto;
+package com.example.smartair.dto.sensorDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class DeviceRequestDto {
+public class SensorRequestDto {
 
     public record setDeviceDto(
             Long serialNumber,

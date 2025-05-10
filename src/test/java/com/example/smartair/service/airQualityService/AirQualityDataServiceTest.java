@@ -3,15 +3,15 @@ package com.example.smartair.service.airQualityService;
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import com.example.smartair.entity.room.Room;
-import com.example.smartair.entity.roomDevice.RoomDevice;
+import com.example.smartair.entity.roomSensor.RoomDevice;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataPt2Repository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataRepository;
-import com.example.smartair.repository.deviceRepository.DeviceRepository;
-import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
+import com.example.smartair.repository.sensorRepository.SensorRepository;
+import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,10 +34,10 @@ import static org.mockito.Mockito.*;
 class AirQualityDataServiceTest {
 
     @Mock
-    private DeviceRepository deviceRepository;
+    private SensorRepository sensorRepository;
 
     @Mock
-    private RoomDeviceRepository roomDeviceRepository;
+    private RoomSensorRepository roomSensorRepository;
 
     @Mock
     private AirQualityDataRepository airQualityDataRepository;
@@ -94,8 +94,8 @@ class AirQualityDataServiceTest {
         FineParticlesData mockSavedFineParticles = FineParticlesData.builder().id(200L).device(device).build();
         when(fineParticlesDataRepository.save(any(FineParticlesData.class))).thenReturn(mockSavedFineParticles);
 
-        when(deviceRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(device));
-        when(roomDeviceRepository.findByDevice(device)).thenReturn(Optional.of(roomDevice));
+        when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(device));
+        when(roomSensorRepository.findByDevice(device)).thenReturn(Optional.of(roomDevice));
         when(airQualityDataRepository.save(any(DeviceAirQualityData.class))).thenAnswer(invocation -> {
             DeviceAirQualityData savedData = invocation.getArgument(0);
             savedData.setId(100L);
@@ -118,7 +118,7 @@ class AirQualityDataServiceTest {
     @DisplayName("디바이스가 존재하지 않을 때 : CustomException(DEVICE_NOT_FOUND) 발생")
     void processAirQualityData_DeviceNotFound_ShouldThrowException(){
         //given
-        when(deviceRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.empty());
+        when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.empty());
 
         //when & then
         CustomException exception = assertThrows(CustomException.class, () -> {
@@ -137,8 +137,8 @@ class AirQualityDataServiceTest {
         //given
         Device device = Device.builder().id(TEST_DEVICE_ID).build();
 
-        when(deviceRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(device));
-        when(roomDeviceRepository.findByDevice(device)).thenReturn(Optional.empty());
+        when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(device));
+        when(roomSensorRepository.findByDevice(device)).thenReturn(Optional.empty());
 
         //when & then: 예외 발생 및 내용을 명확히 검증
         CustomException thrownException = assertThrows(

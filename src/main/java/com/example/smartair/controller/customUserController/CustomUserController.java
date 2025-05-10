@@ -71,7 +71,7 @@ public class CustomUserController implements CustomUserControllerDocs{
 
     @PutMapping("/customMoi")
     public ResponseEntity<?> updateCustomMoi(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                              @RequestBody Double customMoi){
+                                             @RequestParam("customMoi")Double customMoi){
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }

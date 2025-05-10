@@ -4,7 +4,7 @@ import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
-import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.service.airQualityService.AirQualityScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 public class AirQualityScoreCalculationScheduler {
 
-    private final DeviceRepository deviceRepository;
+    private final SensorRepository sensorRepository;
     private final AirQualityDataRepository airQualityDataRepository;
     private final AirQualityScoreService airQualityScoreService;
 
@@ -33,7 +33,7 @@ public class AirQualityScoreCalculationScheduler {
         int failedCount = 0;
 
         //활성 디바이스 ID 목록 조회
-        List<Long> runningDeviceIDs = deviceRepository.findAllRunningDeviceIds();
+        List<Long> runningDeviceIDs = sensorRepository.findAllRunningDeviceIds();
         log.info("Found running devices: {}", runningDeviceIDs);
 
         for (Long runningDeviceID : runningDeviceIDs) {

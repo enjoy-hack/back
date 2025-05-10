@@ -4,12 +4,12 @@ import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
 import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
-import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.service.airQualityService.calculator.AirQualityCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ import java.util.Optional;
 @Slf4j
 public class SnapshotService {
 
-    private final DeviceRepository deviceRepository;
+    private final SensorRepository sensorRepository;
     private final AirQualityDataRepository airQualityDataRepository;
     private final HourlyDeviceAirQualitySnapshotRepository snapshotRepository;
     private final AirQualityCalculator airQualityCalculator;
@@ -35,7 +35,7 @@ public class SnapshotService {
      */
     @Transactional
     public HourlyDeviceAirQualitySnapshot createHourlySnapshot(Long deviceId, LocalDateTime snapshotHourBase) {
-        Device device = deviceRepository.findById(deviceId)
+        Device device = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         // 정시 기준으로 시간 설정 (예: 2023-10-28 13:00:00)
@@ -105,7 +105,7 @@ public class SnapshotService {
      */
     @Transactional(readOnly = true)
     public HourlyDeviceAirQualitySnapshot getHourlySnapshot(Long deviceId, LocalDateTime snapshotHour) {
-        Device device = deviceRepository.findById(deviceId)
+        Device device = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         return snapshotRepository.findByDeviceAndSnapshotHour(device, snapshotHour)

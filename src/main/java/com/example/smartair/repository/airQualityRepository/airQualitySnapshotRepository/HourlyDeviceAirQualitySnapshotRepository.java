@@ -1,7 +1,7 @@
 package com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository;
 
 import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

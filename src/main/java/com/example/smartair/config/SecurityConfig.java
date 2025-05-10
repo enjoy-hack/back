@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.util.Arrays;
 import java.util.Collections;
 @Configuration
 @EnableWebSecurity
@@ -52,12 +53,12 @@ public class SecurityConfig {
         http
                 .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                    config.setAllowedMethods(Collections.singletonList("*"));
+                    config.setAllowedOrigins(Collections.singletonList("http://localhost:3000")); // 허용할 도메인
+                    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE")); // 허용할 HTTP 메서드
                     config.setAllowCredentials(true);
-                    config.setAllowedHeaders(Collections.singletonList("*"));
-                    config.setMaxAge(3600L);
-                    config.setExposedHeaders(Collections.singletonList("Authorization"));
+                    config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type")); // 허용할 헤더
+                    config.setExposedHeaders(Collections.singletonList("Authorization")); // 노출할 헤더
+                    config.setMaxAge(3600L); // 캐싱 시간
                     return config;
                 }))
                 .csrf(csrf -> csrf.disable())
@@ -69,7 +70,7 @@ public class SecurityConfig {
                                 "/login", "/join", "/reissue", "/oauth2/**",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() //개발 중
                 );
 
         // JWT 필터 & 커스텀 필터 설정

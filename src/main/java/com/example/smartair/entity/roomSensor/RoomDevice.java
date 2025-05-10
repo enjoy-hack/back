@@ -1,6 +1,6 @@
-package com.example.smartair.entity.roomDevice;
+package com.example.smartair.entity.roomSensor;
 
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;

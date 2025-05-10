@@ -5,16 +5,16 @@ import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
-import com.example.smartair.entity.roomDevice.RoomDevice;
+import com.example.smartair.entity.roomSensor.RoomDevice;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.DeviceAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.PlaceAirQualityScoreRepository;
-import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
+import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
 import com.example.smartair.service.airQualityService.calculator.AirQualityCalculator;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class AirQualityScoreService {
     private final DeviceAirQualityScoreRepository deviceAirQualityScoreRepository;
     private final RoomAirQualityScoreRepository roomAirQualityScoreRepository;
     private final PlaceAirQualityScoreRepository placeAirQualityScoreRepository;
-    private final RoomDeviceRepository roomDeviceRepository;
+    private final RoomSensorRepository roomSensorRepository;
     private final RoomRepository roomRepository;
 
     /**
@@ -51,7 +51,7 @@ public class AirQualityScoreService {
         if (device == null) {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
-        Room room = roomDeviceRepository.findByDevice(device)
+        Room room = roomSensorRepository.findByDevice(device)
                 .map(RoomDevice::getRoom)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
@@ -72,7 +72,7 @@ public class AirQualityScoreService {
     private void updateRoomAverageScore(Room room) {
         log.info("Updating average score for Room ID: {}", room.getId());
         List<DeviceAirQualityScore> airQualityScoreList = new ArrayList<>();
-        List<Device> deviceList = roomDeviceRepository.findAllDeviceByRoom(room);
+        List<Device> deviceList = roomSensorRepository.findAllDeviceByRoom(room);
 
         if (deviceList.isEmpty()) {
             log.warn("Room ID: {} 에 속한 Device가 없습니다. 평균 점수 계산을 건너뛰었습니다.", room.getId());
