@@ -16,9 +16,10 @@ env:
   KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
   KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
   KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
-  FIREBASE_CONFIG_PATH: ${{ secrets.FIREBASE_CONFIG_PATH }}
   FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
   MQTT_URL: ${{ secrets.MQTT_URL }}
+  CI_FIREBASE_KEY_FILE_NAME: firebase-ci-key.json # 파일 이름만 지정
+  CI_FIREBASE_FULL_CONFIG_PATH_IN_SPRING: classpath:firebase-ci-key.json # Spring에서 사용할 전체 경로
 
 jobs:
   build-and-test:
@@ -34,17 +35,16 @@ jobs:
         java-version: '17'
         distribution: 'corretto'
 
-    - name: Create Firebase Service Account Key File
-      if: env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 != '' && env.FIREBASE_CONFIG_PATH != ''
+    - name: Create Firebase Service Account Key File for CI
+      if: env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 != ''
       run: |
-        mkdir -p "$(dirname "$FIREBASE_CONFIG_PATH")"
-        echo "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" | base64 --decode > "$FIREBASE_CONFIG_PATH"
+        mkdir -p src/main/resources 
+        echo "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" | base64 --decode > "src/main/resources/$CI_FIREBASE_KEY_FILE_NAME"
+        echo "Firebase key file created at src/main/resources/$CI_FIREBASE_KEY_FILE_NAME for CI"
 
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@v4
-      with:
-        cache-write-only: true
-        
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
@@ -62,26 +62,32 @@ jobs:
       run: |
         ssh -i ~/.ssh/smartAir-server-key.pem -o StrictHostKeyChecking=no -f -N -L 3307:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_HOST }} || exit 1
 
-    - name: Verify application-ci.yml
+    - name: Verify application-ci.yml and Firebase key
       run: |
         echo "Checking for application-ci.yml..."
         ls -l src/main/resources/application-ci.yml
         echo "Contents of application-ci.yml:"
         cat src/main/resources/application-ci.yml
+        echo "Checking for Firebase key file in resources..."
+        ls -l "src/main/resources/$CI_FIREBASE_KEY_FILE_NAME" || echo "Firebase key file NOT FOUND in resources"
+        echo "Attempting to read Firebase config (first few lines from resources):"
+        head -n 5 "src/main/resources/$CI_FIREBASE_KEY_FILE_NAME" || echo "Failed to read file or file is empty."
 
     - name: Check Secrets Availability
       run: |
         if [ -z "${{ secrets.MYSQL_DB_NAME }}" ]; then echo "Error: MYSQL_DB_NAME is not set or is empty."; else echo "MYSQL_DB_NAME is set."; fi
         if [ -z "${{ secrets.MYSQL_DB_USERNAME }}" ]; then echo "Error: MYSQL_DB_USERNAME is not set or is empty."; else echo "MYSQL_DB_USERNAME is set."; fi
         if [ -z "${{ secrets.MYSQL_DB_PASSWORD }}" ]; then echo "Error: MYSQL_DB_PASSWORD is not set or is empty."; else echo "MYSQL_DB_PASSWORD is set."; fi
-        # 필요한 다른 secrets들도 유사하게 확인 가능
+        if [ -z "${{ env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}" ]; then echo "Error: FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 is not set or is empty."; else echo "FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 is (partially) set."; fi
 
-    - name: Build with Gradle
+    - name: Build and Test with Gradle
       env:
         SPRING_PROFILES_ACTIVE: ci
+        FIREBASE_CONFIG_PATH_FOR_SPRING: ${{ env.CI_FIREBASE_FULL_CONFIG_PATH_IN_SPRING }}
       run: ./gradlew build
       
-    - name: Run tests
-      env:
-        SPRING_PROFILES_ACTIVE: ci
-      run: ./gradlew test 
+    # 'Run tests' 단계는 './gradlew build'에 포함되므로 제거합니다.
+    # - name: Run tests
+    #   env:
+    #     SPRING_PROFILES_ACTIVE: ci
+    #   run: ./gradlew test 
