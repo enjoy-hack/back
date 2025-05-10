@@ -54,4 +54,4 @@ mqtt:
 
 firebase:
   config:
-    path: ${FIREBASE_CONFIG_PATH_FOR_SPRING}
+    path: ${FIREBASE_CONFIG_PATH}
