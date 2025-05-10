@@ -62,17 +62,13 @@ jobs:
       run: |
         ssh -i ~/.ssh/smartAir-server-key.pem -o StrictHostKeyChecking=no -f -N -L 3307:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_HOST }} || exit 1
 
-    - name: Verify application-ci.yml and Firebase key
+    - name: Verify application-ci.yml
       run: |
         echo "Checking for application-ci.yml..."
         ls -l src/main/resources/application-ci.yml
         echo "Contents of application-ci.yml:"
         cat src/main/resources/application-ci.yml
-        echo "Checking for Firebase key file in resources..."
-        ls -l "src/main/resources/$CI_FIREBASE_KEY_FILE_NAME" || echo "Firebase key file NOT FOUND in resources"
-        echo "Attempting to read Firebase config (first few lines from resources):"
-        head -n 5 "src/main/resources/$CI_FIREBASE_KEY_FILE_NAME" || echo "Failed to read file or file is empty."
-
+       
     - name: Check Secrets Availability
       run: |
         if [ -z "${{ secrets.MYSQL_DB_NAME }}" ]; then echo "Error: MYSQL_DB_NAME is not set or is empty."; else echo "MYSQL_DB_NAME is set."; fi
