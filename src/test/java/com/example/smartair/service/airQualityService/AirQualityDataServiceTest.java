@@ -3,7 +3,7 @@ package com.example.smartair.service.airQualityService;
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomDevice;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
@@ -84,18 +84,18 @@ class AirQualityDataServiceTest {
     @DisplayName("유효한 topic과 payload를 받을 때 : AirQualityData 저장 및 캐싱 성공")
     void processAirQualityData(){
         //given
-        Device device = Device.builder().id(TEST_DEVICE_ID).build();
+        Sensor sensor = Sensor.builder().id(TEST_DEVICE_ID).build();
         Room room  = Room.builder().id(TEST_ROOM_ID).build();
         RoomDevice roomDevice = RoomDevice.builder()
                 .id(1L)
                 .room(room)
-                .device(device)
+                .sensor(sensor)
                 .build();
-        FineParticlesData mockSavedFineParticles = FineParticlesData.builder().id(200L).device(device).build();
+        FineParticlesData mockSavedFineParticles = FineParticlesData.builder().id(200L).sensor(sensor).build();
         when(fineParticlesDataRepository.save(any(FineParticlesData.class))).thenReturn(mockSavedFineParticles);
 
-        when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(device));
-        when(roomSensorRepository.findByDevice(device)).thenReturn(Optional.of(roomDevice));
+        when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(sensor));
+        when(roomSensorRepository.findBySensor(sensor)).thenReturn(Optional.of(roomDevice));
         when(airQualityDataRepository.save(any(DeviceAirQualityData.class))).thenAnswer(invocation -> {
             DeviceAirQualityData savedData = invocation.getArgument(0);
             savedData.setId(100L);
@@ -111,7 +111,7 @@ class AirQualityDataServiceTest {
         assertEquals(60, data.getHumidity());
         verify(fineParticlesDataRepository).save(any(FineParticlesData.class));
         verify(airQualityDataRepository).save(any(DeviceAirQualityData.class));
-        verify(recentAirQualityDataCache).put(eq(device.getId()), any(DeviceAirQualityData.class));
+        verify(recentAirQualityDataCache).put(eq(sensor.getId()), any(DeviceAirQualityData.class));
     }
 
     @Test
@@ -135,10 +135,10 @@ class AirQualityDataServiceTest {
     @DisplayName("방-디바이스 매핑이 존재하지 않을 때 : CustomException(ROOM_DEVICE_MAPPING_NOT_FOUND) 발생")
     void processAirQualityData_RoomDeviceMappingNotFound_ShouldThrowException(){
         //given
-        Device device = Device.builder().id(TEST_DEVICE_ID).build();
+        Sensor sensor = Sensor.builder().id(TEST_DEVICE_ID).build();
 
-        when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(device));
-        when(roomSensorRepository.findByDevice(device)).thenReturn(Optional.empty());
+        when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(sensor));
+        when(roomSensorRepository.findBySensor(sensor)).thenReturn(Optional.empty());
 
         //when & then: 예외 발생 및 내용을 명확히 검증
         CustomException thrownException = assertThrows(

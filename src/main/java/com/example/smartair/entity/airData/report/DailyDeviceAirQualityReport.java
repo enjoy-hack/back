@@ -1,7 +1,7 @@
 package com.example.smartair.entity.airData.report;
 
 import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,7 +21,7 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uq_device_report_date",
-                        columnNames = {"device_id", "report_date"}
+                        columnNames = {"sensor_id", "report_date"}
                 )
         }
 )
@@ -31,8 +31,8 @@ public class DailyDeviceAirQualityReport extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "device_id", nullable = false)
-    private Device device;
+    @JoinColumn(name = "sensor_id", nullable = false)
+    private Sensor sensor;
 
     @Column(name = "report_date", nullable = false)
     private LocalDate reportDate; // 리포트 날짜 (예: 2023-10-28)

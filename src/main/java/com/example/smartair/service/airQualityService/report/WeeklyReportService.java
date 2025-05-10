@@ -3,7 +3,7 @@ package com.example.smartair.service.airQualityService.report;
 import com.example.smartair.entity.airData.report.DailyDeviceAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklyDeviceAirQualityReport;
 import com.example.smartair.entity.airScore.AirQualityGrade;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.WeeklyDeviceAirQualityReportRepository;
@@ -34,11 +34,11 @@ public class WeeklyReportService {
      */
     @Transactional
     public WeeklyDeviceAirQualityReport createOrUpdateWeeklyReport(Long deviceId, int year, int weekOfYear) {
-        Device device = sensorRepository.findById(deviceId)
+        Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         Optional<WeeklyDeviceAirQualityReport> existingReportOpt =
-                weeklyReportRepository.findByDeviceAndYearOfWeekAndWeekOfYear(device, year, weekOfYear);
+                weeklyReportRepository.findBySensorAndYearOfWeekAndWeekOfYear(sensor, year, weekOfYear);
 
         // 해당 주의 시작일(월요일)과 종료일(일요일) 계산
         LocalDate firstDayOfWeek = LocalDate.now() // 기준일은 중요하지 않음, 연도와 주차로 결정됨
@@ -85,7 +85,7 @@ public class WeeklyReportService {
         WeeklyDeviceAirQualityReport report = existingReportOpt.orElseGet(() -> {
             log.info("Device ID: {}의 {}년 {}주차에 대한 새 주간 보고서를 생성합니다.", deviceId, year, weekOfYear);
             return WeeklyDeviceAirQualityReport.builder()
-                    .device(device)
+                    .sensor(sensor)
                     .yearOfWeek(year)
                     .weekOfYear(weekOfYear)
                     .startDateOfWeek(firstDayOfWeek)
@@ -129,9 +129,9 @@ public class WeeklyReportService {
      */
     @Transactional(readOnly = true)
     public WeeklyDeviceAirQualityReport getWeeklyReport(Long deviceId, int year, int weekOfYear) {
-        Device device = sensorRepository.findById(deviceId)
+        Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
-        return weeklyReportRepository.findByDeviceAndYearOfWeekAndWeekOfYear(device, year, weekOfYear)
+        return weeklyReportRepository.findBySensorAndYearOfWeekAndWeekOfYear(sensor, year, weekOfYear)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
     }
 
@@ -143,12 +143,12 @@ public class WeeklyReportService {
         if (startDate.isAfter(endDate)) {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
-        Device device = sensorRepository.findById(deviceId)
+        Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         // 주간 보고서의 시작일이 주어진 기간 내에 있는 모든 주간 보고서 조회
         List<WeeklyDeviceAirQualityReport> reportsInPeriod =
-                weeklyReportRepository.findOverlappingWeeklyReports(device, startDate, endDate);
+                weeklyReportRepository.findOverlappingWeeklyReports(sensor, startDate, endDate);
 
         log.info("Device ID: {}의 {}부터 {}까지의 주간 보고서 {}건 조회 완료", deviceId, startDate, endDate, reportsInPeriod.size());
         return reportsInPeriod;
@@ -198,7 +198,7 @@ public class WeeklyReportService {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
         log.info("Device ID: {} 관련 모든 주간 보고서 삭제 시작", deviceId);
-        List<WeeklyDeviceAirQualityReport> reportsToDelete = weeklyReportRepository.findAllByDeviceId(deviceId);
+        List<WeeklyDeviceAirQualityReport> reportsToDelete = weeklyReportRepository.findAllBySensorId(deviceId);
         if (reportsToDelete.isEmpty()) {
             log.info("Device ID: {} 관련 삭제할 주간 보고서가 없습니다.", deviceId);
             return 0;

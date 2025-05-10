@@ -2,7 +2,7 @@ package com.example.smartair.entity.airData.report;
 
 import com.example.smartair.domain.enums.Pollutant;
 import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,8 +24,8 @@ public class AnomalyReport extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "device_id", nullable = false)
-    private Device device;
+    @JoinColumn(name = "sensor_id", nullable = false)
+    private Sensor sensor;
 
     @Column(nullable = false)
     private LocalDateTime anomalyTimestamp; // 이상치 발생 시각

@@ -2,7 +2,7 @@ package com.example.smartair.service.airQualityService.report;
 
 import com.example.smartair.entity.airData.report.DailyDeviceAirQualityReport;
 import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailyDeviceAirQualityReportRepository;
@@ -38,17 +38,17 @@ public class DailyReportService {
      */
     @Transactional
     public DailyDeviceAirQualityReport createOrUpdateDailyReport(Long deviceId, LocalDate date) {
-        Device device = sensorRepository.findById(deviceId)
+        Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         Optional<DailyDeviceAirQualityReport> existingReportOpt =
-                dailyReportRepository.findByDeviceAndReportDate(device, date);
+                dailyReportRepository.findBySensorAndReportDate(sensor, date);
 
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX); // 23:59:59.999999999
 
         List<HourlyDeviceAirQualitySnapshot> hourlySnapshots =
-                snapshotRepository.findByDeviceAndSnapshotHourBetweenOrderBySnapshotHourAsc(device, startOfDay, endOfDay);
+                snapshotRepository.findBySensorAndSnapshotHourBetweenOrderBySnapshotHourAsc(sensor, startOfDay, endOfDay);
 
         // 스냅샷이 없으면 보고서를 생성하거나 업데이트할 수 없습니다.
         if (hourlySnapshots.isEmpty()) {
@@ -67,7 +67,7 @@ public class DailyReportService {
         DailyDeviceAirQualityReport report = existingReportOpt.orElseGet(() -> {
             log.info("Device ID: {}의 {} 날짜에 대한 새 일별 보고서를 생성합니다.", deviceId, date);
             return DailyDeviceAirQualityReport.builder()
-                    .device(device)
+                    .sensor(sensor)
                     .reportDate(date)
                     .build();
         });
@@ -89,9 +89,9 @@ public class DailyReportService {
      */
     @Transactional(readOnly = true)
     public DailyDeviceAirQualityReport getDailyReport(Long deviceId, LocalDate date) {
-        Device device = sensorRepository.findById(deviceId)
+        Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
-        return dailyReportRepository.findByDeviceAndReportDate(device, date)
+        return dailyReportRepository.findBySensorAndReportDate(sensor, date)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
     }
 
@@ -103,9 +103,9 @@ public class DailyReportService {
         if (startDate.isAfter(endDate)) {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
-        Device device = sensorRepository.findById(deviceId)
+        Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
-        return dailyReportRepository.findByDeviceAndReportDateBetweenOrderByReportDateAsc(device, startDate, endDate);
+        return dailyReportRepository.findBySensorAndReportDateBetweenOrderByReportDateAsc(sensor, startDate, endDate);
     }
 
 
@@ -153,7 +153,7 @@ public class DailyReportService {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
         log.info("Device ID: {} 관련 모든 일별 보고서 삭제 시작", deviceId);
-        List<DailyDeviceAirQualityReport> reportsToDelete = dailyReportRepository.findAllByDeviceId(deviceId);
+        List<DailyDeviceAirQualityReport> reportsToDelete = dailyReportRepository.findAllBySensorId(deviceId);
         if (reportsToDelete.isEmpty()) {
             log.info("Device ID: {} 관련 삭제할 일별 보고서가 없습니다.", deviceId);
             return 0;

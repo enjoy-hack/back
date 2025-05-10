@@ -54,12 +54,12 @@ public class AirQualityScoreCalculationScheduler {
         log.info("Duration: {}, Total devices processed: {}, Error: {}", duration, processedCount, failedCount);
     }
 
-    public void calculateScoresForDevice(Long deviceId) {
+    public void calculateScoresForDevice(Long sensorId) {
         //최신 7개 데이터 조회
-        List<DeviceAirQualityData> airQualityDataList = airQualityDataRepository.findTop7ByDeviceIdOrderByCreatedAtDesc(deviceId);
+        List<DeviceAirQualityData> airQualityDataList = airQualityDataRepository.findTop7BySensorIdOrderByCreatedAtDesc(sensorId);
 
         if (airQualityDataList.isEmpty()) {
-            log.warn("No data found for device ID: {}", deviceId);
+            log.warn("No data found for device ID: {}", sensorId);
             throw new CustomException(ErrorCode.DEVICE_AIR_DATA_NOT_FOUND);
         }
 
@@ -72,7 +72,7 @@ public class AirQualityScoreCalculationScheduler {
                 log.error("Score calculation error for data ID: {}", airQualityData.getId(), e);
             }
         }
-        log.debug("===Finished calculateScoresForDevice for device ID: {}===", deviceId);
+        log.debug("===Finished calculateScoresForDevice for device ID: {}===", sensorId);
     }
 
 }

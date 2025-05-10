@@ -29,12 +29,10 @@ public class MqttReceiveService {
 
             log.info("Received message on topic '{}', payload: {}", topic, payload);
 
-            /*
-            S3 사용시, 지금은 local로 테스트하니 주석처리.. 나중에 서버 쓸때 사용
             String deviceId = topic.split("/")[1];
-            String roomId = topic.split("/")[2]
+            String roomId = topic.split("/")[2];
             s3Service.uploadJson(deviceId, roomId, payload);
-            */
+
             //String payload를 JSON으로 파싱 -> AirQualityPayloadDto로 변환
             AirQualityPayloadDto dto = objectMapper.readValue(payload, AirQualityPayloadDto.class);
 

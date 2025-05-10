@@ -5,7 +5,7 @@ import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore;
-import com.example.smartair.entity.Sensor.Device;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomDevice;
@@ -47,11 +47,11 @@ public class AirQualityScoreService {
         if (airQualityData == null) {
            throw new CustomException(ErrorCode.INVALID_INPUT_DATA);
         }
-        Device device = airQualityData.getDevice();
-        if (device == null) {
+        Sensor sensor = airQualityData.getSensor();
+        if (sensor == null) {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
-        Room room = roomSensorRepository.findByDevice(device)
+        Room room = roomSensorRepository.findBySensor(sensor)
                 .map(RoomDevice::getRoom)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
@@ -72,21 +72,21 @@ public class AirQualityScoreService {
     private void updateRoomAverageScore(Room room) {
         log.info("Updating average score for Room ID: {}", room.getId());
         List<DeviceAirQualityScore> airQualityScoreList = new ArrayList<>();
-        List<Device> deviceList = roomSensorRepository.findAllDeviceByRoom(room);
+        List<Sensor> sensorList = roomSensorRepository.findAllDeviceByRoom(room);
 
-        if (deviceList.isEmpty()) {
+        if (sensorList.isEmpty()) {
             log.warn("Room ID: {} 에 속한 Device가 없습니다. 평균 점수 계산을 건너뛰었습니다.", room.getId());
             return; // 처리할 디바이스 없으면 종료
         }
 
-        for (Device device : deviceList) {
+        for (Sensor sensor : sensorList) {
             try {
                 //디바이스의 최신 한 건의 공기질 점수 데이터 조회
-                deviceAirQualityScoreRepository.findTopByDeviceAirQualityData_DeviceOrderByCreatedAtDesc(device)
+                deviceAirQualityScoreRepository.findTopByDeviceAirQualityData_SensorOrderByCreatedAtDesc(sensor)
                         .ifPresent(airQualityScoreList::add);
                 // .orElseThrow() 대신 ifPresent 사용으로 점수 없는 디바이스는 그냥 넘어감
             } catch (Exception e) { // 데이터 조회 중 예외 처리 (예: DB 연결 문제)
-                log.error("Device ID {}의 최신 공기질 점수 조회 중 오류 발생", device.getId(), e);
+                log.error("Device ID {}의 최신 공기질 점수 조회 중 오류 발생", sensor.getId(), e);
             }
         }
 
