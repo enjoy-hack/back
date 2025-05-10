@@ -7,24 +7,22 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-
 @Slf4j
 @Configuration
 public class FcmConfig {
 
     @Value("${firebase.config.path}")
-    private Resource firebaseConfigResource; // String 대신 Resource 타입으로 변경
+    private String firebaseConfigPath;
 
     @PostConstruct
     public void initializeFirebase() throws IOException {
-        InputStream serviceAccountStream = firebaseConfigResource.getInputStream();
+        FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath);
 
         FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccountStream))
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .build();
 
         if (FirebaseApp.getApps().isEmpty()) { // 이미 초기화됐는지 확인
