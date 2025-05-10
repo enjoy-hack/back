@@ -18,8 +18,8 @@ env:
   KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
   FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
   MQTT_URL: ${{ secrets.MQTT_URL }}
-  CI_FIREBASE_KEY_FILE_NAME: firebase-ci-key.json # 파일 이름만 지정
-  CI_FIREBASE_FULL_CONFIG_PATH_IN_SPRING: classpath:firebase-ci-key.json # Spring에서 사용할 전체 경로
+  CI_FIREBASE_KEY_FILE_NAME: firebase.json # 파일 이름만 지정
+  CI_FIREBASE_FULL_CONFIG_PATH_IN_SPRING: classpath:firebase.json # Spring에서 사용할 전체 경로
 
 jobs:
   build-and-test:
