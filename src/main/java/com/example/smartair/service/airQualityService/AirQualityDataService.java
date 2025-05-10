@@ -4,17 +4,17 @@ import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import com.example.smartair.entity.room.Room;
-import com.example.smartair.entity.roomDevice.RoomDevice;
+import com.example.smartair.entity.roomSensor.RoomDevice;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataPt2Repository;
-import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataRepository;
-import com.example.smartair.repository.roomDeviceRepository.RoomDeviceRepository;
+import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,8 +27,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AirQualityDataService {
 
-    private final DeviceRepository deviceRepository;
-    private final RoomDeviceRepository roomDeviceRepository;
+    private final SensorRepository sensorRepository;
+    private final RoomSensorRepository roomSensorRepository;
     private final AirQualityDataRepository airQualityDataRepository;
     private final FineParticlesDataRepository fineParticlesDataRepository;
     private final RecentAirQualityDataCache recentAirQualityDataCache;
@@ -44,12 +44,12 @@ public class AirQualityDataService {
             }
             // 2. Device 추출
             Long deviceId = Long.parseLong(topic.split("/")[1]);
-            Device device = deviceRepository.findById(deviceId)
+            Device device = sensorRepository.findById(deviceId)
                     .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
             // 3. Room 추출
             Long roomIdFromTopic = Long.parseLong(topic.split("/")[2]);
-            Room room = roomDeviceRepository.findByDevice(device)
+            Room room = roomSensorRepository.findByDevice(device)
                     .map(RoomDevice::getRoom)
                     .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 

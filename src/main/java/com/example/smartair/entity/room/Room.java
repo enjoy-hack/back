@@ -1,14 +1,10 @@
 package com.example.smartair.entity.room;
 
 import com.example.smartair.entity.place.Place;
-import com.example.smartair.entity.roomDevice.RoomDevice;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @NoArgsConstructor

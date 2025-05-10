@@ -3,11 +3,11 @@ package com.example.smartair.service.airQualityService.report;
 import com.example.smartair.entity.airData.report.DailyDeviceAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklyDeviceAirQualityReport;
 import com.example.smartair.entity.airScore.AirQualityGrade;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.WeeklyDeviceAirQualityReportRepository;
-import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.sensorRepository.SensorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WeeklyReportService {
 
-    private final DeviceRepository deviceRepository;
+    private final SensorRepository sensorRepository;
     private final DailyReportService dailyReportService; // DailyReportService 주입
     private final WeeklyDeviceAirQualityReportRepository weeklyReportRepository;
 
@@ -34,7 +34,7 @@ public class WeeklyReportService {
      */
     @Transactional
     public WeeklyDeviceAirQualityReport createOrUpdateWeeklyReport(Long deviceId, int year, int weekOfYear) {
-        Device device = deviceRepository.findById(deviceId)
+        Device device = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         Optional<WeeklyDeviceAirQualityReport> existingReportOpt =
@@ -129,7 +129,7 @@ public class WeeklyReportService {
      */
     @Transactional(readOnly = true)
     public WeeklyDeviceAirQualityReport getWeeklyReport(Long deviceId, int year, int weekOfYear) {
-        Device device = deviceRepository.findById(deviceId)
+        Device device = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
         return weeklyReportRepository.findByDeviceAndYearOfWeekAndWeekOfYear(device, year, weekOfYear)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
@@ -143,7 +143,7 @@ public class WeeklyReportService {
         if (startDate.isAfter(endDate)) {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
-        Device device = deviceRepository.findById(deviceId)
+        Device device = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         // 주간 보고서의 시작일이 주어진 기간 내에 있는 모든 주간 보고서 조회
@@ -194,7 +194,7 @@ public class WeeklyReportService {
      */
     @Transactional
     public int deleteWeeklyReportsByDeviceId(Long deviceId) {
-        if (!deviceRepository.existsById(deviceId)) {
+        if (!sensorRepository.existsById(deviceId)) {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
         log.info("Device ID: {} 관련 모든 주간 보고서 삭제 시작", deviceId);

@@ -6,7 +6,7 @@ import com.example.smartair.dto.airQualityScoreDto.RoomAirQualityScoreDto;
 import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.exception.CustomException;
@@ -14,7 +14,7 @@ import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.DeviceAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.PlaceAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
-import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.repository.placeRepository.PlaceRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class AirQualityQueryService {
     private final DeviceAirQualityScoreRepository deviceAirQualityScoreRepository;
     private final RoomAirQualityScoreRepository roomAirQualityScoreRepository;
     private final PlaceAirQualityScoreRepository placeAirQualityScoreRepository;
-    private final DeviceRepository deviceRepository;
+    private final SensorRepository sensorRepository;
     private final RoomRepository roomRepository;
     private final PlaceRepository placeRepository;
 
@@ -48,7 +48,7 @@ public class AirQualityQueryService {
      * @return 페이징된 DeviceAirQualityScoreDto
      */
     public Page<DeviceAirQualityScoreDto> getDeviceAirQualityScores(Long deviceId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable) {
-        if (!deviceRepository.existsById(deviceId)) {
+        if (!sensorRepository.existsById(deviceId)) {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
 
@@ -93,7 +93,7 @@ public class AirQualityQueryService {
     }
 
     public DeviceAirQualityScoreDto getLatestDeviceAirQualityScore(Long deviceId) {
-        Device device = deviceRepository.findById(deviceId).orElseThrow(()-> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
+        Device device = sensorRepository.findById(deviceId).orElseThrow(()-> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         DeviceAirQualityScore latestDeviceScore = deviceAirQualityScoreRepository.findFirstByDeviceAirQualityData_DeviceOrderByCreatedAtDesc(device).orElseThrow(
                 ()-> new CustomException(ErrorCode.DEVICE_NOT_FOUND)

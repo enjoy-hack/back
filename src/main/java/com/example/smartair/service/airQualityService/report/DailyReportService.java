@@ -2,12 +2,12 @@ package com.example.smartair.service.airQualityService.report;
 
 import com.example.smartair.entity.airData.report.DailyDeviceAirQualityReport;
 import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
-import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.Sensor.Device;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailyDeviceAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
-import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.sensorRepository.SensorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DailyReportService {
 
-    private final DeviceRepository deviceRepository;
+    private final SensorRepository sensorRepository;
     private final HourlyDeviceAirQualitySnapshotRepository snapshotRepository;
     private final DailyDeviceAirQualityReportRepository dailyReportRepository;
 
@@ -38,7 +38,7 @@ public class DailyReportService {
      */
     @Transactional
     public DailyDeviceAirQualityReport createOrUpdateDailyReport(Long deviceId, LocalDate date) {
-        Device device = deviceRepository.findById(deviceId)
+        Device device = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         Optional<DailyDeviceAirQualityReport> existingReportOpt =
@@ -89,7 +89,7 @@ public class DailyReportService {
      */
     @Transactional(readOnly = true)
     public DailyDeviceAirQualityReport getDailyReport(Long deviceId, LocalDate date) {
-        Device device = deviceRepository.findById(deviceId)
+        Device device = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
         return dailyReportRepository.findByDeviceAndReportDate(device, date)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
@@ -103,7 +103,7 @@ public class DailyReportService {
         if (startDate.isAfter(endDate)) {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
-        Device device = deviceRepository.findById(deviceId)
+        Device device = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
         return dailyReportRepository.findByDeviceAndReportDateBetweenOrderByReportDateAsc(device, startDate, endDate);
     }
@@ -149,7 +149,7 @@ public class DailyReportService {
      */
     @Transactional
     public int deleteDailyReportsByDeviceId(Long deviceId) {
-        if (!deviceRepository.existsById(deviceId)) {
+        if (!sensorRepository.existsById(deviceId)) {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
         log.info("Device ID: {} 관련 모든 일별 보고서 삭제 시작", deviceId);
