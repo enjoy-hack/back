@@ -97,7 +97,7 @@ jobs:
           username: "ec2-user"
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} # EC2 접속용 SSH 키 
           port: 22
-          source: "docker/docker-compose.yml" # 복사할 파일 목록 (docker-install.sh 제거)
+          source: "docker/docker-compose.yml" # 복사할 파일 목록
           target: 'compose' # EC2 내 대상 디렉토리
           rm: true # 복사 전 대상 디렉토리 내용 삭제
 
@@ -144,5 +144,5 @@ jobs:
             sudo docker pull $ECR_REGISTRY_URI:$IMAGE_TAG 
             
             # Docker Compose로 애플리케이션 재시작
-            sudo docker-compose down  
-            sudo docker-compose up -d   
+            sudo /usr/local/bin/docker-compose down  
+            sudo /usr/local/bin/docker-compose up -d   
