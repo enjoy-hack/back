@@ -121,7 +121,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} 
           port: 22
           source: "docker/docker-compose.yml,docker/mosquitto.conf" 
-          target: 'compose' 
+          target: 'compose/docker'
           rm: true 
 
       - name: SSH remote and Run Docker Compose # EC2에 SSH로 접속하여 Docker Compose 명령을 실행합니다.
