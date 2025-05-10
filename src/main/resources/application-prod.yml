@@ -1,0 +1,72 @@
+spring:
+  datasource:
+    # EC2에서는 실제 RDS 엔드포인트 등으로 변경해야 함
+    url: jdbc:mysql://${RDS_ENDPOINT}:3306/${MYSQL_DB_NAME}
+    username: ${MYSQL_DB_USERNAME} # EC2에 설정된 환경 변수
+    password: ${MYSQL_DB_PASSWORD} # EC2에 설정된 환경 변수 (보안 매우 중요)
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate # EC2/운영 환경에서는 validate 또는 none 권장
+    show-sql: false      # EC2/운영 환경에서는 false 권장
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  api-docs:
+    enabled: true # 필요에 따라 false로 변경 가능
+  swagger-ui:
+    enabled: true # 필요에 따라 false로 변경 가능
+
+  jwt:
+    secret: ${JWT_SECRET} # EC2에 설정된 환경 변수
+
+  security:
+    oauth2:
+      client:
+        # provider 설정은 보통 동일하게 유지
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID} # EC2에 설정된 환경 변수
+            client-secret: ${KAKAO_CLIENT_SECRET} # EC2에 설정된 환경 변수
+            # 중요! EC2의 실제 접속 가능한 리디렉션 URI로 변경
+            redirect-uri: ${KAKAO_REDIRECT_URI_EC2_PROD} # 예: http://YOUR_EC2_IP_OR_DOMAIN/login/oauth2/code/kakao
+            authorization-grant-type: authorization_code
+            client-authentication-method: POST
+            client-name: Kakao
+            scope:
+              - name
+              - profile_nickname
+              - account_email
+
+logging:
+  level:
+    root: info # 필요에 따라 warn 등으로 변경 가능
+
+mqtt:
+  # EC2에서 접속할 MQTT 브로커 주소로 변경
+  url: ${MQTT_URL_EC2_PROD} # 예: tcp://localhost:1883 또는 외부 브로커 주소
+  client-id: spring-client-prod # 운영 환경용 고유 ID 권장
+  username: ${MQTT_USERNAME_EC2_PROD} # 필요시 설정
+  password: ${MQTT_PASSWORD_EC2_PROD} # 필요시 설정 (환경 변수)
+  topic: prod/data # 운영 환경용 토픽 권장
+
+firebase:
+  config:
+    # EC2 파일 시스템 내의 실제 Firebase 키 파일 경로
+    path: ${FIREBASE_CONFIG_PATH} # 예: firebase/firebase.json (src/main/resources 기준) 또는 절대경로
+
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET_NAME} # EC2에 설정된 환경 변수
+    stack.auto: false
+    region.static: ap-northeast-2
+    credentials:
+      accessKey: ${AWS_S3_ACCESS_KEY_ID} # EC2에 설정된 환경 변수
+      secretKey: ${AWS_S3_SECRET_ACCESS_KEY} # EC2에 설정된 환경 변수

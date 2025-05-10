@@ -6,7 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: craete-drop
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -55,3 +55,15 @@ mqtt:
 firebase:
   config:
     path: ${FIREBASE_CONFIG_PATH}
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${ENV_AWS_ACCESS_KEY}
+      secret-key: ${ENV_AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    s3:
+      bucket: ${ENV_S3_BUCKET}
