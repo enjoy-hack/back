@@ -120,8 +120,8 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }} # EC2_USERNAME Secret 사용
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} 
           port: 22
-          source: "docker/docker-compose.yml,docker/mosquitto.conf" # 로컬의 docker 폴더 기준
-          target: 'compose/docker/docker' # EC2의 ~/compose/docker/docker/ 경로로 복사되어야 함
+          source: "docker/" # <--- source를 "docker/" 로 변경 (디렉토리 전체 복사)
+          target: 'compose/docker' # <--- target은 compose/docker로 유지 (결과적으로 EC2에 ~/compose/docker/docker/ 구조 생성 유도)
           rm: true 
 
       - name: SSH remote and Run Docker Compose # EC2에 SSH로 접속하여 Docker Compose 명령을 실행합니다.
@@ -135,12 +135,12 @@ jobs:
           script: |
             echo "--- Initial directory before cd ---"
             pwd
-            # 혹시 모를 compose 디렉토리 생성
+            # scp-action이 compose/docker/docker 구조를 만들 것으로 예상
             mkdir -p ~/compose/docker/docker 
-            cd ~/compose/docker/docker/
+            cd ~/compose/docker/docker/ # <--- cd 경로는 compose/docker/docker로 유지
             echo "--- Current directory after cd (should be ~/compose/docker/docker/) ---"
             pwd
-            echo "--- Listing files in current directory (should show docker-compose.yml, mosquitto.conf if scp worked) ---"
+            echo "--- Listing files in current directory (should show docker-compose.yml, mosquitto.conf) ---"
             ls -la
 
             ECR_ACCOUNT_ID=$(echo $ECR_REGISTRY_URI | cut -d'.' -f1)
