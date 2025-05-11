@@ -1,6 +1,7 @@
 package com.example.smartair.service.sensorService;
 
 import com.example.smartair.dto.sensorDto.SensorRequestDto;
+import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.user.User;

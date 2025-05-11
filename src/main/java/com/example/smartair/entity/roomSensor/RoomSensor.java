@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "room_sensor")
 public class RoomSensor extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
