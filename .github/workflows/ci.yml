@@ -11,7 +11,7 @@ env:
   RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
   MYSQL_DB_USERNAME: ${{ secrets.MYSQL_DB_USERNAME }}
   MYSQL_DB_PASSWORD: ${{ secrets.MYSQL_DB_PASSWORD }}
-  MYSQL_DB_NAME: ${{ secrets.MYSQL_DB_NAME }}
+  MYSQL_DB_NAME_FOR_TEST: ${{ secrets.MYSQL_DB_NAME_FOR_TEST }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
   KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
@@ -85,7 +85,7 @@ jobs:
 
     - name: Check Secrets Availability
       run: |
-        if [ -z "${{ secrets.MYSQL_DB_NAME }}" ]; then echo "Error: MYSQL_DB_NAME is not set or is empty."; else echo "MYSQL_DB_NAME is set."; fi
+        if [ -z "${{ secrets.MYSQL_DB_NAME_FOR_TEST }}" ]; then echo "Error: MYSQL_DB_NAME_FOR_TEST is not set or is empty."; else echo "MYSQL_DB_NAME_FOR_TEST is set."; fi
         if [ -z "${{ secrets.MYSQL_DB_USERNAME }}" ]; then echo "Error: MYSQL_DB_USERNAME is not set or is empty."; else echo "MYSQL_DB_USERNAME is set."; fi
         if [ -z "${{ secrets.MYSQL_DB_PASSWORD }}" ]; then echo "Error: MYSQL_DB_PASSWORD is not set or is empty."; else echo "MYSQL_DB_PASSWORD is set."; fi
         if [ -z "${{ env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}" ]; then echo "Error: FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 is not set or is empty."; else echo "FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 is (partially) set."; fi
