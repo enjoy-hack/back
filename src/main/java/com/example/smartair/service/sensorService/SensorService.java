@@ -6,7 +6,7 @@ import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
-import com.example.smartair.entity.roomSensor.RoomDevice;
+import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
@@ -42,7 +42,7 @@ public class SensorService {
 
         Room room = optionalRoom.get();
 
-        Optional<RoomDevice>  optionalRoomDevice = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(
+        Optional<RoomSensor>  optionalRoomDevice = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(
                 deviceRequestDto.serialNumber(),room.getId());
         if(optionalRoomDevice.isPresent()) throw new Exception(new CustomException(ErrorCode.DEVICE_ALREADY_EXIST_IN_ROOM));
         //이미 디바이스가 방에 연결되어 있는 경우
@@ -60,20 +60,20 @@ public class SensorService {
 
         sensorRepository.save(sensor);
 
-        RoomDevice roomDevice = RoomDevice.builder()
+        RoomSensor roomSensor = RoomSensor.builder()
                 .sensor(sensor)
                 .room(optionalRoom.get())
                 .build();
 
-        roomSensorRepository.save(roomDevice);
+        roomSensorRepository.save(roomSensor);
     }
 
     public void deleteDevice(User user, SensorRequestDto.deleteDeviceDto deviceDto) throws Exception {
-        Optional<RoomDevice> optionalRoomDevice = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(deviceDto.serialNumber(), deviceDto.roomId());
+        Optional<RoomSensor> optionalRoomDevice = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(deviceDto.serialNumber(), deviceDto.roomId());
         if(optionalRoomDevice.isEmpty()) throw new Exception(new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
-        RoomDevice roomDevice = optionalRoomDevice.get();
-        Sensor sensor = roomDevice.getSensor();
+        RoomSensor roomSensor = optionalRoomDevice.get();
+        Sensor sensor = roomSensor.getSensor();
 
         //실시간 데이터 삭제
         Optional<FineParticlesData> optionalFine = fineParticlesDataRepository.findBySensor_Id(sensor.getId());
@@ -89,16 +89,16 @@ public class SensorService {
         
 
         sensorRepository.delete(sensor);
-        roomSensorRepository.delete(roomDevice);
+        roomSensorRepository.delete(roomSensor);
     }
 
     public List<Sensor> getDevices(Long roomId){
 
-        List<RoomDevice> roomDevices = roomSensorRepository.findByRoomId(roomId);
+        List<RoomSensor> roomSensors = roomSensorRepository.findByRoomId(roomId);
 
         // RoomDevice → Device 추출
-        return roomDevices.stream()
-                .map(RoomDevice::getSensor)
+        return roomSensors.stream()
+                .map(RoomSensor::getSensor)
                 .collect(Collectors.toList());
     }
 

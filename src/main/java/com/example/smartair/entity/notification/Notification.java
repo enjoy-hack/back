@@ -20,6 +20,6 @@ public class Notification extends BaseEntity {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "airQualityData_id")
+    @JoinColumn(name = "device_air_quality_data_id")
     private DeviceAirQualityData airQualityData;
 }

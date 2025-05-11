@@ -8,7 +8,7 @@ import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
-import com.example.smartair.entity.roomSensor.RoomDevice;
+import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.DeviceAirQualityScoreRepository;
@@ -52,7 +52,7 @@ public class AirQualityScoreService {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
         Room room = roomSensorRepository.findBySensor(sensor)
-                .map(RoomDevice::getRoom)
+                .map(RoomSensor::getRoom)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
         // 개별 DeviceAirQualityScore 계산 및 저장

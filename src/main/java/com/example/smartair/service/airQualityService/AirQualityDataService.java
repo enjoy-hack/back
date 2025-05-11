@@ -6,7 +6,7 @@ import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
-import com.example.smartair.entity.roomSensor.RoomDevice;
+import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
@@ -50,7 +50,7 @@ public class AirQualityDataService {
             // 3. Room 추출
             Long roomIdFromTopic = Long.parseLong(topic.split("/")[2]);
             Room room = roomSensorRepository.findBySensor(sensor)
-                    .map(RoomDevice::getRoom)
+                    .map(RoomSensor::getRoom)
                     .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
             if (!room.getId().equals(roomIdFromTopic)){
