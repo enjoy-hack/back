@@ -99,6 +99,13 @@ jobs:
         ENV_AWS_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY_ID_FOR_CI }}
         ENV_AWS_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }}
         ENV_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME_FOR_CI }}
+
+        # ThinQ 및 PAT 관련 Secrets 추가
+        THINQ_API_BASE_URL: ${{ secrets.THINQ_API_BASE_URL }}
+        THINQ_API_KEY: ${{ secrets.THINQ_API_KEY }}
+        THINQ_API_COUNTRY: ${{ secrets.THINQ_API_COUNTRY }}
+        THINQ_API_CLIENT_ID_PREFIX: ${{ secrets.THINQ_API_CLIENT_ID_PREFIX }}
+        PAT_SECRET_KEY: ${{ secrets.PAT_SECRET_KEY }}
       run: ./gradlew build
       
     # 'Run tests' 단계는 './gradlew build'에 포함되므로 제거합니다.
