@@ -67,3 +67,13 @@ cloud:
       auto: false
     s3:
       bucket: ${ENV_S3_BUCKET}
+
+thinq:
+  api:
+    base-url: ${THINQ_API_BASE_URL}
+    api-key: ${THINQ_API_KEY}
+    country: ${THINQ_API_COUNTRY}
+    client-id-prefix: ${THINQ_API_CLIENT_ID_PREFIX}
+
+pat:
+  secret-key: ${PAT_SECRET_KEY}
