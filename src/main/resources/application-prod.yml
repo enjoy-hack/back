@@ -70,13 +70,3 @@ cloud:
     credentials:
       accessKey: ${AWS_S3_ACCESS_KEY_ID} # EC2에 설정된 환경 변수
       secretKey: ${AWS_S3_SECRET_ACCESS_KEY} # EC2에 설정된 환경 변수
-
-thinq:
-  api:
-    base-url: ${THINQ_API_BASE_URL} 
-    api-key: ${THINQ_API_KEY} 
-    country: ${THINQ_API_COUNTRY} 
-    client-id-prefix: ${THINQ_API_CLIENT_ID_PREFIX} 
-
-pat:
-  secret-key: ${PAT_SECRET_KEY} 
