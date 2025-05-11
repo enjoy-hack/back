@@ -108,8 +108,11 @@ jobs:
         PAT_SECRET_KEY: ${{ secrets.PAT_SECRET_KEY }}
       run: ./gradlew build
       
-    # 'Run tests' 단계는 './gradlew build'에 포함되므로 제거합니다.
-    # - name: Run tests
-    #   env:
-    #     SPRING_PROFILES_ACTIVE: ci
-    #   run: ./gradlew test 
+    - name: Upload Test Report Artifact # 테스트 리포트 아티팩트 업로드 단계
+      if: failure() # 테스트 실패 시에만 실행
+      uses: actions/upload-artifact@v4 
+      with:
+        name: test-report 
+        path: build/reports/tests/test/ 
+        retention-days: 7 
+
