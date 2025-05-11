@@ -41,7 +41,7 @@ public class DailyDeviceAirQualityReport extends BaseEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "daily_report_id")
     @OrderBy("snapshotHour ASC") // 시간 순으로 정렬
-    private List<HourlyDeviceAirQualitySnapshot> hourlySnapshots = new ArrayList<>();
+    private List<HourlyDeviceAirQualitySnapshot> hourlySnapshots;
 
     // 일일 평균 데이터
     private Double dailyAvgTemperature;

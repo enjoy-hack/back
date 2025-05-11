@@ -25,7 +25,7 @@ public interface WeeklyDeviceAirQualityReportRepository extends JpaRepository<We
             "AND w.endDateOfWeek >= :periodStart " +
             "ORDER BY w.startDateOfWeek ASC")
     List<WeeklyDeviceAirQualityReport> findOverlappingWeeklyReports(
-            @Param("device") Sensor sensor,
+            @Param("sensor") Sensor sensor,
             @Param("periodStart") LocalDate periodStart,
             @Param("periodEnd") LocalDate periodEnd
     );

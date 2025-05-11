@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3307/${MYSQL_DB_NAME}
+    url: jdbc:mysql://localhost:3307/${MYSQL_DB_NAME_FOR_TEST}
     username: ${MYSQL_DB_USERNAME}
     password: ${MYSQL_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -8,6 +8,7 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+    generate-ddl: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -44,6 +45,8 @@ spring:
 logging:
   level:
     root: info
+    org.hibernate.SQL: DEBUG
+    org.hibernate.tool.hbm2ddl: DEBUG
 
 mqtt:
   url: ${MQTT_URL}
@@ -67,3 +70,13 @@ cloud:
       auto: false
     s3:
       bucket: ${ENV_S3_BUCKET}
+
+thinq:
+  api:
+    base-url: ${THINQ_API_BASE_URL}
+    api-key: ${THINQ_API_KEY}
+    country: ${THINQ_API_COUNTRY}
+    client-id-prefix: ${THINQ_API_CLIENT_ID_PREFIX}
+
+pat:
+  secret-key: ${PAT_SECRET_KEY}

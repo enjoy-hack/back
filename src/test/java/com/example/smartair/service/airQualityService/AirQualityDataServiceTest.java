@@ -5,7 +5,7 @@ import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
-import com.example.smartair.entity.roomSensor.RoomDevice;
+import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataPt2Repository;
@@ -86,7 +86,7 @@ class AirQualityDataServiceTest {
         //given
         Sensor sensor = Sensor.builder().id(TEST_DEVICE_ID).build();
         Room room  = Room.builder().id(TEST_ROOM_ID).build();
-        RoomDevice roomDevice = RoomDevice.builder()
+        RoomSensor roomSensor = RoomSensor.builder()
                 .id(1L)
                 .room(room)
                 .sensor(sensor)
@@ -95,7 +95,7 @@ class AirQualityDataServiceTest {
         when(fineParticlesDataRepository.save(any(FineParticlesData.class))).thenReturn(mockSavedFineParticles);
 
         when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(sensor));
-        when(roomSensorRepository.findBySensor(sensor)).thenReturn(Optional.of(roomDevice));
+        when(roomSensorRepository.findBySensor(sensor)).thenReturn(Optional.of(roomSensor));
         when(airQualityDataRepository.save(any(DeviceAirQualityData.class))).thenAnswer(invocation -> {
             DeviceAirQualityData savedData = invocation.getArgument(0);
             savedData.setId(100L);
