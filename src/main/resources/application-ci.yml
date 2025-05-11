@@ -45,6 +45,7 @@ logging:
   level:
     root: info
     org.hibernate.SQL: DEBUG
+    org.hibernate.tool.hbm2ddl: DEBUG
 
 mqtt:
   url: ${MQTT_URL}
