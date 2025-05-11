@@ -110,11 +110,19 @@ jobs:
       MQTT_URL_EC2_PROD: ${{ secrets.MQTT_URL }} # MQTT_URL Secret 사용
       MQTT_USERNAME_EC2_PROD: ${{ secrets.MQTT_USERNAME_EC2_PROD }} # Secret 필요시 생성
       MQTT_PASSWORD_EC2_PROD: ${{ secrets.MQTT_PASSWORD_EC2_PROD }} # Secret 필요시 생성
-      FIREBASE_CONFIG_PATH: "classpath:firebase.json" # JAR 내 firebase.json 사용 가정
+      FIREBASE_CONFIG_PATH: "classpath:firebase.json" # JAR 내 firebase.json 사용 
       S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
       AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
       AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
       SPRING_PROFILES_ACTIVE: prod # prod 프로파일 활성화
+
+      # ThinQ 및 PAT 관련 Secrets
+      THINQ_API_BASE_URL: ${{ secrets.THINQ_API_BASE_URL }}
+      THINQ_API_KEY: ${{ secrets.THINQ_API_KEY }}
+      THINQ_API_COUNTRY: ${{ secrets.THINQ_API_COUNTRY }}
+      THINQ_API_CLIENT_ID_PREFIX: ${{ secrets.THINQ_API_CLIENT_ID_PREFIX }}
+      PAT_SECRET_KEY: ${{ secrets.PAT_SECRET_KEY }}
+
     steps:
       - name: Checkout code # deploy 작업에서도 코드가 필요할 수 있으므로 checkout (docker-compose.yml 등)
         uses: actions/checkout@v3
@@ -197,6 +205,28 @@ jobs:
             CLOUD_AWS_S3_BUCKET=$S3_BUCKET_NAME
             CLOUD_AWS_CREDENTIALS_ACCESS_KEY=$AWS_S3_ACCESS_KEY_ID
             CLOUD_AWS_CREDENTIALS_SECRET_KEY=$AWS_S3_SECRET_ACCESS_KEY
+
+            # AWS S3 환경 변수
+            S3_BUCKET_NAME=$S3_BUCKET_NAME
+            AWS_S3_ACCESS_KEY_ID=$AWS_S3_ACCESS_KEY_ID
+            AWS_S3_SECRET_ACCESS_KEY=$AWS_S3_SECRET_ACCESS_KEY
+
+            # Spring Profiles
+            SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE
+
+            # ThinQ API 및 PAT Secret Key 환경 변수
+            THINQ_API_BASE_URL=$THINQ_API_BASE_URL
+            THINQ_API_KEY=$THINQ_API_KEY
+            THINQ_API_COUNTRY=$THINQ_API_COUNTRY
+            THINQ_API_CLIENT_ID_PREFIX=$THINQ_API_CLIENT_ID_PREFIX
+            PAT_SECRET_KEY=$PAT_SECRET_KEY
+
+            # Spring Boot 환경 변수 (위와 동일하지만 Spring Boot 관례에 따름)
+            SPRING_THINQ_API_BASE_URL=$THINQ_API_BASE_URL
+            SPRING_THINQ_API_API_KEY=$THINQ_API_KEY
+            SPRING_THINQ_API_COUNTRY=$THINQ_API_COUNTRY
+            SPRING_THINQ_API_CLIENT_ID_PREFIX=$THINQ_API_CLIENT_ID_PREFIX
+            SPRING_PAT_SECRET_KEY=$PAT_SECRET_KEY
 
             # 로깅 레벨 환경 변수
             LOGGING_LEVEL_ORG_HIBERNATE_SQL=DEBUG
