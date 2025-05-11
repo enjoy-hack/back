@@ -8,6 +8,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Table(name = "device")
 public class Device extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
