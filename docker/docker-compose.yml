@@ -16,7 +16,7 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - .env
+      - /home/ec2-user/compose/docker/docker/.env
     depends_on:
       - mqtt
     networks:
