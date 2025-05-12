@@ -6,7 +6,7 @@ import com.example.smartair.dto.deviceDto.DeviceStateResponseDto;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.device.PATEntity;
 import com.example.smartair.entity.user.User;
-import com.example.smartair.repository.deviceRepository.deviceRepository;
+import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.repository.deviceRepository.PATRepository;
 import com.example.smartair.util.EncryptionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +26,7 @@ public class ThinQService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final PATRepository patRepository;
-    private final deviceRepository deviceRepository;
+    private final DeviceRepository deviceRepository;
     private final EncryptionUtil encryptionUtil;
 
     private final String baseUrl;
@@ -39,7 +39,7 @@ public class ThinQService {
             ObjectMapper objectMapper,
             PATRepository patRepository,
             EncryptionUtil encryptionUtil,
-            deviceRepository deviceRepository,
+            DeviceRepository deviceRepository,
             @Value("${thinq.api.base-url}") String baseUrl,
             @Value("${thinq.api.api-key}") String apiKey,
             @Value("${thinq.api.country}") String country,
