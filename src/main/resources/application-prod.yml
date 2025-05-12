@@ -73,10 +73,10 @@ cloud:
 
 thinq:
   api:
-    base-url: ${THINQ_API_BASE_URL}
-    api-key: ${THINQ_API_KEY}
-    country: ${THINQ_API_COUNTRY}
-    client-id-prefix: ${THINQ_API_CLIENT_ID_PREFIX}
+    base-url: ${SPRING_THINQ_API_BASE_URL}
+    api-key: ${SPRING_THINQ_API_API_KEY}
+    country: ${SPRING_THINQ_API_COUNTRY}
+    client-id-prefix: ${SPRING_THINQ_API_CLIENT_ID_PREFIX}
 
 pat:
   secret-key: ${PAT_SECRET_KEY}
