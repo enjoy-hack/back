@@ -25,7 +25,6 @@ services:
       resources:
         limits:
           memory: 800M
-    command: ["sleep", "infinity"]
 
 networks:
   app-network:
