@@ -16,4 +16,7 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
     List<Long> findAllRunningDeviceIds();
 
     Optional<Sensor> findBySerialNumber(Long serialNumber);
+
+    List<Sensor> findAllByRunningStatusIsTrue();
+
 }

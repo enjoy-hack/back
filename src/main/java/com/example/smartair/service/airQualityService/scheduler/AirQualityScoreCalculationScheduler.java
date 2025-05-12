@@ -1,78 +1,47 @@
 package com.example.smartair.service.airQualityService.scheduler;
 
-import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
+import com.example.smartair.entity.room.Room;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.roomRepository.RoomRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.service.airQualityService.AirQualityScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Component
 @Setter
 @RequiredArgsConstructor
 @Slf4j
 public class AirQualityScoreCalculationScheduler {
 
-    private final SensorRepository sensorRepository;
-    private final AirQualityDataRepository airQualityDataRepository;
     private final AirQualityScoreService airQualityScoreService;
+    private final RoomRepository roomRepository;
 
-    @Scheduled(fixedRate = 3600000) //60분 간격
-    public void calculateAirQualityScoresPeriodically() {
-        LocalDateTime startTime = LocalDateTime.now();
-        log.info("===Started Calculating air quality score periodically at {}===", startTime);
+    // 시간별 방의 평균 점수만 스케줄러로 계산
+    // 배치 처리 : 시간차를 두고 순차적 실행
+    @Scheduled(cron = "0 0 * * * *") // 매시 정각
+    public void calculateHourlyRoomAverages() {
+        List<Room> roomList = roomRepository.findAll();
 
-        int processedCount = 0;
-        int failedCount = 0;
-
-        //활성 디바이스 ID 목록 조회
-        List<Long> runningDeviceIDs = sensorRepository.findAllRunningDeviceIds();
-        log.info("Found running devices: {}", runningDeviceIDs);
-
-        for (Long runningDeviceID : runningDeviceIDs) {
-            try{
-                log.info("Processing air quality score for device ID: {}", runningDeviceID);
-                calculateScoresForDevice(runningDeviceID);
-                processedCount++;
-            }
-            catch (Exception e){
-                log.error("Error processing air quality score for device ID: {}", runningDeviceID, e);
-                failedCount++;
+        for (Room room : roomList) {
+            try {
+                // 각 방의 시간별 평균 점수 계산
+                airQualityScoreService.calculateHourlyRoomScore(room);
+                Thread.sleep(100);
+            } catch (Exception e) {
+                log.error("방 ID {} 시간별 점수 계산 실패: {}", room.getId(), e.getMessage());
             }
         }
-
-        LocalDateTime endTime = LocalDateTime.now();
-        Duration duration = Duration.between(startTime, endTime);
-        log.info("===Finished Calculating air quality score periodically at {}===", endTime);
-        log.info("Duration: {}, Total devices processed: {}, Error: {}", duration, processedCount, failedCount);
-    }
-
-    public void calculateScoresForDevice(Long sensorId) {
-        //최신 7개 데이터 조회
-        List<DeviceAirQualityData> airQualityDataList = airQualityDataRepository.findTop7BySensorIdOrderByCreatedAtDesc(sensorId);
-
-        if (airQualityDataList.isEmpty()) {
-            log.warn("No data found for device ID: {}", sensorId);
-            throw new CustomException(ErrorCode.DEVICE_AIR_DATA_NOT_FOUND);
-        }
-
-        for (DeviceAirQualityData airQualityData : airQualityDataList) {
-            try{
-                airQualityScoreService.calculateAndSaveDeviceScore(airQualityData);
-                log.debug("Score calculation successful for data ID: {}", airQualityData.getId());
-            }
-            catch (Exception e){
-                log.error("Score calculation error for data ID: {}", airQualityData.getId(), e);
-            }
-        }
-        log.debug("===Finished calculateScoresForDevice for device ID: {}===", sensorId);
     }
 
 }

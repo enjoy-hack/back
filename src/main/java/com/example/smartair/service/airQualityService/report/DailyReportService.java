@@ -1,11 +1,11 @@
 package com.example.smartair.service.airQualityService.report;
 
-import com.example.smartair.entity.airData.report.DailyDeviceAirQualityReport;
-import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
+import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
+import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailyDeviceAirQualityReportRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,24 +30,24 @@ public class DailyReportService {
 
     private final SensorRepository sensorRepository;
     private final HourlyDeviceAirQualitySnapshotRepository snapshotRepository;
-    private final DailyDeviceAirQualityReportRepository dailyReportRepository;
+    private final DailySensorAirQualityReportRepository dailyReportRepository;
 
     /**
      * 특정 장치의 특정 날짜에 대한 일별 보고서를 생성하거나 업데이트합니다.
      * 이미 보고서가 존재하면 업데이트하고, 없으면 새로 생성합니다.
      */
     @Transactional
-    public DailyDeviceAirQualityReport createOrUpdateDailyReport(Long deviceId, LocalDate date) {
+    public DailySensorAirQualityReport createOrUpdateDailyReport(Long deviceId, LocalDate date) {
         Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
-        Optional<DailyDeviceAirQualityReport> existingReportOpt =
+        Optional<DailySensorAirQualityReport> existingReportOpt =
                 dailyReportRepository.findBySensorAndReportDate(sensor, date);
 
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX); // 23:59:59.999999999
 
-        List<HourlyDeviceAirQualitySnapshot> hourlySnapshots =
+        List<HourlySensorAirQualitySnapshot> hourlySnapshots =
                 snapshotRepository.findBySensorAndSnapshotHourBetweenOrderBySnapshotHourAsc(sensor, startOfDay, endOfDay);
 
         // 스냅샷이 없으면 보고서를 생성하거나 업데이트할 수 없습니다.
@@ -64,9 +64,9 @@ public class DailyReportService {
             throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND);
         }
 
-        DailyDeviceAirQualityReport report = existingReportOpt.orElseGet(() -> {
+        DailySensorAirQualityReport report = existingReportOpt.orElseGet(() -> {
             log.info("Device ID: {}의 {} 날짜에 대한 새 일별 보고서를 생성합니다.", deviceId, date);
-            return DailyDeviceAirQualityReport.builder()
+            return DailySensorAirQualityReport.builder()
                     .sensor(sensor)
                     .reportDate(date)
                     .build();
@@ -88,7 +88,7 @@ public class DailyReportService {
      * 특정 장치의 특정 날짜에 대한 일별 보고서를 조회합니다.
      */
     @Transactional(readOnly = true)
-    public DailyDeviceAirQualityReport getDailyReport(Long deviceId, LocalDate date) {
+    public DailySensorAirQualityReport getDailyReport(Long deviceId, LocalDate date) {
         Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
         return dailyReportRepository.findBySensorAndReportDate(sensor, date)
@@ -99,7 +99,7 @@ public class DailyReportService {
      * 특정 장치의 특정 기간 동안의 일별 보고서 목록을 조회합니다.
      */
     @Transactional(readOnly = true)
-    public List<DailyDeviceAirQualityReport> getDailyReportsForPeriod(Long deviceId, LocalDate startDate, LocalDate endDate) {
+    public List<DailySensorAirQualityReport> getDailyReportsForPeriod(Long deviceId, LocalDate startDate, LocalDate endDate) {
         if (startDate.isAfter(endDate)) {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
@@ -115,7 +115,7 @@ public class DailyReportService {
      */
     @Transactional
     public void deleteDailyReport(Long reportId) {
-        DailyDeviceAirQualityReport report = dailyReportRepository.findById(reportId)
+        DailySensorAirQualityReport report = dailyReportRepository.findById(reportId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
 
         dailyReportRepository.delete(report);
@@ -132,7 +132,7 @@ public class DailyReportService {
         }
         LocalDate cutoffDate = LocalDate.now().minusDays(daysOld);
         log.info("{} 이전의 일별 보고서 삭제 시작 ({}일 이전 데이터)", cutoffDate, daysOld);
-        List<DailyDeviceAirQualityReport> oldReports = dailyReportRepository.findByReportDateBefore(cutoffDate);
+        List<DailySensorAirQualityReport> oldReports = dailyReportRepository.findByReportDateBefore(cutoffDate);
         if (oldReports.isEmpty()) {
             log.info("{} 이전의 삭제할 일별 보고서가 없습니다.", cutoffDate);
             return 0;
@@ -153,7 +153,7 @@ public class DailyReportService {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
         log.info("Device ID: {} 관련 모든 일별 보고서 삭제 시작", deviceId);
-        List<DailyDeviceAirQualityReport> reportsToDelete = dailyReportRepository.findAllBySensorId(deviceId);
+        List<DailySensorAirQualityReport> reportsToDelete = dailyReportRepository.findAllBySensorId(deviceId);
         if (reportsToDelete.isEmpty()) {
             log.info("Device ID: {} 관련 삭제할 일별 보고서가 없습니다.", deviceId);
             return 0;
@@ -164,7 +164,7 @@ public class DailyReportService {
     }
 
 
-    private void calculateAndSetDailyStatistics(DailyDeviceAirQualityReport report, List<HourlyDeviceAirQualitySnapshot> snapshots) {
+    private void calculateAndSetDailyStatistics(DailySensorAirQualityReport report, List<HourlySensorAirQualitySnapshot> snapshots) {
         if (snapshots == null || snapshots.isEmpty()) {
             setDefaultDailyStatistics(report); // 스냅샷이 없으면 기본값 설정
             return;
@@ -172,7 +172,7 @@ public class DailyReportService {
 
         // 온도 통계
         DoubleSummaryStatistics tempStats = snapshots.stream()
-                .map(HourlyDeviceAirQualitySnapshot::getHourlyAvgTemperature)
+                .map(HourlySensorAirQualitySnapshot::getHourlyAvgTemperature)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setDailyAvgTemperature(tempStats.getCount() > 0 ? tempStats.getAverage() : null);
@@ -181,7 +181,7 @@ public class DailyReportService {
 
         // 습도 통계
         DoubleSummaryStatistics humidityStats = snapshots.stream()
-                .map(HourlyDeviceAirQualitySnapshot::getHourlyAvgHumidity)
+                .map(HourlySensorAirQualitySnapshot::getHourlyAvgHumidity)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setDailyAvgHumidity(humidityStats.getCount() > 0 ? humidityStats.getAverage() : null);
@@ -190,7 +190,7 @@ public class DailyReportService {
 
         // TVOC 통계
         IntSummaryStatistics tvocStats = snapshots.stream()
-                .map(HourlyDeviceAirQualitySnapshot::getHourlyAvgTvoc)
+                .map(HourlySensorAirQualitySnapshot::getHourlyAvgTvoc)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingInt(Integer::intValue));
         report.setDailyAvgTvoc(tvocStats.getCount() > 0 ?  tvocStats.getAverage() : null);
@@ -198,7 +198,7 @@ public class DailyReportService {
 
         // eCO2 통계
         IntSummaryStatistics eco2Stats = snapshots.stream()
-                .map(HourlyDeviceAirQualitySnapshot::getHourlyAvgEco2)
+                .map(HourlySensorAirQualitySnapshot::getHourlyAvgEco2)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingInt(Integer::intValue));
         report.setDailyAvgEco2(eco2Stats.getCount() > 0 ? eco2Stats.getAverage() : null);
@@ -206,26 +206,26 @@ public class DailyReportService {
         
         // PM2.5 통계
         DoubleSummaryStatistics pm25Stats = snapshots.stream()
-                .map(HourlyDeviceAirQualitySnapshot::getHourlyAvgPm25)
+                .map(HourlySensorAirQualitySnapshot::getHourlyAvgPm25)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setDailyAvgPm25(pm25Stats.getCount() > 0 ? pm25Stats.getAverage() : null);
         report.setDailyMaxPm25(pm25Stats.getCount() > 0 ? pm25Stats.getMax() : null);
 
         // 점수 통계 (평균만)
-        DoubleSummaryStatistics overallScoreStats = snapshots.stream().map(HourlyDeviceAirQualitySnapshot::getOverallScore).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
+        DoubleSummaryStatistics overallScoreStats = snapshots.stream().map(HourlySensorAirQualitySnapshot::getOverallScore).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setDailyOverallScore(overallScoreStats.getCount() > 0 ? overallScoreStats.getAverage() : 0.0);
-        DoubleSummaryStatistics pm25ScoreStats = snapshots.stream().map(HourlyDeviceAirQualitySnapshot::getPm25Score).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
+        DoubleSummaryStatistics pm25ScoreStats = snapshots.stream().map(HourlySensorAirQualitySnapshot::getPm25Score).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setDailyPm25Score(pm25ScoreStats.getCount() > 0 ? pm25ScoreStats.getAverage() : 0.0);
-        DoubleSummaryStatistics eco2ScoreStats = snapshots.stream().map(HourlyDeviceAirQualitySnapshot::getEco2Score).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
+        DoubleSummaryStatistics eco2ScoreStats = snapshots.stream().map(HourlySensorAirQualitySnapshot::getEco2Score).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setDailyEco2Score(eco2ScoreStats.getCount() > 0 ? eco2ScoreStats.getAverage() : 0.0);
-        DoubleSummaryStatistics tvocScoreStats = snapshots.stream().map(HourlyDeviceAirQualitySnapshot::getTvocScore).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
+        DoubleSummaryStatistics tvocScoreStats = snapshots.stream().map(HourlySensorAirQualitySnapshot::getTvocScore).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setDailyTvocScore(tvocScoreStats.getCount() > 0 ? tvocScoreStats.getAverage() : 0.0);
         
         // validDataPointCount는 createOrUpdateDailyReport 메서드에서 이미 설정됨
     }
 
-    private void setDefaultDailyStatistics(DailyDeviceAirQualityReport report) {
+    private void setDefaultDailyStatistics(DailySensorAirQualityReport report) {
         report.setDailyAvgTemperature(null);
         report.setDailyAvgHumidity(null);
         report.setDailyAvgTvoc(null);
