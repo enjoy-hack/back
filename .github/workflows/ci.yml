@@ -30,6 +30,12 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
+
+    - name: Clean and reinitialize workspace
+      run: |
+        rm -rf ./* 
+        git checkout HEAD -- .
+        git clean -fdx
     
     - name: Set up JDK 17
       uses: actions/setup-java@v4
