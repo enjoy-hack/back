@@ -1,9 +1,4 @@
 spring:
-#  flyway:
-#    enabled: true
-#    createSchemas: true  # 스키마 생성
-#    locations: classpath:db/migration
-
   datasource:
     # EC2에서는 실제 RDS 엔드포인트 등으로 변경해야 함
     url: jdbc:mysql://${RDS_ENDPOINT}:3306/${MYSQL_DB_NAME}
