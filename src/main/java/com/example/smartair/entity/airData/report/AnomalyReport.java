@@ -1,7 +1,7 @@
 package com.example.smartair.entity.airData.report;
 
 import com.example.smartair.domain.enums.Pollutant;
-import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
+import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
@@ -39,9 +39,9 @@ public class AnomalyReport extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hourly_snapshot_id") // 관련 시간별 스냅샷
-    private HourlyDeviceAirQualitySnapshot relatedHourlySnapshot;
+    private HourlySensorAirQualitySnapshot relatedHourlySnapshot;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "daily_report_id") // 관련 일별 보고서
-    private DailyDeviceAirQualityReport relatedDailyReport;
+    private DailySensorAirQualityReport relatedDailyReport;
 }

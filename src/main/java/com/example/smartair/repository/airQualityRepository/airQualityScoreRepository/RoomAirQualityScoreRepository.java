@@ -20,7 +20,7 @@ public interface RoomAirQualityScoreRepository extends JpaRepository<RoomAirQual
 
     Optional<RoomAirQualityScore> findFirstByRoomIdOrderByCreatedAtDesc(Long roomId);
     // Place에 속한 모든 RoomAirQualityScore 찾기
-    List<RoomAirQualityScore> findByRoom_Place(Place place);
+//    List<RoomAirQualityScore> findByRoom_Place(Place place);
 
     // Room ID와 시간 범위로 RoomAirQualityScore 목록을 페이징하여 조회 
     @Query("SELECT rqs FROM RoomAirQualityScore rqs WHERE rqs.room.id = :roomId " +
@@ -32,5 +32,7 @@ public interface RoomAirQualityScoreRepository extends JpaRepository<RoomAirQual
             @Param("endTime") LocalDateTime endTime,
             Pageable pageable
     );
+
+    List<RoomAirQualityScore> findByRoom_IdAndCreatedAtBetween(Long roomId, LocalDateTime startTime, LocalDateTime endTime);
 
 } 

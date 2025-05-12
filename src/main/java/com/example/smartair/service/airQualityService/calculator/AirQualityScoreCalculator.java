@@ -1,9 +1,9 @@
 package com.example.smartair.service.airQualityService.calculator;
 
 import com.example.smartair.domain.enums.Pollutant;
-import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
-import com.example.smartair.entity.airScore.airQualityScore.DeviceAirQualityScore;
+import com.example.smartair.entity.airScore.airQualityScore.SensorAirQualityScore;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import org.springframework.stereotype.Component;
@@ -35,7 +35,7 @@ public class AirQualityScoreCalculator implements AirQualityCalculator {
      * @return 계산된 공기질 점수 객체 (DeviceAirQualityScore 타입)
      */
     @Override
-    public DeviceAirQualityScore calculateScore(DeviceAirQualityData airQualityData) {
+    public SensorAirQualityScore calculateScore(SensorAirQualityData airQualityData) {
         if (airQualityData == null) {
            throw new CustomException(ErrorCode.INVALID_INPUT_DATA);
         }
@@ -59,8 +59,8 @@ public class AirQualityScoreCalculator implements AirQualityCalculator {
         double overallScore = Collections.max(Arrays.asList(pm10Score, pm25Score, eco2Score, tvocScore));
 
         // DeviceAirQualityScore 객체 생성 및 값 설정
-        DeviceAirQualityScore score = new DeviceAirQualityScore();
-        score.setDeviceAirQualityData(airQualityData);
+        SensorAirQualityScore score = new SensorAirQualityScore();
+        score.setSensorAirQualityData(airQualityData);
         score.setPm10Score(pm10Score);
         score.setPm25Score(pm25Score);
         score.setEco2Score(eco2Score); 

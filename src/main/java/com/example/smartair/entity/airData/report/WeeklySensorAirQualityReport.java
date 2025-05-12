@@ -25,7 +25,7 @@ import java.util.List;
                 )
         }
 )
-public class WeeklyDeviceAirQualityReport extends BaseEntity {
+public class WeeklySensorAirQualityReport extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -50,7 +50,7 @@ public class WeeklyDeviceAirQualityReport extends BaseEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "weekly_report_id")
     @OrderBy("reportDate ASC") // 날짜 순으로 정렬
-    private List<DailyDeviceAirQualityReport> dailyReports = new ArrayList<>();
+    private List<DailySensorAirQualityReport> dailyReports;
 
     // 주간 평균 데이터
     private Double weeklyAvgTemperature;

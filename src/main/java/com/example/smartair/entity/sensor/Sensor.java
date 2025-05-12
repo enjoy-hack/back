@@ -21,6 +21,7 @@ public class Sensor extends BaseEntity {
     private String name;
     private Long serialNumber;
     private boolean runningStatus;
+    private String currentValue;
 
     @ManyToOne //기기와 유저 : 다대일 관계
     @JoinColumn(name = "user_id")

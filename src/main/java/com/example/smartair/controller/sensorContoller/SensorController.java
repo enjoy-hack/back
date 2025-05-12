@@ -17,57 +17,62 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @Slf4j
+@RequestMapping
 public class SensorController implements SensorControllerDocs {
     private final SensorService sensorService;
 
-    @PostMapping("/device")
-    public ResponseEntity<?> setDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                       @RequestBody SensorRequestDto.setDeviceDto deviceDto) throws Exception {
+    @Override
+    @PostMapping("/sensor")
+    public ResponseEntity<?> setSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                       @RequestBody SensorRequestDto.setSensorDto sensorDto) throws Exception {
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
         User user = userDetails.getUser();
 
-        sensorService.setDevice(user, deviceDto);
+        sensorService.setSensor(user, sensorDto);
 
         return ResponseEntity.ok("success");
     }
 
-    @DeleteMapping("/device")
-    public ResponseEntity<?> deleteDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                          @RequestBody SensorRequestDto.deleteDeviceDto deviceDto) throws Exception {
+    @Override
+    @DeleteMapping("/sensor")
+    public ResponseEntity<?> deleteSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                          @RequestBody SensorRequestDto.deleteSensorDto deviceDto) throws Exception {
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
         User user = userDetails.getUser();
 
-        sensorService.deleteDevice(user, deviceDto);
+        sensorService.deleteSensor(user, deviceDto);
 
         return ResponseEntity.ok("success");
     }
 
-    @GetMapping("/devices")
-    public ResponseEntity<String> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+    @Override
+    @GetMapping("/sensors")
+    public ResponseEntity<String> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
                                              @RequestBody Long roomId){
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
         User user = userDetails.getUser();
 
-        List<Sensor> sensorList = sensorService.getDevices(roomId);
+        List<Sensor> sensorList = sensorService.getSensors(roomId);
 
         return ResponseEntity.ok(sensorList.toString());
     }
 
-    @GetMapping("/device/status")
-    public ResponseEntity<?> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
+    @Override
+    @GetMapping("/sensor/status")
+    public ResponseEntity<?> getSensorStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                              @RequestBody Long deviceSerialNumber) throws Exception {
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
         User user = userDetails.getUser();
 
-        Boolean status = sensorService.getDeviceStatus(deviceSerialNumber);
+        Boolean status = sensorService.getSensorStatus(deviceSerialNumber);
 
         return ResponseEntity.ok("device"+ deviceSerialNumber + " running state: " + status);
     }

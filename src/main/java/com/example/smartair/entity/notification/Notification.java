@@ -1,7 +1,7 @@
 package com.example.smartair.entity.notification;
 
 import com.example.smartair.entity.user.User;
-import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 
@@ -20,6 +20,6 @@ public class Notification extends BaseEntity {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "airQualityData_id")
-    private DeviceAirQualityData airQualityData;
+    @JoinColumn(name = "sensor_air_quality_data_id")
+    private SensorAirQualityData airQualityData;
 }

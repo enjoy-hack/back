@@ -1,6 +1,6 @@
-package com.example.smartair.entity.roomSensor;
+package com.example.smartair.entity.roomDevice;
 
-import com.example.smartair.entity.sensor.Sensor;
+import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
@@ -24,6 +24,6 @@ public class RoomDevice extends BaseEntity {
     private Room room;
 
     @ManyToOne
-    @JoinColumn(name = "sensor_id")
-    private Sensor sensor;
+    @JoinColumn(name = "device_id")
+    private Device device;
 }
