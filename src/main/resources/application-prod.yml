@@ -8,7 +8,7 @@ spring:
     # EC2에서는 실제 RDS 엔드포인트 등으로 변경해야 함
     url: jdbc:mysql://${RDS_ENDPOINT}:3306/${MYSQL_DB_NAME}
     username: ${MYSQL_DB_USERNAME} # EC2에 설정된 환경 변수
-    password: ${MYSQL_DB_PASSWORD} # EC2에 설정된 환경 변수 (보안 매우 중요)
+    password: ${MYSQL_DB_PASSWORD} # EC2에 설정된 환경 변수
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

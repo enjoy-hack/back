@@ -112,7 +112,6 @@ jobs:
       AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
       SPRING_PROFILES_ACTIVE: prod # prod 프로파일 활성화
 
-      # ThinQ 및 PAT 관련 Secrets
       THINQ_API_BASE_URL: ${{ secrets.THINQ_API_BASE_URL }}
       THINQ_API_KEY: ${{ secrets.THINQ_API_KEY }}
       THINQ_API_COUNTRY: ${{ secrets.THINQ_API_COUNTRY }}
