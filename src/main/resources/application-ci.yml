@@ -44,9 +44,9 @@ spring:
 
 logging:
   level:
-    root: info
-    org.hibernate.SQL: DEBUG
-    org.hibernate.tool.hbm2ddl: DEBUG
+    root: warn
+    org.hibernate.SQL: info
+#    org.hibernate.tool.hbm2ddl: DEBUG
 
 mqtt:
   url: ${MQTT_URL}
