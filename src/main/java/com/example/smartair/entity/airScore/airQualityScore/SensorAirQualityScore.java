@@ -1,6 +1,6 @@
 package com.example.smartair.entity.airScore.airQualityScore;
 
-import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,14 +11,14 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-public class DeviceAirQualityScore extends BaseEntity {
+public class SensorAirQualityScore extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "device_air_quality_data_id")
-    private DeviceAirQualityData deviceAirQualityData;
+    @JoinColumn(name = "sensor_air_quality_data_id")
+    private SensorAirQualityData sensorAirQualityData;
 
     private double overallScore;
 

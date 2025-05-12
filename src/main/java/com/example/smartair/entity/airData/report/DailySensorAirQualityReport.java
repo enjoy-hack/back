@@ -1,13 +1,12 @@
 package com.example.smartair.entity.airData.report;
 
-import com.example.smartair.entity.airData.snapshot.HourlyDeviceAirQualitySnapshot;
+import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -25,7 +24,7 @@ import java.util.List;
                 )
         }
 )
-public class DailyDeviceAirQualityReport extends BaseEntity {
+public class DailySensorAirQualityReport extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,7 +40,7 @@ public class DailyDeviceAirQualityReport extends BaseEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "daily_report_id")
     @OrderBy("snapshotHour ASC") // 시간 순으로 정렬
-    private List<HourlyDeviceAirQualitySnapshot> hourlySnapshots;
+    private List<HourlySensorAirQualitySnapshot> hourlySnapshots;
 
     // 일일 평균 데이터
     private Double dailyAvgTemperature;

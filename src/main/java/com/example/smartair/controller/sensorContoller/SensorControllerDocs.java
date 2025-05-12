@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@Tag(name = "Device API", description = "사용자 디바이스 관리 API")
+@Tag(name = "Sensor API", description = "사용자 센서 관리 API")
 public interface SensorControllerDocs {
 
     @Operation(
@@ -33,8 +33,8 @@ public interface SensorControllerDocs {
         - `401 Unauthorized`: 인증 정보가 없을 경우 오류 메시지 반환
         """
     )
-    ResponseEntity<?> setDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                @RequestBody SensorRequestDto.setDeviceDto deviceDto) throws Exception;
+    ResponseEntity<?> setSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                @RequestBody SensorRequestDto.setSensorDto deviceDto) throws Exception;
 
     @Operation(
             summary = "디바이스 삭제",
@@ -58,8 +58,8 @@ public interface SensorControllerDocs {
         - `401 Unauthorized`: 인증 정보가 없을 경우 오류 메시지 반환
         """
     )
-    ResponseEntity<?> deleteDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                   @RequestBody SensorRequestDto.deleteDeviceDto deviceDto) throws Exception;
+    ResponseEntity<?> deleteSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                   @RequestBody SensorRequestDto.deleteSensorDto deviceDto) throws Exception;
 
     @Operation(
             summary = "디바이스 목록 조회",
@@ -83,7 +83,7 @@ public interface SensorControllerDocs {
         - `401 Unauthorized`: 인증 정보가 없을 경우 오류 메시지 반환
         """
     )
-    ResponseEntity<String> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+    ResponseEntity<String> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
                                             @RequestBody Long roomId);
 
     @Operation(
@@ -108,6 +108,6 @@ public interface SensorControllerDocs {
         - `401 Unauthorized`: 인증 정보가 없을 경우 오류 메시지 반환
         """
     )
-    ResponseEntity<?> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
+    ResponseEntity<?> getSensorStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                       @RequestBody Long deviceSerialNumber) throws Exception;
 }
