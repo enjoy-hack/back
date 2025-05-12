@@ -7,7 +7,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create # validate에서 create로 변경
+      ddl-auto: validate
     show-sql: false      # EC2/운영 환경에서는 false 권장
     properties:
       hibernate:
@@ -54,7 +54,7 @@ mqtt:
   client-id: spring-client-prod # 운영 환경용 고유 ID 권장
   username: ${MQTT_USERNAME_EC2_PROD} # 필요시 설정
   password: ${MQTT_PASSWORD_EC2_PROD} # 필요시 설정 (환경 변수)
-  topic: prod/data # 운영 환경용 토픽 권장
+  topic: smartair/+/+/airquality
 
 firebase:
   config:

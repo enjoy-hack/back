@@ -19,5 +19,5 @@ public interface RoomSensorRepository extends JpaRepository<RoomSensor, Long> {
 
     Optional<RoomSensor> findBySensor_SerialNumber(Long serialNumber);
 
-    List<Sensor> findAllDeviceByRoom(Room room);
+    List<Sensor> findAllSensorByRoom(Room room);
 }

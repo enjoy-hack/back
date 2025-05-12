@@ -1,7 +1,7 @@
 package com.example.smartair.service.airQualityService;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
-import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
 import com.example.smartair.entity.sensor.Sensor;
@@ -33,34 +33,30 @@ public class AirQualityDataService {
     private final FineParticlesDataRepository fineParticlesDataRepository;
     private final RecentAirQualityDataCache recentAirQualityDataCache;
     private final FineParticlesDataPt2Repository fineParticlesDataPt2Repository;
+    private final AirQualityScoreService airQualityScoreService;
 
     @Transactional
-    public AirQualityPayloadDto processAirQualityData(String topic, AirQualityPayloadDto dto) {
+    public AirQualityPayloadDto processAirQualityData(Long deviceId, Long roomIdFromTopic, AirQualityPayloadDto dto) {
         try {
-            String[] parts = topic.split("/");
-            if (parts.length < 3){
-                log.error("잘못된 토픽 형식 수신 : {}", topic);
-                throw new CustomException(ErrorCode.MQTT_INVALID_TOPIC_ERROR);
-            }
-            // 2. Device 추출
-            Long deviceId = Long.parseLong(topic.split("/")[1]);
+
+            // 1. Device 추출
             Sensor sensor = sensorRepository.findById(deviceId)
                     .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
-            // 3. Room 추출
-            Long roomIdFromTopic = Long.parseLong(topic.split("/")[2]);
-            Room room = roomSensorRepository.findBySensor(sensor)
+            // 2. Room 추출
+            Room actualRoom = roomSensorRepository.findBySensor(sensor)
                     .map(RoomSensor::getRoom)
                     .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
-            if (!room.getId().equals(roomIdFromTopic)){
-                log.warn("토픽의 Room ID({})와 실제 Device({})가 매핑된 Room ID({}) 불일치", roomIdFromTopic, deviceId, room.getId());
+            // 토픽에서 파싱된 roomId와 DB에서 조회한 실제 Room의 ID가 일치하는지 확인
+            if (!actualRoom.getId().equals(roomIdFromTopic)) {
+                log.warn("토픽의 Room ID({})와 실제 Device ID {} 가 DB에 매핑된 Room ID({})와 불일치합니다. DB에 매핑된 Room ID '{}'를 기준으로 처리합니다.",
+                        roomIdFromTopic, deviceId, actualRoom.getId(), actualRoom.getId());
             }
 
-
-            // 4. FineParticlesData 엔티티 생성 및 저장 (pt1 데이터 기준)
+            // 4. FineParticlesData 엔티티 생성 및 저장 
             FineParticlesData fineParticlesData = FineParticlesData.builder()
-                    .pm10_standard(dto.getPt1Pm10Standard()) 
+                    .pm10_standard(dto.getPt1Pm10Standard())
                     .pm25_standard(dto.getPt1Pm25Standard())
                     .pm100_standard(dto.getPt1Pm100Standard())
                     .particle_03(dto.getPt1Particles03um())
@@ -88,13 +84,12 @@ public class AirQualityDataService {
             FineParticlesDataPt2 savedFineParticlesDataPt2 = fineParticlesDataPt2Repository.save(fineParticlesDataPt2);
 
             // 5. AirQualityData 엔티티 생성
-            DeviceAirQualityData airQualityData = DeviceAirQualityData.builder()
-                    .topic(topic)
+            SensorAirQualityData airQualityData = SensorAirQualityData.builder()
                     .temperature(dto.getTemperature())
                     .humidity(dto.getHumidity())
                     .pressure(dto.getPressure())
                     .tvoc(dto.getTvoc())
-                    .eco2(dto.getPpm()) 
+                    .eco2(dto.getPpm())
                     .rawh2(dto.getRawh2())
                     .rawethanol(dto.getRawethanol())
                     .sensor(sensor)
@@ -103,10 +98,13 @@ public class AirQualityDataService {
                     .build();
 
             // 6. AirQualityData 저장
-            DeviceAirQualityData savedAirQualityData = airQualityDataRepository.save(airQualityData);
+            SensorAirQualityData savedAirQualityData = airQualityDataRepository.save(airQualityData);
+
+            //즉시 점수 계산
+            airQualityScoreService.calculateAndSaveDeviceScore(savedAirQualityData);
 
             // 7. 캐싱
-            recentAirQualityDataCache.put(sensor.getId(), savedAirQualityData);
+            updateCache(sensor.getId(), savedAirQualityData);
 
             return dto;
 
@@ -123,8 +121,46 @@ public class AirQualityDataService {
         }
     }
 
-    // 캐시에 저장된 데이터 조회 메서드
-    public Optional<DeviceAirQualityData> getRecentAirQualityData(Long deviceId) {
-        return recentAirQualityDataCache.get(deviceId);
+    @Transactional(readOnly = true)
+    public SensorAirQualityData getSavedAirQualityData(Long deviceId) {
+        try {
+            // 1. 캐시에서 먼저 조회
+            Optional<SensorAirQualityData> cachedData = recentAirQualityDataCache.get(deviceId);
+            if (cachedData.isPresent()) {
+                log.debug("Cache hit for device ID: {}", deviceId);
+                return cachedData.get();
+            }
+
+            // 2. 캐시에 없는 경우 DB에서 최신 데이터 조회
+            SensorAirQualityData latestData = airQualityDataRepository.findTopBySensorIdOrderByCreatedAtDesc(deviceId)
+                    .orElseThrow(() -> {
+                        log.warn("Device ID {}의 최근 데이터를 찾을 수 없습니다.", deviceId);
+                        return new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND);
+                    });
+
+            // 3. 조회된 데이터를 캐시에 저장
+            updateCache(deviceId, latestData);
+            log.debug("Latest data cached for device ID: {}", deviceId);
+
+            return latestData;
+        } catch (CustomException ce) {
+            throw ce;
+        } catch (Exception e) {
+            log.error("Device ID {}의 데이터 조회 중 오류 발생", deviceId, e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
+
+    // 캐시 관리를 위한 전용 메서드
+    private void updateCache(Long sensorId, SensorAirQualityData data) {
+        try {
+            recentAirQualityDataCache.put(sensorId, data);
+            log.debug("Cache updated for sensor ID: {}", sensorId);
+        } catch (Exception e) {
+            log.error("Cache update failed for sensor ID: {}", sensorId, e);
+            // 캐시 실패는 애플리케이션 동작에 영향을 주지 않도록 처리
+        }
+    }
+
+
 }

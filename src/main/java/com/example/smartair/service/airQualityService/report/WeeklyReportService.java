@@ -1,12 +1,12 @@
 package com.example.smartair.service.airQualityService.report;
 
-import com.example.smartair.entity.airData.report.DailyDeviceAirQualityReport;
-import com.example.smartair.entity.airData.report.WeeklyDeviceAirQualityReport;
+import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
+import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
 import com.example.smartair.entity.airScore.AirQualityGrade;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.WeeklyDeviceAirQualityReportRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.WeeklySensorAirQualityReportRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,17 +27,17 @@ public class WeeklyReportService {
 
     private final SensorRepository sensorRepository;
     private final DailyReportService dailyReportService; // DailyReportService 주입
-    private final WeeklyDeviceAirQualityReportRepository weeklyReportRepository;
+    private final WeeklySensorAirQualityReportRepository weeklyReportRepository;
 
     /**
      * 특정 장치의 특정 연도, 주차에 대한 주간 보고서를 생성하거나 업데이트합니다.
      */
     @Transactional
-    public WeeklyDeviceAirQualityReport createOrUpdateWeeklyReport(Long deviceId, int year, int weekOfYear) {
+    public WeeklySensorAirQualityReport createOrUpdateWeeklyReport(Long deviceId, int year, int weekOfYear) {
         Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
-        Optional<WeeklyDeviceAirQualityReport> existingReportOpt =
+        Optional<WeeklySensorAirQualityReport> existingReportOpt =
                 weeklyReportRepository.findBySensorAndYearOfWeekAndWeekOfYear(sensor, year, weekOfYear);
 
         // 해당 주의 시작일(월요일)과 종료일(일요일) 계산
@@ -48,11 +48,11 @@ public class WeeklyReportService {
         LocalDate lastDayOfWeek = firstDayOfWeek.plusDays(6);
 
         // 해당 주의 모든 일별 보고서 가져오기 (없으면 생성 시도)
-        List<DailyDeviceAirQualityReport> dailyReportsForWeek = new ArrayList<>();
+        List<DailySensorAirQualityReport> dailyReportsForWeek = new ArrayList<>();
         for (LocalDate date = firstDayOfWeek; !date.isAfter(lastDayOfWeek); date = date.plusDays(1)) {
             try {
                 // DailyReportService를 통해 일별 보고서를 가져오거나 생성
-                DailyDeviceAirQualityReport dailyReport = dailyReportService.createOrUpdateDailyReport(deviceId, date);
+                DailySensorAirQualityReport dailyReport = dailyReportService.createOrUpdateDailyReport(deviceId, date);
                 if (dailyReport != null) { // createOrUpdateDailyReport가 null을 반환할 수도 있음 (스냅샷 없을 시)
                     dailyReportsForWeek.add(dailyReport);
                 }
@@ -82,9 +82,9 @@ public class WeeklyReportService {
             throw new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND);
         }
 
-        WeeklyDeviceAirQualityReport report = existingReportOpt.orElseGet(() -> {
+        WeeklySensorAirQualityReport report = existingReportOpt.orElseGet(() -> {
             log.info("Device ID: {}의 {}년 {}주차에 대한 새 주간 보고서를 생성합니다.", deviceId, year, weekOfYear);
-            return WeeklyDeviceAirQualityReport.builder()
+            return WeeklySensorAirQualityReport.builder()
                     .sensor(sensor)
                     .yearOfWeek(year)
                     .weekOfYear(weekOfYear)
@@ -128,7 +128,7 @@ public class WeeklyReportService {
      * 특정 장치의 특정 연도, 주차에 대한 주간 보고서를 조회합니다.
      */
     @Transactional(readOnly = true)
-    public WeeklyDeviceAirQualityReport getWeeklyReport(Long deviceId, int year, int weekOfYear) {
+    public WeeklySensorAirQualityReport getWeeklyReport(Long deviceId, int year, int weekOfYear) {
         Sensor sensor = sensorRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
         return weeklyReportRepository.findBySensorAndYearOfWeekAndWeekOfYear(sensor, year, weekOfYear)
@@ -139,7 +139,7 @@ public class WeeklyReportService {
      * 특정 장치의 특정 기간(시작일, 종료일 기준) 동안 포함되는 모든 주간 보고서 목록을 조회합니다.
      */
     @Transactional(readOnly = true)
-    public List<WeeklyDeviceAirQualityReport> getWeeklyReportsForPeriod(Long deviceId, LocalDate startDate, LocalDate endDate) {
+    public List<WeeklySensorAirQualityReport> getWeeklyReportsForPeriod(Long deviceId, LocalDate startDate, LocalDate endDate) {
         if (startDate.isAfter(endDate)) {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
@@ -147,7 +147,7 @@ public class WeeklyReportService {
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         // 주간 보고서의 시작일이 주어진 기간 내에 있는 모든 주간 보고서 조회
-        List<WeeklyDeviceAirQualityReport> reportsInPeriod =
+        List<WeeklySensorAirQualityReport> reportsInPeriod =
                 weeklyReportRepository.findOverlappingWeeklyReports(sensor, startDate, endDate);
 
         log.info("Device ID: {}의 {}부터 {}까지의 주간 보고서 {}건 조회 완료", deviceId, startDate, endDate, reportsInPeriod.size());
@@ -160,7 +160,7 @@ public class WeeklyReportService {
      */
     @Transactional
     public void deleteWeeklyReport(Long reportId) {
-        WeeklyDeviceAirQualityReport report = weeklyReportRepository.findById(reportId)
+        WeeklySensorAirQualityReport report = weeklyReportRepository.findById(reportId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
         weeklyReportRepository.delete(report);
 
@@ -179,7 +179,7 @@ public class WeeklyReportService {
         LocalDate cutoffDate = LocalDate.now().minusWeeks(weeksOld).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         log.info("{} 이전 (주의 시작일 기준) 주간 보고서 삭제 시작 ({}주 이전 데이터)", cutoffDate, weeksOld);
 
-        List<WeeklyDeviceAirQualityReport> oldReports = weeklyReportRepository.findByStartDateOfWeekBefore(cutoffDate);
+        List<WeeklySensorAirQualityReport> oldReports = weeklyReportRepository.findByStartDateOfWeekBefore(cutoffDate);
         if (oldReports.isEmpty()) {
             log.info("{} 이전의 삭제할 주간 보고서가 없습니다.", cutoffDate);
             return 0;
@@ -198,7 +198,7 @@ public class WeeklyReportService {
             throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
         }
         log.info("Device ID: {} 관련 모든 주간 보고서 삭제 시작", deviceId);
-        List<WeeklyDeviceAirQualityReport> reportsToDelete = weeklyReportRepository.findAllBySensorId(deviceId);
+        List<WeeklySensorAirQualityReport> reportsToDelete = weeklyReportRepository.findAllBySensorId(deviceId);
         if (reportsToDelete.isEmpty()) {
             log.info("Device ID: {} 관련 삭제할 주간 보고서가 없습니다.", deviceId);
             return 0;
@@ -209,7 +209,7 @@ public class WeeklyReportService {
     }
 
 
-    private void calculateAndSetWeeklyStatistics(WeeklyDeviceAirQualityReport report, List<DailyDeviceAirQualityReport> dailyReports) {
+    private void calculateAndSetWeeklyStatistics(WeeklySensorAirQualityReport report, List<DailySensorAirQualityReport> dailyReports) {
         if (dailyReports == null || dailyReports.isEmpty()) {
             setDefaultWeeklyStatistics(report); // 일별 보고서가 없으면 기본값 설정
             return;
@@ -217,61 +217,61 @@ public class WeeklyReportService {
 
         // 주간 평균 온도
         DoubleSummaryStatistics tempStats = dailyReports.stream()
-                .map(DailyDeviceAirQualityReport::getDailyAvgTemperature)
+                .map(DailySensorAirQualityReport::getDailyAvgTemperature)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setWeeklyAvgTemperature(tempStats.getCount() > 0 ? tempStats.getAverage() : null);
-        report.setWeeklyMaxTemperature(dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyMaxTemperature).filter(Objects::nonNull).max(Double::compare).orElse(null));
-        report.setWeeklyMinTemperature(dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyMinTemperature).filter(Objects::nonNull).min(Double::compare).orElse(null));
+        report.setWeeklyMaxTemperature(dailyReports.stream().map(DailySensorAirQualityReport::getDailyMaxTemperature).filter(Objects::nonNull).max(Double::compare).orElse(null));
+        report.setWeeklyMinTemperature(dailyReports.stream().map(DailySensorAirQualityReport::getDailyMinTemperature).filter(Objects::nonNull).min(Double::compare).orElse(null));
 
         // 주간 평균 습도
         DoubleSummaryStatistics humidityStats = dailyReports.stream()
-                .map(DailyDeviceAirQualityReport::getDailyAvgHumidity)
+                .map(DailySensorAirQualityReport::getDailyAvgHumidity)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setWeeklyAvgHumidity(humidityStats.getCount() > 0 ? humidityStats.getAverage() : null);
-        report.setWeeklyMaxHumidity(dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyMaxHumidity).filter(Objects::nonNull).max(Double::compare).orElse(null));
-        report.setWeeklyMinHumidity(dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyMinHumidity).filter(Objects::nonNull).min(Double::compare).orElse(null));
+        report.setWeeklyMaxHumidity(dailyReports.stream().map(DailySensorAirQualityReport::getDailyMaxHumidity).filter(Objects::nonNull).max(Double::compare).orElse(null));
+        report.setWeeklyMinHumidity(dailyReports.stream().map(DailySensorAirQualityReport::getDailyMinHumidity).filter(Objects::nonNull).min(Double::compare).orElse(null));
 
         // 주간 평균 TVOC
         DoubleSummaryStatistics tvocStats = dailyReports.stream()
-                .map(DailyDeviceAirQualityReport::getDailyAvgTvoc)
+                .map(DailySensorAirQualityReport::getDailyAvgTvoc)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setWeeklyAvgTvoc(tvocStats.getCount() > 0 ? tvocStats.getAverage() : null);
-        report.setWeeklyMaxTvoc(dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyMaxTvoc).filter(Objects::nonNull).max(Integer::compare).orElse(null));
+        report.setWeeklyMaxTvoc(dailyReports.stream().map(DailySensorAirQualityReport::getDailyMaxTvoc).filter(Objects::nonNull).max(Integer::compare).orElse(null));
 
         // 주간 평균 eCO2
         DoubleSummaryStatistics eco2Stats = dailyReports.stream()
-                .map(DailyDeviceAirQualityReport::getDailyAvgEco2)
+                .map(DailySensorAirQualityReport::getDailyAvgEco2)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setWeeklyAvgEco2(eco2Stats.getCount() > 0 ? eco2Stats.getAverage() : null);
-        report.setWeeklyMaxEco2(dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyMaxEco2).filter(Objects::nonNull).max(Integer::compare).orElse(null));
+        report.setWeeklyMaxEco2(dailyReports.stream().map(DailySensorAirQualityReport::getDailyMaxEco2).filter(Objects::nonNull).max(Integer::compare).orElse(null));
 
         // 주간 평균 PM2.5
         DoubleSummaryStatistics pm25Stats = dailyReports.stream()
-                .map(DailyDeviceAirQualityReport::getDailyAvgPm25)
+                .map(DailySensorAirQualityReport::getDailyAvgPm25)
                 .filter(Objects::nonNull)
                 .collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setWeeklyAvgPm25(pm25Stats.getCount() > 0 ? pm25Stats.getAverage() : null);
-        report.setWeeklyMaxPm25(dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyMaxPm25).filter(Objects::nonNull).max(Double::compare).orElse(null));
+        report.setWeeklyMaxPm25(dailyReports.stream().map(DailySensorAirQualityReport::getDailyMaxPm25).filter(Objects::nonNull).max(Double::compare).orElse(null));
 
         // 주간 평균 점수들
-        DoubleSummaryStatistics overallScoreStats = dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyOverallScore).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
+        DoubleSummaryStatistics overallScoreStats = dailyReports.stream().map(DailySensorAirQualityReport::getDailyOverallScore).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setWeeklyOverallScore(overallScoreStats.getCount() > 0 ? overallScoreStats.getAverage() : 0.0);
-        DoubleSummaryStatistics pm25ScoreStats = dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyPm25Score).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
+        DoubleSummaryStatistics pm25ScoreStats = dailyReports.stream().map(DailySensorAirQualityReport::getDailyPm25Score).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setWeeklyPm25Score(pm25ScoreStats.getCount() > 0 ? pm25ScoreStats.getAverage() : 0.0);
-        DoubleSummaryStatistics eco2ScoreStats = dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyEco2Score).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
+        DoubleSummaryStatistics eco2ScoreStats = dailyReports.stream().map(DailySensorAirQualityReport::getDailyEco2Score).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setWeeklyEco2Score(eco2ScoreStats.getCount() > 0 ? eco2ScoreStats.getAverage() : 0.0);
-        DoubleSummaryStatistics tvocScoreStats = dailyReports.stream().map(DailyDeviceAirQualityReport::getDailyTvocScore).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
+        DoubleSummaryStatistics tvocScoreStats = dailyReports.stream().map(DailySensorAirQualityReport::getDailyTvocScore).filter(Objects::nonNull).collect(Collectors.summarizingDouble(Double::doubleValue));
         report.setWeeklyTvocScore(tvocScoreStats.getCount() > 0 ? tvocScoreStats.getAverage() : 0.0);
         
         // 경향성 계산
         calculateAndSetWeeklyTrends(report, dailyReports);
     }
 
-    private void calculateAndSetWeeklyTrends(WeeklyDeviceAirQualityReport report, List<DailyDeviceAirQualityReport> dailyReports) {
+    private void calculateAndSetWeeklyTrends(WeeklySensorAirQualityReport report, List<DailySensorAirQualityReport> dailyReports) {
         if (dailyReports == null || dailyReports.stream().filter(dr -> dr != null).count() < 2) { // 유효한 일별 보고서가 2개 미만인 경우
             setDefaultTrends(report);
             return;
@@ -303,7 +303,7 @@ public class WeeklyReportService {
         report.setEco2Trend(calculateLinearRegressionSlope(dailyAvgEco2s));
     }
 
-    private void setDefaultTrends(WeeklyDeviceAirQualityReport report) {
+    private void setDefaultTrends(WeeklySensorAirQualityReport report) {
         report.setTemperatureTrend(0.0);
         report.setHumidityTrend(0.0);
         report.setPm25Trend(0.0);
@@ -355,7 +355,7 @@ public class WeeklyReportService {
         return ((n * sumXY) - (sumX * sumY)) / denominator;
     }
 
-    private void setDefaultWeeklyStatistics(WeeklyDeviceAirQualityReport report){
+    private void setDefaultWeeklyStatistics(WeeklySensorAirQualityReport report){
         report.setWeeklyAvgTemperature(null);
         report.setWeeklyAvgHumidity(null);
         report.setWeeklyAvgTvoc(null);

@@ -1,10 +1,14 @@
 package com.example.smartair.entity.room;
 
-import com.example.smartair.entity.place.Place;
+// import com.example.smartair.entity.place.Place; // Place import 제거
+import com.example.smartair.entity.roomParticipant.RoomParticipant;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -19,11 +23,24 @@ public class Room extends BaseEntity {
 
     private String name;
 
-    @ManyToOne //방과 유저 : 다대일 관계
-    @JoinColumn(name = "user_id")
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
-    @ManyToOne //방과 공간 : 다대일 관계
-    @JoinColumn(name = "place_id")
-    private Place place;
+    private String password;
+
+    @Column(nullable = false)
+    private boolean deviceControlEnabled = true;
+
+    // Place 관련 필드 및 어노테이션 삭제
+    // @ManyToOne
+    // @JoinColumn(name = "place_id")
+    // private Place place;
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<RoomParticipant> participants = new HashSet<>();
+
+    private double latitude;
+    private double longitude;
 }

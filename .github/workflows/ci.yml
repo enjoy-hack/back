@@ -30,6 +30,12 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
+
+    - name: Clean and reinitialize workspace
+      run: |
+        rm -rf ./* 
+        git checkout HEAD -- .
+        git clean -fdx
     
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -106,7 +112,15 @@ jobs:
         THINQ_API_COUNTRY: ${{ secrets.THINQ_API_COUNTRY }}
         THINQ_API_CLIENT_ID_PREFIX: ${{ secrets.THINQ_API_CLIENT_ID_PREFIX }}
         PAT_SECRET_KEY: ${{ secrets.PAT_SECRET_KEY }}
-      run: ./gradlew build
+      run: |
+        # Gradle 캐시 및 빌드 초기화
+        ./gradlew clean
+        
+        # Lombok 어노테이션 프로세서 실행 확인
+        ./gradlew compileJava --stacktrace
+        
+        # 전체 빌드 및 테스트 실행
+        ./gradlew build --info
       
     - name: Upload Test Report Artifact # 테스트 리포트 아티팩트 업로드 단계
       if: failure() # 테스트 실패 시에만 실행

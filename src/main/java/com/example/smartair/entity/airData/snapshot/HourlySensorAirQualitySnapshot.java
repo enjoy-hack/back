@@ -14,15 +14,15 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @Table(
-        name = "hourly_device_air_quality_snapshot",
+        name = "hourly_sensor_air_quality_snapshot",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uq_device_snapshot_hour",
+                        name = "uq_sensor_snapshot_hour",
                         columnNames = {"sensor_id", "snapshot_hour"}
                 )
         }
 )
-public class HourlyDeviceAirQualitySnapshot extends BaseEntity {
+public class HourlySensorAirQualitySnapshot extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

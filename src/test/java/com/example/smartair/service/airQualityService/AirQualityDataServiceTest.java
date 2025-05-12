@@ -1,7 +1,7 @@
 package com.example.smartair.service.airQualityService;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
-import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
@@ -34,6 +34,9 @@ import static org.mockito.Mockito.*;
 class AirQualityDataServiceTest {
 
     @Mock
+    private AirQualityScoreService airQualityScoreService;
+
+    @Mock
     private SensorRepository sensorRepository;
 
     @Mock
@@ -56,7 +59,7 @@ class AirQualityDataServiceTest {
 
     private static final Long TEST_DEVICE_ID = 1L;
     private static final Long TEST_ROOM_ID = 1L;
-    private static final String TEST_TOPIC = "smartair/" +  + TEST_DEVICE_ID + "/" + TEST_ROOM_ID;
+    private static final String TEST_TOPIC = "smartair/" +  + TEST_DEVICE_ID + "/" + TEST_ROOM_ID + "/airQuality";
     private AirQualityPayloadDto testPayloadDto;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -96,22 +99,22 @@ class AirQualityDataServiceTest {
 
         when(sensorRepository.findById(TEST_DEVICE_ID)).thenReturn(Optional.of(sensor));
         when(roomSensorRepository.findBySensor(sensor)).thenReturn(Optional.of(roomSensor));
-        when(airQualityDataRepository.save(any(DeviceAirQualityData.class))).thenAnswer(invocation -> {
-            DeviceAirQualityData savedData = invocation.getArgument(0);
+        when(airQualityDataRepository.save(any(SensorAirQualityData.class))).thenAnswer(invocation -> {
+            SensorAirQualityData savedData = invocation.getArgument(0);
             savedData.setId(100L);
             return savedData;
         });
 
         //when
-        AirQualityPayloadDto data = airQualityDataService.processAirQualityData(TEST_TOPIC, testPayloadDto);
+        AirQualityPayloadDto data = airQualityDataService.processAirQualityData(TEST_DEVICE_ID, TEST_ROOM_ID, testPayloadDto);
 
         //then
         assertNotNull(data);
         assertEquals(25.5, data.getTemperature());
         assertEquals(60, data.getHumidity());
         verify(fineParticlesDataRepository).save(any(FineParticlesData.class));
-        verify(airQualityDataRepository).save(any(DeviceAirQualityData.class));
-        verify(recentAirQualityDataCache).put(eq(sensor.getId()), any(DeviceAirQualityData.class));
+        verify(airQualityDataRepository).save(any(SensorAirQualityData.class));
+        verify(recentAirQualityDataCache).put(eq(sensor.getId()), any(SensorAirQualityData.class));
     }
 
     @Test
@@ -122,7 +125,7 @@ class AirQualityDataServiceTest {
 
         //when & then
         CustomException exception = assertThrows(CustomException.class, () -> {
-            airQualityDataService.processAirQualityData(TEST_TOPIC, testPayloadDto);
+            airQualityDataService.processAirQualityData(TEST_DEVICE_ID, TEST_ROOM_ID, testPayloadDto);
         });
         assertEquals(ErrorCode.DEVICE_NOT_FOUND, exception.getErrorCode());
 
@@ -143,7 +146,7 @@ class AirQualityDataServiceTest {
         //when & then: 예외 발생 및 내용을 명확히 검증
         CustomException thrownException = assertThrows(
                 CustomException.class,
-                () -> airQualityDataService.processAirQualityData(TEST_TOPIC, testPayloadDto),
+                () -> airQualityDataService.processAirQualityData(TEST_DEVICE_ID, TEST_ROOM_ID, testPayloadDto),
                 "ROOM_DEVICE_MAPPING_NOT_FOUND 예외가 발생해야 합니다."
         );
 

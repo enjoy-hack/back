@@ -1,10 +1,10 @@
 package com.example.smartair.infrastructure;
 
-import com.example.smartair.entity.airData.airQualityData.DeviceAirQualityData;
+import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 
 import java.util.Optional;
 
 public interface RecentAirQualityDataCache {
-    void put(Long deviceId, DeviceAirQualityData airQualityData);
-    Optional<DeviceAirQualityData> get(Long deviceId);
+    void put(Long deviceId, SensorAirQualityData airQualityData);
+    Optional<SensorAirQualityData> get(Long deviceId);
 }

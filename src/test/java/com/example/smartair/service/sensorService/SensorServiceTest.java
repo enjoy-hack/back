@@ -55,7 +55,7 @@ public class SensorServiceTest {
         // 방 생성
         testRoom = Room.builder()
                 .name("Test Room")
-                .user(testUser)
+                .owner(testUser)
                 .build();
         roomRepository.save(testRoom);
     }
@@ -63,13 +63,13 @@ public class SensorServiceTest {
     @Test
     void 디바이스_등록_후_조회() throws Exception {
         // given
-        SensorRequestDto.setDeviceDto dto = new SensorRequestDto.setDeviceDto(1001L, "TestDevice", testRoom.getId());
+        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(1001L, "TestDevice", testRoom.getId());
 
         // when
-        sensorService.setDevice(testUser, dto);
+        sensorService.setSensor(testUser, dto);
 
         // then
-        List<Sensor> sensors = sensorService.getDevices(testRoom.getId());
+        List<Sensor> sensors = sensorService.getSensors(testRoom.getId());
         assertThat(sensors).hasSize(1);
         assertThat(sensors.get(0).getSerialNumber()).isEqualTo(1001L);
         assertThat(sensors.get(0).getName()).isEqualTo("TestDevice");
@@ -78,16 +78,16 @@ public class SensorServiceTest {
     @Test
     void 디바이스_삭제() throws Exception {
         // given
-        SensorRequestDto.setDeviceDto dto = new SensorRequestDto.setDeviceDto(2002L, "ToDeleteDevice", testRoom.getId());
-        sensorService.setDevice(testUser, dto);
+        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(2002L, "ToDeleteDevice", testRoom.getId());
+        sensorService.setSensor(testUser, dto);
 
-        SensorRequestDto.deleteDeviceDto deleteDto = new SensorRequestDto.deleteDeviceDto(2002L, testRoom.getId());
+        SensorRequestDto.deleteSensorDto deleteDto = new SensorRequestDto.deleteSensorDto(2002L, testRoom.getId());
 
         // when
-        sensorService.deleteDevice(testUser, deleteDto);
+        sensorService.deleteSensor(testUser, deleteDto);
 
         // then
-        List<Sensor> sensors = sensorService.getDevices(testRoom.getId());
+        List<Sensor> sensors = sensorService.getSensors(testRoom.getId());
         assertThat(sensors).isEmpty();
     }
 
@@ -95,11 +95,11 @@ public class SensorServiceTest {
     void 디바이스_상태_확인() throws Exception {
         // given
         Long serialNumber = 3003L;
-        SensorRequestDto.setDeviceDto dto = new SensorRequestDto.setDeviceDto(serialNumber, "StatusCheck", testRoom.getId());
-        sensorService.setDevice(testUser, dto);
+        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(serialNumber, "StatusCheck", testRoom.getId());
+        sensorService.setSensor(testUser, dto);
 
         // when
-        boolean status = sensorService.getDeviceStatus(serialNumber);
+        boolean status = sensorService.getSensorStatus(serialNumber);
 
         // then
         assertThat(status).isFalse(); // 등록 시 runningStatus = false
