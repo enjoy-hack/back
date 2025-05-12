@@ -112,7 +112,7 @@ jobs:
         THINQ_API_COUNTRY: ${{ secrets.THINQ_API_COUNTRY }}
         THINQ_API_CLIENT_ID_PREFIX: ${{ secrets.THINQ_API_CLIENT_ID_PREFIX }}
         PAT_SECRET_KEY: ${{ secrets.PAT_SECRET_KEY }}
-      run:
+      run: |
         # Gradle 캐시 및 빌드 초기화
         ./gradlew clean
         
