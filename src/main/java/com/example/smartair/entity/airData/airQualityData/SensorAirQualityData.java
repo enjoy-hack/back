@@ -14,13 +14,11 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-@Table(name = "device_air_quality_data")
-public class DeviceAirQualityData extends BaseEntity {
+@Table(name = "sensor_air_quality_data")
+public class SensorAirQualityData extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String topic;
 
     private double temperature; //온도
     private double humidity; //습도

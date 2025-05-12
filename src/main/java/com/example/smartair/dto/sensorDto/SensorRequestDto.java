@@ -9,13 +9,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public class SensorRequestDto {
 
-    public record setDeviceDto(
+    public record setSensorDto(
             Long serialNumber,
             String name,
             Long roomId
     ){}
 
-    public record deleteDeviceDto(
+    public record deleteSensorDto(
             Long serialNumber,
             Long roomId
     ){}
