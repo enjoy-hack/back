@@ -1,8 +1,11 @@
 name: CD for main
 
 on:
-  push:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["CI for main"]  # CI 워크플로우 이름과 정확히 일치해야 함
+    branches: [main]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       branch:
@@ -18,6 +21,7 @@ env:
 
 jobs:
   build-and-docker-operations:
+    if : ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.generate_tag.outputs.tag }}
