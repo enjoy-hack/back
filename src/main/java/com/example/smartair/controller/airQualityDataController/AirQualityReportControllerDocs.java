@@ -1,5 +1,7 @@
 package com.example.smartair.controller.airQualityDataController;
 
+import com.example.smartair.dto.airQualityDataDto.AnomalyReportDto;
+import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -108,4 +112,31 @@ public interface AirQualityReportControllerDocs {
             })
     ResponseEntity<Integer> deleteOldDailyReports(
             @Parameter(description = "삭제할 일별 리포트의 ID", required = true, example = "100") Integer days);
-} 
+
+    @Operation(summary = "이상치 리포트 생성",
+            description = "이상치 데이터를 기반으로 새로운 이상치 리포트를 생성합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "이상치 리포트 생성 성공",
+                            content = @Content(schema = @Schema(type = "string", example = "messageId"))),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터",
+                            content = @Content(schema = @Schema(hidden = true))),
+                    @ApiResponse(responseCode = "404", description = "센서 또는 관련 데이터가 존재하지 않음",
+                            content = @Content(schema = @Schema(hidden = true)))
+            })
+    ResponseEntity<?> setAnomalyDailyReport(@RequestBody AnomalyReportDto anomalyReportDto);
+
+    @Operation(summary = "이상치 리포트 조회",
+            description = "특정 센서의 지정된 기간 동안의 모든 이상치 리포트를 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "이상치 리포트 조회 성공",
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = AnomalyReport.class)))),
+                    @ApiResponse(responseCode = "404", description = "센서 또는 해당 기간의 리포트를 찾을 수 없음",
+                            content = @Content(schema = @Schema(hidden = true)))
+            })
+    ResponseEntity<List<AnomalyReport>> getAnomalyReports(
+            @Parameter(description = "리포트를 조회할 센서의 ID", required = true, example = "1") @PathVariable Long sensorId,
+            @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate);
+}

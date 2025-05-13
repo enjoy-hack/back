@@ -2,6 +2,7 @@ package com.example.smartair.controller.customUserController;
 
 import com.example.smartair.dto.customUserDto.UserSatisfactionResponseDto;
 import com.example.smartair.entity.login.CustomUserDetails;
+import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.repository.userSatisfactionRepository.UserSatisfactionRepository;
 import com.example.smartair.service.customUserService.UserSatisfactionService;
@@ -21,7 +22,7 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
 
     private final UserSatisfactionService userSatisfactionService;
     private final UserSatisfactionRepository userSatisfactionRepository;
-    // 사용자 만족도 & AQI 별로 set,get 구현 예정
+
     @PostMapping("/userSatisfaction/{roomId}")
     public ResponseEntity<?> setUsersSatisfaction(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                   @RequestParam("satisfaction") Double satisfaction,
@@ -32,7 +33,7 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
 
         User user = userDetails.getUser();
 
-        if(user.getRole().equals("ROLE_USER")){
+        if(user.getRole() == Role.USER){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
         }
         userSatisfactionService.setUserSatisfaction(user, satisfaction, roomId);
@@ -48,7 +49,7 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
 
         User user = userDetails.getUser();
 
-        if(user.getRole().equals("ROLE_USER")){
+        if(user.getRole() == Role.USER){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
         }
         List<UserSatisfactionResponseDto> list = userSatisfactionService.getUserSatisfaction(user, roomId);
@@ -66,7 +67,7 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
 
         User user = userDetails.getUser();
 
-        if (user.getRole().equals("ROLE_USER")) {
+        if (user.getRole() == Role.USER) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
         }
 
@@ -88,7 +89,7 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
 
         User user = userDetails.getUser();
 
-        if (user.getRole().equals("ROLE_USER")) {
+        if (user.getRole() == Role.USER) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
         }
 
