@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -27,11 +28,16 @@ public class AnomalyReportService {
     private final SensorRepository sensorRepository;
     private final HourlyDeviceAirQualitySnapshotRepository hourlyDeviceAirQualitySnapshotRepository;
     private final DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
+
+    private static final DateTimeFormatter ANOMALY_TIMESTAMP_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     public String setAnomalyReport(AnomalyReportDto dto) {
         Sensor sensor = sensorRepository.findBySerialNumber(dto.getSensorSerialNumber())
                 .orElseThrow(() -> new IllegalArgumentException("Sensor not found with serial number: " + dto.getSensorSerialNumber()));
 
-        LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp());
+        LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER);
+
 
         HourlySensorAirQualitySnapshot hourlySnapshot = hourlyDeviceAirQualitySnapshotRepository
                 .findBySensorAndSnapshotHour(sensor, anomalyDate)
@@ -45,7 +51,7 @@ public class AnomalyReportService {
 
         AnomalyReport anomalyReport = AnomalyReport.builder()
                 .sensor(sensor)
-                .anomalyTimestamp(LocalDateTime.parse(dto.getAnomalyTimestamp()))
+                .anomalyTimestamp(LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER))
                 .pollutant(Pollutant.valueOf(dto.getPollutant()))
                 .pollutantValue(dto.getPollutantValue())
                 .description(description)
