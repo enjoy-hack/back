@@ -107,7 +107,14 @@ public class RoomService {
         }
 
         boolean initialDeviceControlEnabled = room.isDeviceControlEnabled();
-        RoomParticipant newParticipant = new RoomParticipant(room, user, Role.USER, initialDeviceControlEnabled);
+        RoomParticipant newParticipant = RoomParticipant.builder()
+                .room(room)
+                .roleInRoom(user.getRole())
+                .canControlPatDevices(initialDeviceControlEnabled)
+                .patPermissionRequestStatus(PatPermissionRequestStatus.NONE)
+                .user(user)
+                .build();
+
         roomParticipantRepository.save(newParticipant);
 
         room.getParticipants().add(newParticipant); 
@@ -136,7 +143,7 @@ public class RoomService {
         boolean isSystemAdmin = actingUser.getRole() == Role.ADMIN;
         boolean isRoomOwner = room.getOwner().getId().equals(actingUserId);
         if (!isSystemAdmin && !isRoomOwner) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY); // NO_AUTHORITY_TO_MANAGE_PARTICIPANTS 와 같은 구체적 에러코드 사용 가능
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_MANAGE_PARTICIPANTS);
         }
 
         User targetUser = userRepository.findById(targetParticipantUserId)
@@ -167,7 +174,7 @@ public class RoomService {
         boolean isSystemAdmin = actingUser.getRole() == Role.ADMIN;
         boolean isRoomOwner = room.getOwner().getId().equals(actingUserId);
         if (!isSystemAdmin && !isRoomOwner) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY); // NO_AUTHORITY_TO_MANAGE_PARTICIPANTS 와 같은 구체적 에러코드 사용 가능
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_MANAGE_PARTICIPANTS);
         }
 
         User targetUser = userRepository.findById(targetParticipantUserId)
