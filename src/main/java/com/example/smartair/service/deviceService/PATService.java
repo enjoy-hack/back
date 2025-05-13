@@ -1,6 +1,7 @@
 package com.example.smartair.service.deviceService;
 
 import com.example.smartair.dto.deviceDto.PATRequestDto;
+import com.example.smartair.dto.firebaseDto.FirebaseDto;
 import com.example.smartair.entity.device.PATEntity;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomParticipant.RoomParticipant;
@@ -44,8 +45,24 @@ public class PATService {
         return ResponseEntity.ok("PAT 토큰이 암호화되어 저장되었습니다.");
     }
 
-    public ResponseEntity<String> updatePATSetting(User user) throws Exception {
-        //  사용자 ID로 PAT 엔티티 조회
+    public ResponseEntity<String> updatePATSetting(FirebaseDto.PermissionAcceptDto dto) throws Exception {
+
+
+        // 4. 권한에 따른 처리
+        if (hasPermission) {
+            patEntity.setSetting(!patEntity.getSetting());
+            patRepository.save(patEntity);
+            String message = patEntity.getSetting() ? "PAT 기기가 켜졌습니다." : "PAT 기기가 꺼졌습니다.";
+            return ResponseEntity.ok(message);
+        } else {
+            // 추후 여기에 "권한 요청" 로직 추가 예정
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("PAT 장치 제어 권한이 없습니다. 방장에게 권한을 요청하세요.");
+        }
+    }
+}
+
+/*
+*   //  사용자 ID로 PAT 엔티티 조회
         PATEntity patEntity = patRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new CustomException(ErrorCode.PAT_NOT_FOUND));
 
@@ -75,16 +92,4 @@ public class PATService {
                 }
             }
         }
-
-        // 4. 권한에 따른 처리
-        if (hasPermission) {
-            patEntity.setSetting(!patEntity.getSetting());
-            patRepository.save(patEntity);
-            String message = patEntity.getSetting() ? "PAT 기기가 켜졌습니다." : "PAT 기기가 꺼졌습니다.";
-            return ResponseEntity.ok(message);
-        } else {
-            // 추후 여기에 "권한 요청" 로직 추가 예정
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("PAT 장치 제어 권한이 없습니다. 방장에게 권한을 요청하세요.");
-        }
-    }
-}
+        * */

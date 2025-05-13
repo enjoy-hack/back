@@ -7,6 +7,7 @@ import com.example.smartair.dto.roomDto.ParticipantDetailDto;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.service.roomService.RoomService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +18,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/room")
+@Slf4j
 public class RoomController implements RoomControllerDocs {
 
     private final RoomService roomService;
@@ -109,7 +111,8 @@ public class RoomController implements RoomControllerDocs {
         }
         Long requestingUserId = userDetails.getUser().getId();
         String message = roomService.requestPatDeviceControlPermission(requestingUserId, roomId);
-        return ResponseEntity.ok(message);
+        log.info("PAT 장치 제어 권한 요청: {}", message);
+        return ResponseEntity.ok( message);
     }
 
     // PAT 장치 제어 권한 승인 API
@@ -123,6 +126,7 @@ public class RoomController implements RoomControllerDocs {
         }
         Long actingUserId = userDetails.getUser().getId();
         String message = roomService.approvePatDeviceControlPermission(actingUserId, roomParticipantId);
+        log.info("PAT 장치 제어 권한 승인: {}", message);
         return ResponseEntity.ok(message);
     }
 
@@ -137,6 +141,7 @@ public class RoomController implements RoomControllerDocs {
         }
         Long actingUserId = userDetails.getUser().getId();
         String message = roomService.rejectPatDeviceControlPermission(actingUserId, roomParticipantId);
+        log.info("PAT 장치 제어 권한 거절: {}", message);
         return ResponseEntity.ok(message);
     }
 } 

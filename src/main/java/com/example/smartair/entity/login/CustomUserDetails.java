@@ -35,7 +35,6 @@ public class CustomUserDetails implements UserDetails { // 시큐리티에서 �
 
         return user.getPassword();
     }
-
     @Override
     public String getUsername() {
 

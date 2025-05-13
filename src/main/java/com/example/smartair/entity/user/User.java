@@ -38,5 +38,7 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<RoomParticipant> roomParticipants;
 
+    private String fcmToken; // FCM 토큰
+
 
 }
