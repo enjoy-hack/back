@@ -4,6 +4,8 @@ import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Setter
 @Getter
@@ -18,7 +20,7 @@ public class PredictedAirQualityData extends BaseEntity {
     private Long id;
 
     @Column(name = "timestamp")
-    private String timestamp;
+    private LocalDateTime timestamp;
 
     @Column(name = "sensor_id")
     private Long sensorSerialNumber;

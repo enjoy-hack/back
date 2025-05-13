@@ -1,5 +1,6 @@
 package com.example.smartair.service.airQualityService;
 
+import com.example.smartair.controller.predictedAirQualityController.PredictedAirQualityControllerDocs;
 import com.example.smartair.dto.predictedAirQualityDto.PredictedAirQualityDto;
 import com.example.smartair.entity.airData.predictedAirQualityData.PredictedAirQualityData;
 import com.example.smartair.entity.sensor.Sensor;
@@ -11,22 +12,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 @Slf4j
-public class PredictedAirQualityService {
+public class PredictedAirQualityService  {
 
     private final PredictedAirQualityRepository predictedAirQualityRepository;
     private final RoomSensorRepository roomSensorRepository;
 
+    private static final DateTimeFormatter PREDICTED_TIMESTAMP_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     public void setPredictedAirQuality(List<PredictedAirQualityDto> predictedAirQualityDtoList) {
 
         for (PredictedAirQualityDto dto : predictedAirQualityDtoList) {
             Long sensorSerialNumber = dto.getSensorSerialNumber();
-            String timestamp = dto.getTimestamp();
+            LocalDateTime timestamp = LocalDateTime.parse(dto.getTimestamp(), PREDICTED_TIMESTAMP_FORMATTER);
             float pm10 = dto.getPm10();
             float co2 = dto.getCo2();
             float tvoc = dto.getTvoc();
@@ -67,7 +72,7 @@ public class PredictedAirQualityService {
         return predictedAirQualityRepository.findBySensorSerialNumberOrderByTimestamp(sensorSerialNumber);
     }
 
-    @Scheduled(cron = "23 59 59 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void deleteAllData() {
         log.info("매일 자정 데이터 삭제 작업 시작");
         try {

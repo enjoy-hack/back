@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -108,7 +109,10 @@ public class AnomalyReportService {
         Sensor sensor = sensorRepository.findBySerialNumber(sensorSerialNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Sensor not found with serial number: " + sensorSerialNumber));
 
-        return anomalyReportRepository.findOverlappingAnomalyReports(sensor, startDate, endDate);
+        LocalDateTime startDateTime = startDate.atStartOfDay(); // 00:00:00
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX); // 23:59:59.999999999
+
+        return anomalyReportRepository.findAnomaliesBySensorAndDateRange(sensor,startDateTime, endDateTime);
     }
 
 

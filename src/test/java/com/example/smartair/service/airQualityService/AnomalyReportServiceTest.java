@@ -22,6 +22,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -111,8 +112,11 @@ class AnomalyReportServiceTest {
         AnomalyReport report1 = new AnomalyReport();
         AnomalyReport report2 = new AnomalyReport();
 
+        LocalDateTime startDateTime = startDate.atStartOfDay(); // 00:00:00
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX); // 23:59:59.999999999
+
         when(sensorRepository.findBySerialNumber(sensorSerialNumber)).thenReturn(Optional.of(sensor));
-        when(anomalyReportRepository.findOverlappingAnomalyReports(sensor, startDate, endDate))
+        when(anomalyReportRepository.findAnomaliesBySensorAndDateRange(sensor, startDateTime, endDateTime))
                 .thenReturn(List.of(report1, report2));
 
         // when
@@ -121,6 +125,7 @@ class AnomalyReportServiceTest {
         // then
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(anomalyReportRepository, times(1)).findOverlappingAnomalyReports(sensor, startDate, endDate);
+
+        verify(anomalyReportRepository, times(1)).findAnomaliesBySensorAndDateRange(sensor, startDateTime, endDateTime);
     }
 }

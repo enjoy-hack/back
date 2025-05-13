@@ -4,16 +4,14 @@ import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Setter
 @Table(name = "room_sensor")
 public class RoomSensor extends BaseEntity {
     @Id
