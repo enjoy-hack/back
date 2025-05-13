@@ -1,4 +1,4 @@
-package com.example.smartair.service.UserService;
+package com.example.smartair.service.userService;
 
 import com.example.smartair.dto.userDto.JoinDTO;
 import com.example.smartair.entity.user.Role;

@@ -1,4 +1,4 @@
-package com.example.smartair.service.UserService;
+package com.example.smartair.service.userService;
 
 import com.example.smartair.dto.userDto.KakaoTokenResponseDTO;
 import com.example.smartair.dto.userDto.KakaoUserInfoResponseDTO;

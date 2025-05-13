@@ -1,10 +1,6 @@
 package com.example.smartair.controller.userController;
 
 import com.example.smartair.dto.userDto.JoinDTO;
-import com.example.smartair.exception.CustomException;
-import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.service.UserService.JoinService;
-import com.example.smartair.entity.login.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;

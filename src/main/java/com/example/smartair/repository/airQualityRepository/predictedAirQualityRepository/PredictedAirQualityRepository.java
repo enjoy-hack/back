@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PredictedAirQualityRepository extends JpaRepository<PredictedAirQualityData, Long> {
@@ -13,4 +14,8 @@ public interface PredictedAirQualityRepository extends JpaRepository<PredictedAi
 
     // 예측된 공기질 데이터를 조회하는 메소드
     List<PredictedAirQualityData> findByRoomId(Long roomId);
+
+    List<PredictedAirQualityData> findBySensorSerialNumberOrderByTimestamp(Long sensorSerialNumber);
+
+    Optional<PredictedAirQualityData> findBySensorSerialNumberAndTimestamp(Long sensorSerialNumber, String timestamp);
 }
