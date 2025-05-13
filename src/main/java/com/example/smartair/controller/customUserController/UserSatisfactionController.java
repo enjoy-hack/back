@@ -3,7 +3,7 @@ package com.example.smartair.controller.customUserController;
 import com.example.smartair.dto.customUserDto.UserSatisfactionResponseDto;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
-import com.example.smartair.repository.customUserRepository.UserSatisfactionRepository;
+import com.example.smartair.repository.userSatisfactionRepository.UserSatisfactionRepository;
 import com.example.smartair.service.customUserService.UserSatisfactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

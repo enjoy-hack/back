@@ -43,4 +43,10 @@ public class Room extends BaseEntity {
 
     private double latitude;
     private double longitude;
+
+
+    private Double temperature;
+
+    private Double moisture;
+
 }

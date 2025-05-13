@@ -1,7 +1,10 @@
 package com.example.smartair.controller.customUserController;
 
 import com.example.smartair.entity.login.CustomUserDetails;
+import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.service.customUserService.CustomUserService;
 import com.example.smartair.service.customUserService.UserSatisfactionService;
 import lombok.RequiredArgsConstructor;
@@ -20,68 +23,92 @@ public class CustomUserController implements CustomUserControllerDocs{
 
     private final CustomUserService customUserService;
 
-    @GetMapping("/customTemp")
-    public ResponseEntity<?> getCustom(@AuthenticationPrincipal CustomUserDetails userDetails){
+    @GetMapping("/customTemp/{roomId}")
+    public ResponseEntity<?> getCustom(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                       @PathVariable("roomId") Long roomId){
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
         User user = userDetails.getUser();
 
-        return ResponseEntity.ok(customUserService.getCustom(user));
+        return ResponseEntity.ok(customUserService.getCustom(user, roomId));
     }
 
-    @PostMapping("/customTemp")
+
+
+    @PostMapping("/customTemp/{roomId}")
     public ResponseEntity<?> setCustomTemp(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                           @RequestBody Double customTemp){
-        if(userDetails == null){
+                                              @RequestBody Double customTemp,
+                                              @PathVariable("roomId") Long roomId) {
+        if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
-        User user = userDetails.getUser();
 
-        customUserService.setCustomTemp(user, customTemp);
-
-        return ResponseEntity.ok("sucess");
+        customUserService.saveOrUpdateCustomTemp(userDetails.getUser(), customTemp, roomId);
+        return ResponseEntity.ok("success");
     }
 
-    @PutMapping("/customTemp")
+    @PutMapping("/customTemp/{roomId}")
     public ResponseEntity<?> updateCustomTemp(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                              @RequestBody Double customTemp){
-        if(userDetails == null){
+                                              @RequestBody Double customTemp,
+                                              @PathVariable("roomId") Long roomId) {
+        if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
-        User user = userDetails.getUser();
 
-        customUserService.updateCustomTemp(user, customTemp);
-
-        return ResponseEntity.ok("sucess");
+        customUserService.saveOrUpdateCustomTemp(userDetails.getUser(), customTemp, roomId);
+        return ResponseEntity.ok("success");
     }
 
-    @PostMapping("/customMoi")
+
+    @PostMapping("/customMoi/{roomId}")
     public ResponseEntity<?> setCustomMoi(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                           @RequestBody Double customMoi){
+                                           @RequestBody Double customMoi,
+                                           @PathVariable("roomId") Long roomId){
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
         User user = userDetails.getUser();
 
-        customUserService.setCustomMoi(user, customMoi);
+        customUserService.saveOrUpdateCustomMoi(user, customMoi, roomId);
 
         return ResponseEntity.ok("sucess");
     }
 
-    @PutMapping("/customMoi")
+    @PutMapping("/customMoi/{roomId}")
     public ResponseEntity<?> updateCustomMoi(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                             @RequestParam("customMoi")Double customMoi){
+                                             @RequestParam("customMoi")Double customMoi,
+                                             @PathVariable("roomId") Long roomId){
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
         User user = userDetails.getUser();
 
-        customUserService.updateCustomMoi(user, customMoi);
+        customUserService.saveOrUpdateCustomMoi(user, customMoi, roomId);
 
         return ResponseEntity.ok("sucess");
     }
 
+    @DeleteMapping("/customTemp/{roomId}")
+    public ResponseEntity<?> deleteCustomTemp(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                               @PathVariable("roomId") Long roomId) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
 
+        customUserService.saveOrUpdateCustomTemp(userDetails.getUser(), null, roomId);
+        return ResponseEntity.ok("success");
+    }
+
+    @DeleteMapping("/customMoi/{roomId}")
+    public ResponseEntity<?> deleteCustomMoi(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                              @PathVariable("roomId") Long roomId) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+
+        customUserService.saveOrUpdateCustomMoi(userDetails.getUser(), null, roomId);
+        return ResponseEntity.ok("success");
+    }
 
 }
