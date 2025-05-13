@@ -49,4 +49,9 @@ public class Room extends BaseEntity {
 
     private Double moisture;
 
+    public void addParticipant(RoomParticipant participant) {
+        participants.add(participant);
+        participant.setRoom(this);
+    }
+
 }
