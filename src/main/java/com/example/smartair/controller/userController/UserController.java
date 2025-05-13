@@ -7,7 +7,7 @@ import com.example.smartair.entity.login.RefreshEntity;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.jwt.JWTUtil;
 import com.example.smartair.repository.userRepository.RefreshRepository;
-import com.example.smartair.service.UserService.KakaoService;
+import com.example.smartair.service.userService.KakaoService;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

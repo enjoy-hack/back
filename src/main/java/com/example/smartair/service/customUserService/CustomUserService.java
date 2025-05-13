@@ -1,73 +1,53 @@
 package com.example.smartair.service.customUserService;
 
 import com.example.smartair.dto.userDto.CustomResponseDTO;
-import com.example.smartair.entity.user.CustomUser;
+import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.user.User;
-import com.example.smartair.repository.customUserRepository.CustomUserRepository;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
+import com.example.smartair.repository.roomRepository.RoomRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class CustomUserService {
-    private final CustomUserRepository customUserRepository;
-    @Autowired
-    public CustomUserService(CustomUserRepository customUserRepository){
-        this.customUserRepository = customUserRepository;
-   }
+    private final RoomRepository roomRepository;
 
-    public CustomResponseDTO getCustom(User user){
-        Optional<CustomUser> optionalCustomUser = customUserRepository.findCustomUserByEmail(user.getEmail());
+    public CustomResponseDTO getCustom(User user, Long roomId){
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
 
         CustomResponseDTO response = new CustomResponseDTO();
 
-        if(optionalCustomUser.isEmpty()){
-            response.setTemperature(null);
-            response.setMoisture(null);
-        }else{
-            CustomUser customUser = optionalCustomUser.get();
-            response.setTemperature(customUser.getTemperature());
-            response.setMoisture(customUser.getMoisture());
-        }
+        response.setTemperature(room.getTemperature());
+        response.setMoisture(room.getMoisture());
         return response;
     }
-    public void setCustomTemp(User user, Double customTemp){
-        Optional<CustomUser> optionalCustomUser = customUserRepository.findCustomUserByEmail(user.getEmail());
+    public void saveOrUpdateCustomTemp(User user, Double customTemp, Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        CustomUser customUser = new CustomUser();
-        customUser.setEmail(user.getEmail());
-        customUser.setTemperature(customTemp);
+        if (!room.getOwner().equals(user)) {
+            throw new CustomException(ErrorCode.NO_AUTHORITY);
+        }
 
-        customUserRepository.save(customUser);
-
+        room.setTemperature(customTemp);
+        roomRepository.save(room);
     }
-    public void updateCustomTemp(User user, Double customTemp){
-        Optional<CustomUser> optionalCustomUser = customUserRepository.findCustomUserByEmail(user.getEmail());
+    public void saveOrUpdateCustomMoi(User user, Double customMoi, Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        CustomUser customUser = optionalCustomUser.get();
-        customUser.setTemperature(customTemp);
+        if (!room.getOwner().equals(user)) {
+            throw new CustomException(ErrorCode.NO_AUTHORITY);
+        }
 
-        customUserRepository.save(customUser);
+        room.setMoisture(customMoi);
+        roomRepository.save(room);
     }
 
-    public void setCustomMoi(User user, Double customMoi){
-        Optional<CustomUser> optionalCustomUser = customUserRepository.findCustomUserByEmail(user.getEmail());
 
-        CustomUser customUser = new CustomUser();
-        customUser.setEmail(user.getEmail());
-        customUser.setMoisture(customMoi);
-
-        customUserRepository.save(customUser);
-
-    }
-    public void updateCustomMoi(User user, Double customMoi){
-        Optional<CustomUser> optionalCustomUser = customUserRepository.findCustomUserByEmail(user.getEmail());
-
-        CustomUser customUser = optionalCustomUser.get();
-        customUser.setMoisture(customMoi);
-
-        customUserRepository.save(customUser);
-    }
-    
 }

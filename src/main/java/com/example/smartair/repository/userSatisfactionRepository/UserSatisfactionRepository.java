@@ -1,4 +1,4 @@
-package com.example.smartair.repository.customUserRepository;
+package com.example.smartair.repository.userSatisfactionRepository;
 
 import com.example.smartair.entity.user.UserSatisfaction;
 import org.springframework.data.jpa.repository.JpaRepository;

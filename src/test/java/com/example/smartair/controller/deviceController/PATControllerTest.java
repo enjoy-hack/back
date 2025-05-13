@@ -81,35 +81,4 @@ class PATControllerTest {
         assertEquals("Invalid Token", response.getBody());
         verify(patService, never()).savePAT(any(), any());
     }
-
-    @Test
-    void updatePATSetting_ValidRequest_ShouldReturnOk() throws Exception {
-        // Given
-        CustomUserDetails userDetails = mock(CustomUserDetails.class);
-        User user = new User();
-        user.setId(1L);
-        when(userDetails.getUser()).thenReturn(user);
-
-        when(patService.updatePATSetting(user))
-                .thenReturn(ResponseEntity.ok("PAT 설정이 변경되었습니다."));
-
-        // When
-        ResponseEntity<?> response = patController.updatePATSetting(userDetails);
-
-        // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("PAT 설정이 변경되었습니다.", response.getBody());
-        verify(patService, times(1)).updatePATSetting(user);
-    }
-
-    @Test
-    void updatePATSetting_NullUserDetails_ShouldReturnUnauthorized() throws Exception {
-        // When
-        ResponseEntity<?> response = patController.updatePATSetting(null);
-
-        // Then
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("Invalid Token", response.getBody());
-        verify(patService, never()).updatePATSetting(any());
-    }
 }

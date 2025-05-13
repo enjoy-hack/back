@@ -21,6 +21,4 @@ public class PATEntity {
 
     @Column(length = 1024)
     private String encryptedPat;
-
-    private Boolean setting; // true: 공개키, false: 비공개키
 }
