@@ -1,6 +1,7 @@
 package com.example.smartair.repository.deviceRepository;
 
 import com.example.smartair.entity.device.PATEntity;
+import com.example.smartair.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,5 +15,5 @@ public interface PATRepository extends JpaRepository<PATEntity, String> {
 
     boolean existsByUserId(Long userId);
 
-
+    Optional<User> findUserIdByRoomId(Long roomId);
 }

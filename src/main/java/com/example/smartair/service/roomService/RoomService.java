@@ -13,6 +13,7 @@ import com.example.smartair.repository.userRepository.UserRepository;
 import com.example.smartair.entity.roomParticipant.PatPermissionRequestStatus;
 
 
+import com.google.firebase.messaging.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -215,7 +216,7 @@ public class RoomService {
         }
 
         RoomParticipant participant = roomParticipantRepository.findByRoomAndUser(room, requestingUser)
-                .orElseThrow(() -> new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM)); 
+                .orElseThrow(() -> new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM));
 
         // 방 전체 설정으로 이미 제어 가능한 경우
         if (room.isDeviceControlEnabled()) {
@@ -236,9 +237,33 @@ public class RoomService {
         participant.setPatPermissionRequestStatus(PatPermissionRequestStatus.PENDING);
         roomParticipantRepository.save(participant);
 
-        // TODO: 방장에게 알림을 보내는 로직 추가 (예: 이벤트 발행 또는 직접 알림 서비스 호출)
 
-        return "PAT 장치 제어 권한 요청이 방장에게 전송되었습니다. 승인을 기다려주세요.";
+        String targetToken = room.getOwner().getFcmToken();
+
+        Message message = Message.builder()
+                .setToken(targetToken)
+                .putData("type", "PERMISSION_REQUEST")
+                .putData("requesterUserId", String.valueOf(requestingUser.getUsername()))
+                .putData("message", "사용자로부터 권한 요청이 도착했습니다.")
+                .setNotification(Notification.builder()
+                        .setTitle("권한 요청")
+                        .setBody("권한 요청이 도착했습니다. 수락하시겠습니까?")
+                        .build())
+                .build();
+
+        try {
+            return FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            if (e.getMessagingErrorCode().equals(MessagingErrorCode.INVALID_ARGUMENT)) {
+                // 토큰이 유효하지 않은 경우, 오류 코드를 반환
+                return e.getMessagingErrorCode().toString();
+            } else if (e.getMessagingErrorCode().equals(MessagingErrorCode.UNREGISTERED)) {
+                // 재발급된 이전 토큰인 경우, 오류 코드를 반환
+                return e.getMessagingErrorCode().toString();
+            } else { // 그 외, 오류는 런타임 예외로 처리
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /**
@@ -274,9 +299,32 @@ public class RoomService {
         targetParticipant.setPatPermissionRequestStatus(PatPermissionRequestStatus.APPROVED);
         roomParticipantRepository.save(targetParticipant);
 
-        // TODO: 요청자에게 승인 알림을 보내는 로직 추가
+        String targetToken = targetParticipant.getUser().getFcmToken();
 
-        return "사용자 ID " + targetParticipant.getUser().getId() + "의 PAT 장치 제어 권한 요청이 승인되었습니다.";
+        Message message = Message.builder()
+                .setToken(targetToken)
+                .putData("type", "PERMISSION_APPROVED")
+                .putData("message", "사용자 ID " + targetParticipant.getUser().getUsername() + "의 장치 제어 권한 요청이 승인되었습니다.")
+                .setNotification(Notification.builder()
+                        .setTitle("권한 승인")
+                        .setBody("제어 권한 요청이 승인되었습니다.")
+                        .build())
+                .build();
+
+        try {
+            return FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            if (e.getMessagingErrorCode().equals(MessagingErrorCode.INVALID_ARGUMENT)) {
+                // 토큰이 유효하지 않은 경우, 오류 코드를 반환
+                return e.getMessagingErrorCode().toString();
+            } else if (e.getMessagingErrorCode().equals(MessagingErrorCode.UNREGISTERED)) {
+                // 재발급된 이전 토큰인 경우, 오류 코드를 반환
+                return e.getMessagingErrorCode().toString();
+            } else { // 그 외, 오류는 런타임 예외로 처리
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 
     /**
@@ -312,9 +360,29 @@ public class RoomService {
         targetParticipant.setPatPermissionRequestStatus(PatPermissionRequestStatus.REJECTED);
         roomParticipantRepository.save(targetParticipant);
 
-        // TODO: 요청자에게 거절 알림을 보내는 로직 추가
-
-        return "사용자 ID " + targetParticipant.getUser().getId() + "의 PAT 장치 제어 권한 요청이 거절되었습니다.";
+        String targetToken = targetParticipant.getUser().getFcmToken();
+        Message message = Message.builder()
+                .setToken(targetToken)
+                .putData("type", "PERMISSION_REJECTED")
+                .putData("message", "사용자 ID " + targetParticipant.getUser().getUsername() + "의 장치 제어 권한 요청이 거절되었습니다.")
+                .setNotification(Notification.builder()
+                        .setTitle("권한 거절")
+                        .setBody("제어 권한 요청이 거절되었습니다.")
+                        .build())
+                .build();
+        try {
+            return FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            if (e.getMessagingErrorCode().equals(MessagingErrorCode.INVALID_ARGUMENT)) {
+                // 토큰이 유효하지 않은 경우, 오류 코드를 반환
+                return e.getMessagingErrorCode().toString();
+            } else if (e.getMessagingErrorCode().equals(MessagingErrorCode.UNREGISTERED)) {
+                // 재발급된 이전 토큰인 경우, 오류 코드를 반환
+                return e.getMessagingErrorCode().toString();
+            } else { // 그 외, 오류는 런타임 예외로 처리
+                throw new RuntimeException(e);
+            }
+        }
     }
 
 

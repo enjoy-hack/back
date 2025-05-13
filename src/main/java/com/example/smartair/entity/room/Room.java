@@ -50,4 +50,8 @@ public class Room extends BaseEntity {
     }
 
 
+    private Double temperature;
+
+    private Double moisture;
+
 }

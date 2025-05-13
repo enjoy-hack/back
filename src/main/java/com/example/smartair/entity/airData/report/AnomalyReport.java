@@ -28,7 +28,7 @@ public class AnomalyReport extends BaseEntity {
     private Sensor sensor;
 
     @Column(nullable = false)
-    private LocalDateTime anomalyTimestamp; // 이상치 발생 시각
+    private LocalDateTime anomalyTimestamp; // 이상치 발생 시각 2025-05-13 15:45:00
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

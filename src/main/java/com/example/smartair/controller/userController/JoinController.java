@@ -3,7 +3,7 @@ package com.example.smartair.controller.userController;
 import com.example.smartair.dto.userDto.JoinDTO;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.service.UserService.JoinService;
+import com.example.smartair.service.userService.JoinService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -7,7 +7,7 @@ import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.entity.user.UserSatisfaction;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
-import com.example.smartair.repository.customUserRepository.UserSatisfactionRepository;
+import com.example.smartair.repository.userSatisfactionRepository.UserSatisfactionRepository;
 import com.example.smartair.service.airQualityService.AirQualityQueryService;
 import com.example.smartair.service.customUserService.UserSatisfactionService;
 import org.junit.jupiter.api.BeforeEach;

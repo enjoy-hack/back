@@ -1,7 +1,10 @@
 package com.example.smartair.controller.airQualityDataController;
 
+import com.example.smartair.dto.airQualityDataDto.AnomalyReportDto;
+import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
+import com.example.smartair.service.airQualityService.report.AnomalyReportService;
 import com.example.smartair.service.airQualityService.report.DailyReportService;
 import com.example.smartair.service.airQualityService.report.WeeklyReportService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +30,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
 
     private final DailyReportService dailyReportService;
     private final WeeklyReportService weeklyReportService;
+    private final AnomalyReportService anomalyReportService;
 
     // === 일별 리포트 API ===
     @GetMapping("/daily/{sensorId}/{date}")
@@ -90,4 +94,20 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
         List<WeeklySensorAirQualityReport> reports = weeklyReportService.getWeeklyReportsForPeriod(sensorId, startDate, endDate);
         return ResponseEntity.ok(reports);
     }
+    @PostMapping("/anomaly")
+    public ResponseEntity<?> setAnomalyDailyReport(@RequestBody AnomalyReportDto anomalyReportDto) {
+        return ResponseEntity.ok(anomalyReportService.setAnomalyReport(anomalyReportDto));
+    }
+
+    @GetMapping("/anomaly/{sensorId}/{startDate}/{endDate}")
+    public ResponseEntity<List<AnomalyReport>> getAnomalyReports(
+            @Parameter(description = "리포트를 조회할 센서의 ID", required = true, example = "1") @PathVariable Long sensorId,
+            @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<AnomalyReport> anomalyReports = anomalyReportService.getAnomalyReports(sensorId, startDate, endDate);
+        return ResponseEntity.ok(anomalyReports);
+    }
+
 } 
