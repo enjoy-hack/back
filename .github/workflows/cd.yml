@@ -1,8 +1,11 @@
 name: CD for main
 
 on:
-  push:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["CI for main"]  # CI 워크플로우 이름과 정확히 일치해야 함
+    branches: [main]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       branch:
@@ -18,6 +21,7 @@ env:
 
 jobs:
   build-and-docker-operations:
+    if : ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.generate_tag.outputs.tag }}
@@ -112,9 +116,8 @@ jobs:
       AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_FOR_CI }} # CI용 Secret 사용 또는 앱 전용 Secret 생성
       SPRING_PROFILES_ACTIVE: prod # prod 프로파일 활성화
 
-      # ThinQ 및 PAT 관련 Secrets
       THINQ_API_BASE_URL: ${{ secrets.THINQ_API_BASE_URL }}
-      THINQ_API_KEY: ${{ secrets.THINQ_API_KEY }}
+      THINQ_API_API_KEY: ${{ secrets.THINQ_API_API_KEY }}
       THINQ_API_COUNTRY: ${{ secrets.THINQ_API_COUNTRY }}
       THINQ_API_CLIENT_ID_PREFIX: ${{ secrets.THINQ_API_CLIENT_ID_PREFIX }}
       PAT_SECRET_KEY: ${{ secrets.PAT_SECRET_KEY }}
@@ -141,11 +144,14 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }} # EC2_USERNAME Secret 사용
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} 
           port: 22
-          envs: AWS_REGION,MYSQL_DB_NAME,MYSQL_DB_USERNAME,MYSQL_DB_PASSWORD,IMAGE_TAG,ECR_REGISTRY_URI,RDS_ENDPOINT,JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI_EC2_PROD,MQTT_URL_EC2_PROD,MQTT_USERNAME_EC2_PROD,MQTT_PASSWORD_EC2_PROD,FIREBASE_CONFIG_PATH,S3_BUCKET_NAME,AWS_S3_ACCESS_KEY_ID,AWS_S3_SECRET_ACCESS_KEY,SPRING_PROFILES_ACTIVE
+          envs: AWS_REGION,MYSQL_DB_NAME,MYSQL_DB_USERNAME,MYSQL_DB_PASSWORD,IMAGE_TAG,ECR_REGISTRY_URI,RDS_ENDPOINT,
+            JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI_EC2_PROD,MQTT_URL_EC2_PROD,MQTT_USERNAME_EC2_PROD,
+            MQTT_PASSWORD_EC2_PROD,FIREBASE_CONFIG_PATH,S3_BUCKET_NAME,AWS_S3_ACCESS_KEY_ID,AWS_S3_SECRET_ACCESS_KEY,SPRING_PROFILES_ACTIVE,
+            THINQ_API_BASE_URL,THINQ_API_API_KEY,THINQ_API_COUNTRY,THINQ_API_CLIENT_ID_PREFIX,PAT_SECRET_KEY
+
           script: |
             echo "--- Initial directory before cd ---"
             pwd
-            # scp-action이 compose/docker/docker 구조를 만들 것으로 예상
             mkdir -p ~/compose/docker/docker 
             cd ~/compose/docker/docker/ # <--- cd 경로는 compose/docker/docker로 유지
             echo "--- Current directory after cd (should be ~/compose/docker/docker/) ---"
@@ -176,6 +182,11 @@ jobs:
             AWS_S3_ACCESS_KEY_ID=$AWS_S3_ACCESS_KEY_ID
             AWS_S3_SECRET_ACCESS_KEY=$AWS_S3_SECRET_ACCESS_KEY
             SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE
+            THINQ_API_BASE_URL=$THINQ_API_BASE_URL
+            THINQ_API_API_KEY=$THINQ_API_API_KEY
+            THINQ_API_COUNTRY=$THINQ_API_COUNTRY
+            THINQ_API_CLIENT_ID_PREFIX=$THINQ_API_CLIENT_ID_PREFIX
+            PAT_SECRET_KEY=$PAT_SECRET_KEY
 
             # Spring Boot Datasource 환경 변수
             SPRING_DATASOURCE_URL=jdbc:mysql://${RDS_ENDPOINT}:3306/${MYSQL_DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
@@ -210,16 +221,9 @@ jobs:
             # Spring Profiles
             SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE
 
-            # ThinQ API 및 PAT Secret Key 환경 변수
-            THINQ_API_BASE_URL=$THINQ_API_BASE_URL
-            THINQ_API_KEY=$THINQ_API_KEY
-            THINQ_API_COUNTRY=$THINQ_API_COUNTRY
-            THINQ_API_CLIENT_ID_PREFIX=$THINQ_API_CLIENT_ID_PREFIX
-            PAT_SECRET_KEY=$PAT_SECRET_KEY
-
             # Spring Boot 환경 변수 (위와 동일하지만 Spring Boot 관례에 따름)
             SPRING_THINQ_API_BASE_URL=$THINQ_API_BASE_URL
-            SPRING_THINQ_API_API_KEY=$THINQ_API_KEY
+            SPRING_THINQ_API_API_KEY=$THINQ_API_API_KEY
             SPRING_THINQ_API_COUNTRY=$THINQ_API_COUNTRY
             SPRING_THINQ_API_CLIENT_ID_PREFIX=$THINQ_API_CLIENT_ID_PREFIX
             SPRING_PAT_SECRET_KEY=$PAT_SECRET_KEY

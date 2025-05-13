@@ -16,7 +16,7 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - .env
+      - /home/ec2-user/compose/docker/docker/.env
     depends_on:
       - mqtt
     networks:
@@ -25,7 +25,6 @@ services:
       resources:
         limits:
           memory: 800M
-    command: ["sleep", "infinity"]
 
 networks:
   app-network:

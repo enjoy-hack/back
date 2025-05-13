@@ -44,3 +44,4 @@ application-aws.yml
 
 /src/main/resources/firebase/
 
+/docker/.env

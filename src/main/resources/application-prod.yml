@@ -1,9 +1,9 @@
 spring:
   datasource:
-    # EC2에서는 실제 RDS 엔드포인트 등으로 변경해야 함
+    #변경 적용되었는지 확인합니다
     url: jdbc:mysql://${RDS_ENDPOINT}:3306/${MYSQL_DB_NAME}
     username: ${MYSQL_DB_USERNAME} # EC2에 설정된 환경 변수
-    password: ${MYSQL_DB_PASSWORD} # EC2에 설정된 환경 변수 (보안 매우 중요)
+    password: ${MYSQL_DB_PASSWORD} # EC2에 설정된 환경 변수
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -73,10 +73,11 @@ cloud:
 
 thinq:
   api:
-    base-url: ${THINQ_API_BASE_URL}
-    api-key: ${THINQ_API_KEY}
-    country: ${THINQ_API_COUNTRY}
-    client-id-prefix: ${THINQ_API_CLIENT_ID_PREFIX}
+    base-url: ${SPRING_THINQ_API_BASE_URL}
+    api-key: ${SPRING_THINQ_API_KEY}
+    country: ${SPRING_THINQ_API_COUNTRY}
+    client-id-prefix: ${SPRING_THINQ_API_CLIENT_ID_PREFIX}
 
 pat:
   secret-key: ${PAT_SECRET_KEY}
+
