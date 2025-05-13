@@ -1,4 +1,4 @@
-package com.example.smartair.service.airQualityService;
+package com.example.smartair.service.airQualityService.airQualityScoreTest;
 
 import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
