@@ -2,6 +2,7 @@ package com.example.smartair.controller.deviceController;
 
 import com.example.smartair.dto.deviceDto.PATRequestDto;
 import com.example.smartair.entity.login.CustomUserDetails;
+import com.example.smartair.entity.user.Role;
 import com.example.smartair.service.deviceService.PATService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

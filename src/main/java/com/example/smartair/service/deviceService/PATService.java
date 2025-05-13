@@ -29,6 +29,13 @@ public class PATService {
     private final RoomParticipantRepository roomParticipantRepository;
 
     public ResponseEntity<String> savePAT(User user, PATRequestDto request) throws Exception {
+
+        Room room = roomRepository.findRoomById(request.getRoomId())
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+        if(!room.getOwner().equals(user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("해당 방의 소유자가 아닙니다.");
+        }
+
         // PAT 토큰을 암호화하여 저장
         String encryptedPatToken = encryptionUtil.encrypt(request.getPatToken());
 

@@ -48,6 +48,8 @@ public class SensorService {
 
         Room room = optionalRoom.get();
 
+        if(!room.getOwner().equals(user)) throw new Exception(new CustomException(ErrorCode.NO_AUTHORITY));
+
         Optional<RoomSensor>  optionalRoomSensor = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(
                 sensorRequestDto.serialNumber(),room.getId());
         if(optionalRoomSensor.isPresent()) throw new Exception(new CustomException(ErrorCode.SENSOR_ALREADY_EXIST_IN_ROOM));
@@ -75,6 +77,11 @@ public class SensorService {
     }
 
     public void deleteSensor(User user, SensorRequestDto.deleteSensorDto sensorDto) throws Exception {
+        Room room = roomRepository.findRoomById(sensorDto.roomId())
+                .orElseThrow(() -> new Exception(new CustomException(ErrorCode.ROOM_NOT_FOUND)));
+
+        if(!room.getOwner().equals(user)) throw new Exception(new CustomException(ErrorCode.NO_AUTHORITY));
+
         Optional<RoomSensor> optionalRoomSensor = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(sensorDto.serialNumber(), sensorDto.roomId());
         if(optionalRoomSensor.isEmpty()) throw new Exception(new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND));
 
