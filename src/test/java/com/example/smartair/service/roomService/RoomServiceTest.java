@@ -1,180 +1,476 @@
-//package com.example.smartair.service.roomService;
-//
-//import com.example.smartair.dto.roomDto.CreateRoomRequestDto;
-//import com.example.smartair.dto.roomDto.RoomDetailResponse;
-//import com.example.smartair.entity.place.Place;
-//import com.example.smartair.entity.room.Room;
-//import com.example.smartair.entity.user.User;
-//import com.example.smartair.repository.placeRepository.PlaceRepository;
-//import com.example.smartair.repository.roomRepository.RoomRepository;
-//import com.example.smartair.repository.userRepository.UserRepository;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.DisplayName;
-//import org.junit.jupiter.api.Test;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.MockitoAnnotations;
-//
-//import java.util.List;
-//import java.util.Optional;
-//
-//import static org.assertj.core.api.Assertions.assertThat;
-//import static org.junit.jupiter.api.Assertions.assertEquals;
-//import static org.junit.jupiter.api.Assertions.assertNotNull;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.Mockito.*;
-//
-//class RoomServiceTest {
-//
-//    @Mock
-//    private UserRepository userRepository;
-//
-//    @Mock
-//    private RoomRepository roomRepository;
-//
-//    @Mock
-//    private PlaceRepository placeRepository;
-//
-//    @InjectMocks
-//    private RoomService roomService;
-//
-//    @BeforeEach
-//    void setUp() {
-//        MockitoAnnotations.openMocks(this);
-//    }
-//
-//    @Test
-//    @DisplayName("방 생성에 성공")
-//    void createRoom(){
-//        //given
-//        User user = User.builder().id(1L).build();
-//        Place place = Place.builder().id(1L).name("내 집").build();
-//
-//        CreateRoomRequestDto data = CreateRoomRequestDto.builder()
-//                .name("거실")
-//                .place(place)
-//                .build();
-//
-//        Room room = Room.builder()
-//                .id(1L)
-//                .name("거실")
-//                .place(place)
-//                .user(user)
-//                .build();
-//
-//        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-//        when(roomRepository.save(any(Room.class))).thenReturn(room);
-//
-//        //when
-//        RoomDetailResponse roomDetailResponse = roomService.createRoom(1L, data);
-//
-//        //then
-//        assertNotNull(roomDetailResponse);
-//        assertEquals("거실", roomDetailResponse.getName());
-//        assertEquals("내 집", roomDetailResponse.getPlace().getName());
-//    }
-//
-//    @Test
-//    @DisplayName("방 수정에 성공")
-//    void updateRoom(){
-//        //given
-//        User user = User.builder().id(1L).build();
-//        Place place = Place.builder().id(1L).name("학교").build();
-//
-//        CreateRoomRequestDto data = CreateRoomRequestDto.builder()
-//                .name("수정된 방 이름")
-//                .place(place)
-//                .build();
-//
-//        Room room = Room.builder()
-//                .id(1L)
-//                .name("수정되기 전 방 이름")
-//                .place(place)
-//                .user(user)
-//                .build();
-//
-//        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-//        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
-//        when(roomRepository.save(any(Room.class))).thenReturn(room);
-//
-//        //when
-//        RoomDetailResponse roomDetailResponse = roomService.updateRoom(1L, 1L, data);
-//
-//        //then
-//        assertNotNull(roomDetailResponse);
-//        assertEquals("수정된 방 이름", roomDetailResponse.getName());
-//        assertEquals("학교", roomDetailResponse.getPlace().getName());
-//    }
-//
-//    @Test
-//    @DisplayName("방 삭제에 성공")
-//    void deleteRoom(){
-//        //given
-//        Room room = Room.builder().id(1L).build();
-//
-//        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
-//        doNothing().when(roomRepository).delete(room);
-//
-//        //when
-//        roomService.deleteRoom(1L);
-//
-//        //then
-//        verify(roomRepository).findById(1L);
-//        verify(roomRepository).delete(room);
-//    }
-//
-//    @Test
-//    @DisplayName("방 상세조회에 성공")
-//    void getRoomDetail(){
-//        //given
-//        Place place = Place.builder().id(1L).name("학교").build();
-//        User user = User.builder().id(1L).build();
-//
-//        Room room = Room.builder()
-//                .id(1L)
-//                .name("거실")
-//                .place(place)
-//                .owner(user)
-//                .build();
-//
-//        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
-//
-//        //when
-//        RoomDetailResponse roomDetailResponse = roomService.getRoomDetail(1L);
-//
-//        //then
-//        assertNotNull(roomDetailResponse);
-//        assertEquals("거실", roomDetailResponse.getName());
-//        assertEquals("학교", roomDetailResponse.getPlaceId().getName());
-//    }
-//
-//    @Test
-//    @DisplayName("특정 place의 방 목록 조회에 성공")
-//    void getAllRoomsByPlace(){
-//        //given
-//        Long placeId = 1L;
-//        Place place = Place.builder().id(placeId).name("내 집").build();
-//
-//        Room room1 = Room.builder().id(1L).name("거실").place(place).build();
-//        Room room2 = Room.builder().id(2L).name("안방").place(place).build();
-//
-//        List<Room> roomList = List.of(room1, room2);
-//
-//        when(roomRepository.findAllByPlace(place)).thenReturn(roomList);
-//        when(placeRepository.findById(placeId)).thenReturn(Optional.of(place));
-//
-//        //when
-//        List<RoomDetailResponse> roomDetailResponseList = roomService.getAllRoomsByPlace(placeId);
-//
-//        //then
-//        assertNotNull(roomDetailResponseList);
-//        assertThat(roomDetailResponseList).hasSize(2);
-//        assertThat(roomDetailResponseList.get(0).getName()).isEqualTo("거실");
-//        assertThat(roomDetailResponseList.get(1).getName()).isEqualTo("안방");
-//
-//        verify(roomRepository).findAllByPlace(place);
-//        verify(placeRepository).findById(placeId);
-//    }
-//
-//
-//}
+package com.example.smartair.service.roomService;
+
+
+import com.example.smartair.dto.roomDto.CreateRoomRequestDto;
+import com.example.smartair.dto.roomDto.JoinRoomRequestDto;
+import com.example.smartair.dto.roomDto.RoomDetailResponseDto;
+import com.example.smartair.entity.room.Room;
+import com.example.smartair.entity.roomParticipant.PatPermissionRequestStatus;
+import com.example.smartair.entity.roomParticipant.RoomParticipant;
+import com.example.smartair.entity.user.Role;
+import com.example.smartair.entity.user.User;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
+import com.example.smartair.repository.roomParticipantRepository.RoomParticipantRepository;
+import com.example.smartair.repository.roomRepository.RoomRepository;
+import com.example.smartair.repository.userRepository.UserRepository;
+import org.checkerframework.checker.units.qual.N;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Nested;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+class RoomServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private RoomRepository roomRepository;
+
+    @Mock
+    private RoomParticipantRepository roomParticipantRepository;
+
+    @InjectMocks
+    private RoomService roomService;
+
+    private User adminUser;
+    private User managerUser;
+    private User normalUser;
+    private RoomParticipant normalRoomParticipant;
+    private CreateRoomRequestDto createRoomRequestDto;
+    private Room room;
+    private JoinRoomRequestDto joinRoomRequestDto;
+    private JoinRoomRequestDto wrongJoinRoomRequestDto;
+
+    @BeforeEach
+    void setUpTestData() {
+
+        MockitoAnnotations.openMocks(this);
+
+        adminUser = User.builder()
+                .id(1L)
+                .role(Role.ADMIN).build();
+
+        managerUser = User.builder()
+                .id(2L)
+                .role(Role.MANAGER).build();
+
+        normalUser = User.builder()
+                .id(3L)
+                .role(Role.USER).build();
+
+        normalRoomParticipant = RoomParticipant.builder()
+                .user(normalUser)
+                .roleInRoom(Role.USER)
+                .patPermissionRequestStatus(PatPermissionRequestStatus.NONE)
+                .room(room)
+                .build();
+
+        createRoomRequestDto = CreateRoomRequestDto.builder()
+                .name("Test Room")
+                .password("testPassword")
+                .deviceControlEnabled(false)
+                .latitude(10.0)
+                .longitude(20.0)
+                .build();
+
+        joinRoomRequestDto = JoinRoomRequestDto.builder()
+                .password("testPassword")
+                .build();
+
+        wrongJoinRoomRequestDto = JoinRoomRequestDto.builder()
+                .password("wrongPassword")
+                .build();
+
+        room = Room.builder()
+                .name("Test Room")
+                .password("testPassword")
+                .deviceControlEnabled(true)
+                .latitude(10.0)
+                .longitude(20.0)
+                .owner(managerUser)
+                .build();
+    }
+
+    @Nested
+    @DisplayName("방 생성 시나리오")
+    class CreateRoomTests {
+
+        @Test
+        @DisplayName("admin 유저가 방을 생성할 때 성공")
+        void testCreateRoomByAdmin() {
+            // given
+            when(userRepository.findById(adminUser.getId())).thenReturn(Optional.of(adminUser));
+            when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> {
+                Room savedRoom = invocation.getArgument(0);
+                assertThat(savedRoom.getOwner()).isEqualTo(adminUser);
+                assertThat(savedRoom.getName()).isEqualTo(createRoomRequestDto.getName());
+                assertThat(savedRoom.getPassword()).isEqualTo(createRoomRequestDto.getPassword());
+                assertThat(savedRoom.isDeviceControlEnabled()).isEqualTo(createRoomRequestDto.isDeviceControlEnabled());
+                assertThat(savedRoom.getLatitude()).isEqualTo(createRoomRequestDto.getLatitude());
+                assertThat(savedRoom.getLongitude()).isEqualTo(createRoomRequestDto.getLongitude());
+                return savedRoom;
+            });
+
+            when(roomParticipantRepository.save(any())).thenAnswer(invocation -> {
+                RoomParticipant savedParticipant = invocation.getArgument(0);
+                assertThat(savedParticipant.getUser()).isEqualTo(adminUser);
+                return savedParticipant;
+            });
+
+            // when
+            RoomDetailResponseDto resultDto = roomService.createRoom(adminUser.getId(), createRoomRequestDto);
+
+            // then
+            assertThat(resultDto).isNotNull();
+            assertThat(resultDto.getName()).isEqualTo(createRoomRequestDto.getName());
+            verify(userRepository).findById(adminUser.getId());
+            verify(roomRepository).save(any());
+            verify(roomParticipantRepository).save(any());
+        }
+
+        @Test
+        @DisplayName("manager 유저가 방을 생성할 때 성공")
+        void testCreateRoomByManager() {
+            // given
+            when(userRepository.findById(managerUser.getId())).thenReturn(Optional.of(managerUser));
+            when(roomRepository.save(any())).thenAnswer(invocation -> {
+                Room savedRoom = invocation.getArgument(0);
+                assertThat(savedRoom.getOwner()).isEqualTo(managerUser);
+                assertThat(savedRoom.getName()).isEqualTo(createRoomRequestDto.getName());
+                assertThat(savedRoom.getPassword()).isEqualTo(createRoomRequestDto.getPassword());
+                assertThat(savedRoom.isDeviceControlEnabled()).isEqualTo(createRoomRequestDto.isDeviceControlEnabled());
+                assertThat(savedRoom.getLatitude()).isEqualTo(createRoomRequestDto.getLatitude());
+                assertThat(savedRoom.getLongitude()).isEqualTo(createRoomRequestDto.getLongitude());
+                return savedRoom;
+            });
+            when(roomParticipantRepository.save(any())).thenAnswer(invocation -> {
+                RoomParticipant savedParticipant = invocation.getArgument(0);
+                assertThat(savedParticipant.getUser()).isEqualTo(managerUser);
+                return savedParticipant;
+            });
+
+            // when
+            RoomDetailResponseDto resultDto = roomService.createRoom(managerUser.getId(), createRoomRequestDto);
+
+            // then
+            assertThat(resultDto).isNotNull();
+            assertThat(resultDto.getName()).isEqualTo(createRoomRequestDto.getName());
+            verify(userRepository).findById(managerUser.getId());
+            verify(roomRepository).save(any());
+            verify(roomParticipantRepository).save(any());
+        }
+
+        @Test
+        @DisplayName("일반 유저가 방을 생성할 때 예외 발생")
+        void testCreateRoomWithNormalUser() {
+            //given
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+
+            //when & then
+            assertThatThrownBy(() -> roomService.createRoom(normalUser.getId(), createRoomRequestDto))
+                    .isInstanceOf(CustomException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NO_AUTHORITY);
+
+            verify(userRepository).findById(normalUser.getId());
+            verify(roomRepository, never()).save(any());
+            verify(roomParticipantRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 유저로 방을 생성할 때 예외 발생")
+        void testCreateRoomWithNonExistentUser() {
+            // given
+            Long nonExistentUserId = 999L;
+            when(userRepository.findById(nonExistentUserId)).thenReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> roomService.createRoom(nonExistentUserId, createRoomRequestDto))
+                    .isInstanceOf(CustomException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
+
+            verify(userRepository).findById(nonExistentUserId);
+            verify(roomRepository, never()).save(any());
+            verify(roomParticipantRepository, never()).save(any());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("방 참여 시나리오")
+    class JoinRoomTests {
+
+        @Test
+        @DisplayName("일반 유저가 방에 참여할 때 성공")
+        void testUserJoinSuccess() {
+            //given
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+            when(roomRepository.findById(any())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.save(any(RoomParticipant.class))).thenAnswer(invocation ->
+            {
+                RoomParticipant savedParticipant = invocation.getArgument(0);
+                assertThat(savedParticipant.getUser()).isEqualTo(normalUser);
+                assertThat(savedParticipant.getRoleInRoom()).isEqualTo(Role.USER);
+                assertThat(savedParticipant.getRoom()).isEqualTo(room);
+                return savedParticipant;
+            });
+
+            //when
+            RoomDetailResponseDto resultDto = roomService.joinRoom(normalUser.getId(), room.getId(), joinRoomRequestDto);
+
+            //then
+            //room의 participants set에 추가되었는지 검증
+            verify(roomParticipantRepository).save(argThat(participant -> {
+                boolean isUserMatch = participant.getUser().equals(normalUser);
+                boolean isRoomMatch = participant.getRoom().equals(room);
+                return isRoomMatch && isUserMatch;
+            }));
+
+            //room의 participants set 검증
+            assertThat(room.getParticipants()).hasSize(1);
+            assertThat(room.getParticipants()).extracting("user").contains(normalUser);
+
+            //DTO 검증
+            assertThat(resultDto).isNotNull();
+            assertThat(resultDto.getName()).isEqualTo(room.getName());
+        }
+
+        @Test
+        @DisplayName("방장이 자신의 방에 참여할 때 예외 발생")
+        void testJoinOwner() {
+            //given
+            when(userRepository.findById(managerUser.getId())).thenReturn(Optional.of(managerUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+
+            //when & then
+            assertThatThrownBy(() -> roomService.joinRoom(managerUser.getId(), room.getId(), joinRoomRequestDto))
+                    .isInstanceOf(CustomException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.OWNER_CANNOT_JOIN_OWN_ROOM);
+        }
+
+        @Test
+        @DisplayName("방 비밀번호가 틀렸을 때 예외 발생")
+        void testWrongPassword() {
+            //given
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+
+            //when & then
+            assertThatThrownBy(() -> roomService.joinRoom(normalUser.getId(), room.getId(), wrongJoinRoomRequestDto))
+                    .isInstanceOf(CustomException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_ROOM_PASSWORD);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("PAT 장치 제어 권한 관리 시나리오")
+    class UpdateParticipantDeviceControlTests {
+
+        @Test
+        @DisplayName("방장이 방 참여자의 기기 제어 권한을 변경할 때 성공")
+        void testUpdateParticipantDeviceControlByOwner() {
+            // given
+            when(userRepository.findById(managerUser.getId())).thenReturn(Optional.of(managerUser));
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.findByRoomAndUser(room, normalUser)).thenReturn(Optional.of(normalRoomParticipant));
+
+            // when
+            roomService.updateParticipantDeviceControl(managerUser.getId(), room.getId(), normalUser.getId(), true);
+
+            // then
+            verify(userRepository).findById(managerUser.getId());
+            assertThat(normalRoomParticipant.getCanControlPatDevices()).isEqualTo(true);
+        }
+
+        @Test
+        @DisplayName("방장이 방 참여자의 기기 제어 권한 요청을 승인할 때 성공")
+        void testApprovePatDeviceControlRequestByOwner() {
+            // given
+            room.addParticipant(normalRoomParticipant);
+            normalRoomParticipant.setPatPermissionRequestStatus(PatPermissionRequestStatus.PENDING);
+            when(userRepository.findById(managerUser.getId())).thenReturn(Optional.of(managerUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.findById(normalRoomParticipant.getId())).thenReturn(Optional.of(normalRoomParticipant));
+
+            // when
+            roomService.approvePatDeviceControlPermission(managerUser.getId(), normalRoomParticipant.getId());
+
+            //then
+            assertThat(normalRoomParticipant.getCanControlPatDevices()).isEqualTo(true);
+            assertThat(normalRoomParticipant.getPatPermissionRequestStatus()).isEqualTo(PatPermissionRequestStatus.APPROVED);
+            verify(roomParticipantRepository).save(normalRoomParticipant);
+        }
+
+        @Test
+        @DisplayName("방장이 방 참여자의 기기 제어 권한 요청을 거부할 때 성공")
+        void testDenyPatDeviceControlRequestByOwner() {
+            // given
+            room.addParticipant(normalRoomParticipant);
+            normalRoomParticipant.setPatPermissionRequestStatus(PatPermissionRequestStatus.PENDING);
+            when(userRepository.findById(managerUser.getId())).thenReturn(Optional.of(managerUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.findById(normalRoomParticipant.getId())).thenReturn(Optional.of(normalRoomParticipant));
+
+            // when
+            roomService.rejectPatDeviceControlPermission(managerUser.getId(), normalRoomParticipant.getId());
+
+            //then
+            assertThat(normalRoomParticipant.getCanControlPatDevices()).isEqualTo(false);
+            assertThat(normalRoomParticipant.getPatPermissionRequestStatus()).isEqualTo(PatPermissionRequestStatus.REJECTED);
+            verify(roomParticipantRepository).save(normalRoomParticipant);
+        }
+
+        @Test
+        @DisplayName("일반 유저가 방 참여자의 기기 권한을 관리할 때 예외 발생")
+        void testUpdateParticipantDeviceControlByNormalUser() {
+            // given
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+
+            // when & then
+            assertThatThrownBy(() -> roomService.updateParticipantDeviceControl(normalUser.getId(), room.getId(), normalUser.getId(), true))
+                    .isInstanceOf(CustomException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NO_AUTHORITY_TO_MANAGE_PARTICIPANTS);
+        }
+
+        @Test
+        @DisplayName("방장이 본인의 기기 권한을 관리할 때 예외 발생")
+        void testUpdateOwnerDeviceControl() {
+            // given
+            when(userRepository.findById(managerUser.getId())).thenReturn(Optional.of(managerUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.findByRoomAndUser(room, managerUser)).thenReturn(Optional.of(normalRoomParticipant));
+
+            // when & then
+            assertThatThrownBy(() -> roomService.updateParticipantDeviceControl(managerUser.getId(), room.getId(), managerUser.getId(), true))
+                    .isInstanceOf(CustomException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CANNOT_CHANGE_OWNER_DEVICE_CONTROL);
+        }
+    }
+
+    @Nested
+    @DisplayName("방 참여자 강퇴 시나리오")
+    class RemoveParticipantsFromRoomTests {
+
+        @Test
+        @DisplayName("방장이 방 참여자를 강퇴할 때 성공")
+        void testRemoveParticipantsFromRoom() {
+            //given
+            when(userRepository.findById(managerUser.getId())).thenReturn(Optional.of(managerUser));
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.findByRoomAndUser(room, normalUser)).thenReturn(Optional.of(normalRoomParticipant));
+
+            //when
+            roomService.removeParticipantFromRoom(managerUser.getId(), room.getId(), normalUser.getId());
+
+            //then
+            verify(roomParticipantRepository).delete(normalRoomParticipant);
+            assertThat(room.getParticipants()).doesNotContain(normalRoomParticipant);
+        }
+
+        @Test
+        @DisplayName("관리자가 방 참여자를 강퇴할 때 성공")
+        void testRemoveParticipantsFromRoomByManager() {
+            //given
+            when(userRepository.findById(adminUser.getId())).thenReturn(Optional.of(adminUser));
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.findByRoomAndUser(room, normalUser)).thenReturn(Optional.of(normalRoomParticipant));
+
+            //when
+            roomService.removeParticipantFromRoom(adminUser.getId(), room.getId(), normalUser.getId());
+
+            //then
+            verify(roomParticipantRepository).delete(normalRoomParticipant);
+            assertThat(room.getParticipants()).doesNotContain(normalRoomParticipant);
+        }
+
+        @Test
+        @DisplayName("일반 유저가 방 참여자를 강퇴할 때 예외 발생")
+        void testRemoveParticipantsFromRoomByNormalUser() {
+            //given
+            User targetUser = User.builder().id(4L).role(Role.USER).build();
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+            when(userRepository.findById(targetUser.getId())).thenReturn(Optional.of(targetUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+
+            //when & then
+            assertThatThrownBy(() -> roomService.removeParticipantFromRoom(normalUser.getId(), room.getId(), targetUser.getId()))
+                    .isInstanceOf(CustomException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NO_AUTHORITY_TO_MANAGE_PARTICIPANTS);
+        }
+
+        @Test
+        @DisplayName("방장이 본인을 강퇴할 때 예외 발생")
+        void testRemoveOwnerFromRoom() {
+            //given
+            RoomParticipant ownerRoomParticipant = RoomParticipant.builder()
+                    .user(managerUser)
+                    .roleInRoom(Role.MANAGER)
+                    .build();
+            when(userRepository.findById(managerUser.getId())).thenReturn(Optional.of(managerUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.findByRoomAndUser(room, managerUser)).thenReturn(Optional.of(ownerRoomParticipant));
+
+            //when & then
+            assertThatThrownBy(() -> roomService.removeParticipantFromRoom(managerUser.getId(), room.getId(), managerUser.getId()))
+                    .isInstanceOf(CustomException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CANNOT_REMOVE_OWNER_FROM_ROOM);
+        }
+    }
+
+    @Nested
+    @DisplayName("PAT 장치 제어 권한 요청 시나리오")
+    class RequestPatDeviceControlPermissionTests {
+        @Test
+        @DisplayName("일반 유저가 PAT 장치 제어 권한 요청 시 성공")
+        void testRequestPatDeviceControlPermission() {
+            //given
+            room.setDeviceControlEnabled(false);
+            normalRoomParticipant.setCanControlPatDevices(false);
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.findByRoomAndUser(room, normalUser)).thenReturn(Optional.of(normalRoomParticipant));
+
+            //when
+            roomService.requestPatDeviceControlPermission(normalUser.getId(), room.getId());
+
+            //then
+            assertThat(normalRoomParticipant.getPatPermissionRequestStatus()).isEqualTo(PatPermissionRequestStatus.PENDING);
+            verify(roomParticipantRepository).save(normalRoomParticipant);
+        }
+
+        @Test
+        @DisplayName("이미 권한을 가지고 있을 때 예외 발생")
+        void testRequestPatDeviceControlPermissionAlreadyGranted() {
+            //given
+            room.setDeviceControlEnabled(false);
+            normalRoomParticipant.setCanControlPatDevices(true);
+            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
+            when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+            when(roomParticipantRepository.findByRoomAndUser(room, normalUser)).thenReturn(Optional.of(normalRoomParticipant));
+
+            //when & then
+            assertThatThrownBy(() -> roomService.requestPatDeviceControlPermission(normalUser.getId(), room.getId()))
+                    .isInstanceOf(CustomException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PAT_PERMISSION_REQUEST_ALREADY_EXISTS);
+        }
+
+    }
+
+}
