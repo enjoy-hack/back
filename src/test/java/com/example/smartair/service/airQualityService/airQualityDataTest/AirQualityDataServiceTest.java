@@ -1,4 +1,4 @@
-package com.example.smartair.service.airQualityService;
+package com.example.smartair.service.airQualityService.airQualityDataTest;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
@@ -14,6 +14,8 @@ import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
+import com.example.smartair.service.airQualityService.AirQualityDataService;
+import com.example.smartair.service.airQualityService.AirQualityScoreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
