@@ -5,9 +5,15 @@ import com.example.smartair.dto.deviceDto.DeviceResponseWrapper;
 import com.example.smartair.dto.deviceDto.DeviceStateResponseDto;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.device.PATEntity;
+import com.example.smartair.entity.room.Room;
+import com.example.smartair.entity.roomParticipant.RoomParticipant;
 import com.example.smartair.entity.user.User;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.repository.deviceRepository.PATRepository;
+import com.example.smartair.repository.roomParticipantRepository.RoomParticipantRepository;
+import com.example.smartair.repository.roomRepository.RoomRepository;
 import com.example.smartair.util.EncryptionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +33,8 @@ public class ThinQService {
     private final ObjectMapper objectMapper;
     private final PATRepository patRepository;
     private final DeviceRepository deviceRepository;
+    private final RoomRepository roomRepository;
+    private final RoomParticipantRepository roomParticipantRepository;
     private final EncryptionUtil encryptionUtil;
 
     private final String baseUrl;
@@ -40,6 +48,8 @@ public class ThinQService {
             PATRepository patRepository,
             EncryptionUtil encryptionUtil,
             DeviceRepository deviceRepository,
+            RoomRepository roomRepository,
+            RoomParticipantRepository roomParticipantRepository,
             @Value("${thinq.api.base-url}") String baseUrl,
             @Value("${thinq.api.api-key}") String apiKey,
             @Value("${thinq.api.country}") String country,
@@ -50,6 +60,8 @@ public class ThinQService {
         this.patRepository = patRepository;
         this.encryptionUtil = encryptionUtil;
         this.deviceRepository = deviceRepository;
+        this.roomRepository = roomRepository;
+        this.roomParticipantRepository = roomParticipantRepository;
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
         this.country = country;
@@ -108,15 +120,45 @@ public class ThinQService {
                     return new IllegalStateException("PAT를 찾을 수 없습니다.");
                 });
 
-        validateAccess(user, pat);
+        if(validateAccess(user, pat)) {
+            log.info("사용자 ID {}가 방 ID {}에 대한 PAT에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
+        } else {
+            log.warn("사용자 ID {}가 방 ID {}에 대한 PAT에 접근할 수 있는 권한이 없습니다.", user.getId(), roomId);
+            throw new CustomException(ErrorCode.NO_AUTHORITY);
+        }
         return pat;
     }
 
-    private void validateAccess(User user, PATEntity pat) {
-        if (!pat.getSetting() && !user.getId().equals(pat.getUserId())) {
-            log.warn("비공개 방 접근 거부: userId={}, roomId={}", user.getId(), pat.getRoomId());
-            throw new IllegalStateException("해당 방 설정은 비공개입니다.");
+    private Boolean validateAccess(User user, PATEntity patEntity) {
+        //  PAT 엔티티로부터 Room ID를 가져와 Room 정보 조회
+        Room room = roomRepository.findById(patEntity.getRoomId())
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+
+        boolean hasPermission = false;
+
+        // 1. 요청자가 방장인지 확인
+        if (room.getOwner().getId().equals(user.getId())) {
+            hasPermission = true;
         }
+
+        // 2. 방장이 아니고, 방 전체 참여자 제어 허용 설정이 true인지 확인
+        if (!hasPermission && room.isDeviceControlEnabled()) { // Room.isDeviceControlEnabled() 사용
+            hasPermission = true;
+        }
+
+        // 3. 위 조건들이 아니고, 개별 참여자에게 제어 권한이 있는지 확인
+        if (!hasPermission) {
+            Optional<RoomParticipant> participantOptional = roomParticipantRepository.findByRoomAndUser(room, user);
+            if (participantOptional.isPresent()) {
+                RoomParticipant participant = participantOptional.get();
+                if (participant.getCanControlPatDevices()) { // RoomParticipant.getCanControlDevices() 사용 (또는 isCanControlDevices)
+                    hasPermission = true;
+                }
+            }
+        }
+
+        return hasPermission;
+
     }
 
     private String decryptPatToken(PATEntity patEntity) throws Exception {
