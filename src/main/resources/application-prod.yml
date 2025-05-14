@@ -81,3 +81,17 @@ thinq:
 pat:
   secret-key: ${PAT_SECRET_KEY}
 
+# 별도 관리 포트 설정
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# X-Forwarded 헤더 인식(프록시 환경에서 HTTPS 리다이렉션을 위해 필요)
+server:
+  tomcat:
+    remote-ip-header: x-forwarded-for
+    protocol-header: x-forwarded-proto
