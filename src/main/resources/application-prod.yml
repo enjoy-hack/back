@@ -81,19 +81,4 @@ thinq:
 pat:
   secret-key: ${PAT_SECRET_KEY}
 
-# 별도 관리 포트 설정
-management:
-  server:
-    port: 8081
-  endpoints:
-    web:
-      exposure:
-        include: health
 
-security:
-  require-ssl: false  # 백엔드 서버 자체 SSL 비활성화 (NLB가 이미 처리)
-server:
-  tomcat:
-    remote-ip-header: x-forwarded-for
-    protocol-header: x-forwarded-proto
-  forward-headers-strategy: native  # X-Forwarded 헤더 신뢰
