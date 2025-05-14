@@ -90,8 +90,10 @@ management:
       exposure:
         include: health
 
-# X-Forwarded 헤더 인식(프록시 환경에서 HTTPS 리다이렉션을 위해 필요)
+security:
+  require-ssl: false  # 백엔드 서버 자체 SSL 비활성화 (NLB가 이미 처리)
 server:
   tomcat:
     remote-ip-header: x-forwarded-for
     protocol-header: x-forwarded-proto
+  forward-headers-strategy: native  # X-Forwarded 헤더 신뢰

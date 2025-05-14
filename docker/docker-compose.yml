@@ -4,7 +4,7 @@ services:
     container_name: mqtt
     ports:
       - "1883:1883"
-      - "8080:8080"
+      - "18080:8080"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
       - mqtt_data:/mosquitto/data
