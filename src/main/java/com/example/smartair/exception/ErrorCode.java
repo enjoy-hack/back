@@ -70,6 +70,7 @@ public enum ErrorCode {
 
     // === PAT 관련 오류 코드 ===
     PAT_NOT_FOUND(HttpStatus.NOT_FOUND, "PAT 정보를 찾을 수 없습니다."),
+    FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "FCM 토큰을 찾을 수 없습니다."),
 
     // === Satisfaction 관련 오류 코드 ===
     SATISFACTION_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 만족도 정보가 존재하지 않습니다."),
