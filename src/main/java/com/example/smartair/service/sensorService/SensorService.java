@@ -40,7 +40,7 @@ public class SensorService {
     private final DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
     private final WeeklySensorAirQualityReportRepository weeklySensorAirQualityReportRepository;
 
-    public void setSensor(User user, SensorRequestDto.setSensorDto sensorRequestDto) throws Exception {
+    public Sensor setSensor(User user, SensorRequestDto.setSensorDto sensorRequestDto) throws Exception {
 
         Optional<Room> optionalRoom = roomRepository.findRoomById(sensorRequestDto.roomId());
         if(optionalRoom.isEmpty()) throw new Exception(new CustomException(ErrorCode.ROOM_NOT_FOUND));
@@ -48,7 +48,7 @@ public class SensorService {
 
         Room room = optionalRoom.get();
 
-        if(!room.getOwner().equals(user)) throw new Exception(new CustomException(ErrorCode.NO_AUTHORITY));
+        if(!room.getOwner().getId().equals(user.getId())) throw new Exception(new CustomException(ErrorCode.NO_AUTHORITY));
 
         Optional<RoomSensor>  optionalRoomSensor = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(
                 sensorRequestDto.serialNumber(),room.getId());
@@ -74,6 +74,7 @@ public class SensorService {
                 .build();
 
         roomSensorRepository.save(roomSensor);
+        return sensor;
     }
 
     public void deleteSensor(User user, SensorRequestDto.deleteSensorDto sensorDto) throws Exception {

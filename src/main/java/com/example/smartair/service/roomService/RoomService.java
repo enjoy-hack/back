@@ -239,6 +239,9 @@ public class RoomService {
 
 
         String targetToken = room.getOwner().getFcmToken();
+        if (targetToken == null || targetToken.isEmpty()) {
+            throw new CustomException(ErrorCode.FCM_TOKEN_NOT_FOUND);
+        }
 
         Message message = Message.builder()
                 .setToken(targetToken)
@@ -297,6 +300,7 @@ public class RoomService {
         // 권한 부여 및 상태 변경
         targetParticipant.setCanControlPatDevices(true);
         targetParticipant.setPatPermissionRequestStatus(PatPermissionRequestStatus.APPROVED);
+
         roomParticipantRepository.save(targetParticipant);
 
         String targetToken = targetParticipant.getUser().getFcmToken();
