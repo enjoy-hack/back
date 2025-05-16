@@ -30,7 +30,7 @@ public class Room extends BaseEntity {
     private String password;
 
     @Column(nullable = false)
-    private boolean deviceControlEnabled = true;
+    private boolean deviceControlEnabled;
 
     // Place 관련 필드 및 어노테이션 삭제
     // @ManyToOne
@@ -44,9 +44,16 @@ public class Room extends BaseEntity {
     private double latitude;
     private double longitude;
 
+    public void addParticipant(RoomParticipant roomParticipant) { //양방향 관계 설정
+        this.participants.add(roomParticipant);
+        roomParticipant.setRoom(this);
+    }
+
 
     private Double temperature;
 
     private Double moisture;
+
+
 
 }

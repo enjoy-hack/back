@@ -5,13 +5,14 @@ import com.example.smartair.entity.user.User;
 import com.example.smartair.entity.user.Role;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.checkerframework.checker.units.qual.A;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "room_participant", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"room_id", "user_id"})
@@ -35,9 +36,9 @@ public class RoomParticipant extends BaseEntity {
     private Role roleInRoom;
 
     @Column(nullable = false)
-    private Boolean canControlPatDevices = false;
+    private Boolean canControlPatDevices;
 
-    private PatPermissionRequestStatus patPermissionRequestStatus = PatPermissionRequestStatus.NONE;
+    private PatPermissionRequestStatus patPermissionRequestStatus;
 
     public RoomParticipant(Room room, User user, Role roleInRoom, Boolean canControlDevices) {
         this.room = room;

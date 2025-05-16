@@ -107,7 +107,7 @@ jobs:
       KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
       KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
       KAKAO_REDIRECT_URI_EC2_PROD: ${{ secrets.KAKAO_REDIRECT_URI }} # KAKAO_REDIRECT_URI Secret 사용
-      MQTT_URL_EC2_PROD: ${{ secrets.MQTT_URL }} # MQTT_URL Secret 사용
+      MQTT_URL_EC2_PROD: ${{ secrets.MQTT_URL }} # MQTT_URL_FOR_CD Secret 사용
       MQTT_USERNAME_EC2_PROD: ${{ secrets.MQTT_USERNAME_EC2_PROD }} # Secret 필요시 생성
       MQTT_PASSWORD_EC2_PROD: ${{ secrets.MQTT_PASSWORD_EC2_PROD }} # Secret 필요시 생성
       FIREBASE_CONFIG_PATH: "classpath:firebase.json" # JAR 내 firebase.json 사용 가정
