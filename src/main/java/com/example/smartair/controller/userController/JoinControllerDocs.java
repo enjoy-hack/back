@@ -24,6 +24,7 @@ public interface JoinControllerDocs {
             {
           "email": "example@example.com",
           "nickname": "홍길동",
+          "username" : "이름",
           "password": "password123",
           "role": "USER"
             }
@@ -47,7 +48,7 @@ public interface JoinControllerDocs {
                             schema = @Schema(implementation = JoinDTO.class),
                             examples = @ExampleObject(
                                     name = "Join Request Example",
-                                    value = "{\n  \"email\": \"test@example.com\",\n  \"nickname\": \"tester\",\n  \"password\": \"securePass123\",\n  \"role\": \"USER\"\n}"
+                                    value = "{\n  \"email\": \"test@example.com\",\n \"nickname\": \"tester\", \n  \"username\": \"이름\",\n  \"password\": \"securePass123\",\n  \"role\": \"USER\"\n}"
                             )
                     )
             )

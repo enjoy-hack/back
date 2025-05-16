@@ -159,7 +159,7 @@ public class AirQualityQueryService { //공기질 점수 조회
         Sensor sensor = sensorRepository.findById(sensorId).orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND));
 
         SensorAirQualityScore latestSensorScore = sensorAirQualityScoreRepository.findFirstBySensorAirQualityData_SensorOrderByCreatedAtDesc(sensor).orElseThrow(
-                ()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND)
+                ()-> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND)
         );
 
         return SensorAirQualityScoreDto.fromEntity(latestSensorScore);

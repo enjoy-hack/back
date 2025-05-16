@@ -77,9 +77,9 @@ public class AirQualityScoreController implements AirQualityScoreControllerDocs{
 //        return ResponseEntity.ok(scorePage);
 //    }
 
-    @GetMapping("/sensor")
+    @GetMapping("/sensor/{sensorId}/latest")
     public ResponseEntity<SensorAirQualityScoreDto> getLatestSensorAirQualityScore(
-            @PathVariable Long sensorId
+            @RequestParam Long sensorId
     ) {
         SensorAirQualityScoreDto score = airQualityQueryService.getLatestSensorAirQualityScore(sensorId);
         return ResponseEntity.ok(score);

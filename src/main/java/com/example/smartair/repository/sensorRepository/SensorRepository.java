@@ -1,5 +1,6 @@
 package com.example.smartair.repository.sensorRepository;
 
+import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.sensor.Sensor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

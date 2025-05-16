@@ -38,16 +38,16 @@ public interface RoomControllerDocs {
             @org.springframework.web.bind.annotation.RequestBody CreateRoomRequestDto createRoomRequestDto,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @Operation(summary = "방 정보 수정", description = "기존 방의 정보를 수정합니다. 시스템 관리자(ADMIN)만 수정 가능합니다.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "방 수정 요청 정보", required = true,
-                    content = @Content(schema = @Schema(implementation = CreateRoomRequestDto.class))))
+    @Operation(summary = "방 참여", description = "비밀번호와 함께 특정 방에 참여합니다. 참여 시 기기 제어 권한은 방장이 설정한 값으로 설정됩니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "방 참여 요청 정보", required = true,
+                    content = @Content(schema = @Schema(implementation = JoinRoomRequestDto.class))))
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "방 정보 수정 성공",
+            @ApiResponse(responseCode = "200", description = "방 참여 성공",
                     content = @Content(schema = @Schema(implementation = RoomDetailResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (예: 잘못된 비밀번호)"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-            @ApiResponse(responseCode = "403", description = "권한 없음"),
-            @ApiResponse(responseCode = "404", description = "사용자 또는 방을 찾을 수 없음")
+            @ApiResponse(responseCode = "403", description = "이미 참여한 방"),
+            @ApiResponse(responseCode = "404", description = "방을 찾을 수 없음")
     })
     ResponseEntity<RoomDetailResponseDto> joinRoom(
             @Parameter(name = "roomId", description = "참여할 방의 ID", required = true, in = ParameterIn.PATH)

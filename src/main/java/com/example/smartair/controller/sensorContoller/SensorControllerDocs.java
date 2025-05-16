@@ -1,12 +1,15 @@
 package com.example.smartair.controller.sensorContoller;
 
 import com.example.smartair.dto.sensorDto.SensorRequestDto;
+import com.example.smartair.dto.sensorDto.SensorResponseDto;
 import com.example.smartair.entity.login.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
 
 @Tag(name = "Sensor API", description = "사용자 센서 관리 API")
 public interface SensorControllerDocs {
@@ -83,8 +86,8 @@ public interface SensorControllerDocs {
         - `401 Unauthorized`: 인증 정보가 없을 경우 오류 메시지 반환
         """
     )
-    ResponseEntity<String> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                            @RequestBody Long roomId);
+    ResponseEntity<List<SensorResponseDto>> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                       @RequestBody Long roomId);
 
     @Operation(
             summary = "디바이스 상태 조회",

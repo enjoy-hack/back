@@ -1,6 +1,7 @@
 package com.example.smartair.controller.sensorContoller;
 
 import com.example.smartair.dto.sensorDto.SensorRequestDto;
+import com.example.smartair.dto.sensorDto.SensorResponseDto;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
@@ -23,16 +24,16 @@ public class SensorController implements SensorControllerDocs {
 
     @Override
     @PostMapping("/sensor")
-    public ResponseEntity<?> setSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                       @RequestBody SensorRequestDto.setSensorDto sensorDto) throws Exception {
+    public ResponseEntity<SensorResponseDto> setSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                       @RequestBody SensorRequestDto.setSensorDto sensorDto) throws Exception {
         if(userDetails == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User user = userDetails.getUser();
 
-        sensorService.setSensor(user, sensorDto);
+        Sensor sensor = sensorService.setSensor(user, sensorDto);
 
-        return ResponseEntity.ok("success");
+        return ResponseEntity.ok(SensorResponseDto.from(sensor));
     }
 
     @Override
@@ -40,33 +41,35 @@ public class SensorController implements SensorControllerDocs {
     public ResponseEntity<?> deleteSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
                                           @RequestBody SensorRequestDto.deleteSensorDto deviceDto) throws Exception {
         if(userDetails == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User user = userDetails.getUser();
 
         sensorService.deleteSensor(user, deviceDto);
 
-        return ResponseEntity.ok("success");
+        return ResponseEntity.noContent().build();
     }
 
     @Override
     @GetMapping("/sensors")
-    public ResponseEntity<String> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                             @RequestBody Long roomId){
+    public ResponseEntity<List<SensorResponseDto>> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @RequestParam Long roomId){
         if(userDetails == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User user = userDetails.getUser();
 
         List<Sensor> sensorList = sensorService.getSensors(roomId);
 
-        return ResponseEntity.ok(sensorList.toString());
+        return ResponseEntity.ok(sensorList.stream()
+                .map(SensorResponseDto::from)
+                .toList());
     }
 
     @Override
     @GetMapping("/sensor/status")
     public ResponseEntity<?> getSensorStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                             @RequestBody Long deviceSerialNumber) throws Exception {
+                                             @RequestParam Long deviceSerialNumber) throws Exception {
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
