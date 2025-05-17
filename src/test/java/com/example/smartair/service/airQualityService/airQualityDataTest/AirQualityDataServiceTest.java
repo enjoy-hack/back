@@ -68,20 +68,40 @@ class AirQualityDataServiceTest {
     @BeforeEach
     void setUp() throws JsonProcessingException {
         MockitoAnnotations.openMocks(this);
+        AirQualityPayloadDto.PtData pt1Data = AirQualityPayloadDto.PtData.builder()
+                .pm10Standard(22)
+                .pm25Standard(37)
+                .pm100Standard(39)
+                .particles03um(3867)
+                .particles05um(1132)
+                .particles10um(283)
+                .particles25um(15)
+                .particles50um(2)
+                .particles100um(1)
+                .build();
+
+        AirQualityPayloadDto.PtData pt2Data = AirQualityPayloadDto.PtData.builder()
+                .pm10Standard(18)
+                .pm25Standard(29)
+                .pm100Standard(36)
+                .particles03um(3468)
+                .particles05um(940)
+                .particles10um(191)
+                .particles25um(22)
+                .particles50um(10)
+                .particles100um(4)
+                .build();
+
         testPayloadDto = AirQualityPayloadDto.builder()
-                .temperature(25.5)
-                .humidity(60.0)
-                .pressure(100)
-                .tvoc(50)
-                .ppm(450)
-                .rawh2(10)
-                .rawethanol(5)
-                .pt1Pm10Standard(10.0).pt1Pm25Standard(20.0).pt1Pm100Standard(30.0)
-                .pt1Particles03um(100).pt1Particles05um(200).pt1Particles10um(300)
-                .pt1Particles25um(400).pt1Particles50um(500).pt1Particles100um(600)
-                .pt2Pm10Standard(11.0).pt2Pm25Standard(21.0).pt2Pm100Standard(31.0)
-                .pt2Particles03um(101).pt2Particles05um(201).pt2Particles10um(301)
-                .pt2Particles25um(401).pt2Particles50um(501).pt2Particles100um(601)
+                .temperature(29.47)
+                .humidity(38.22)
+                .pressure(399)
+                .tvoc(6)
+                .eco2(400)
+                .rawh2(12656)
+                .rawethanol(1647)
+                .pt1(pt1Data)
+                .pt2(pt2Data)
                 .build();
     }
 
@@ -112,8 +132,8 @@ class AirQualityDataServiceTest {
 
         //then
         assertNotNull(data);
-        assertEquals(25.5, data.getTemperature());
-        assertEquals(60, data.getHumidity());
+        assertEquals(29.47, data.getTemperature());
+        assertEquals(38.22, data.getHumidity());
         verify(fineParticlesDataRepository).save(any(FineParticlesData.class));
         verify(airQualityDataRepository).save(any(SensorAirQualityData.class));
         verify(recentAirQualityDataCache).put(eq(sensor.getId()), any(SensorAirQualityData.class));

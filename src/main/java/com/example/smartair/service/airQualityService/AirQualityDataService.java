@@ -54,33 +54,13 @@ public class AirQualityDataService {
                         roomIdFromTopic, deviceId, actualRoom.getId(), actualRoom.getId());
             }
 
+
+
             // 4. FineParticlesData 엔티티 생성 및 저장 
-            FineParticlesData fineParticlesData = FineParticlesData.builder()
-                    .pm10_standard(dto.getPt1Pm10Standard())
-                    .pm25_standard(dto.getPt1Pm25Standard())
-                    .pm100_standard(dto.getPt1Pm100Standard())
-                    .particle_03(dto.getPt1Particles03um())
-                    .particle_05(dto.getPt1Particles05um())
-                    .particle_10(dto.getPt1Particles10um())
-                    .particle_25(dto.getPt1Particles25um())
-                    .particle_50(dto.getPt1Particles50um())
-                    .particle_100(dto.getPt1Particles100um())
-                    .sensor(sensor) // Device 연결
-                    .build();
+            FineParticlesData fineParticlesData = dto.toPt1Entity();
             FineParticlesData savedFineParticlesData = fineParticlesDataRepository.save(fineParticlesData);
 
-            FineParticlesDataPt2 fineParticlesDataPt2 = FineParticlesDataPt2.builder()
-                    .pm10_standard(dto.getPt2Pm10Standard())
-                    .pm25_standard(dto.getPt2Pm25Standard())
-                    .pm100_standard(dto.getPt2Pm100Standard())
-                    .particle_03(dto.getPt2Particles03um())
-                    .particle_05(dto.getPt2Particles05um())
-                    .particle_10(dto.getPt2Particles10um())
-                    .particle_25(dto.getPt2Particles25um())
-                    .particle_50(dto.getPt2Particles50um())
-                    .particle_100(dto.getPt2Particles100um())
-                    .sensor(sensor) // Device 연결
-                    .build();
+            FineParticlesDataPt2 fineParticlesDataPt2 = dto.toPt2Entity();
             FineParticlesDataPt2 savedFineParticlesDataPt2 = fineParticlesDataPt2Repository.save(fineParticlesDataPt2);
 
             // 5. AirQualityData 엔티티 생성
@@ -89,7 +69,7 @@ public class AirQualityDataService {
                     .humidity(dto.getHumidity())
                     .pressure(dto.getPressure())
                     .tvoc(dto.getTvoc())
-                    .eco2(dto.getPpm())
+                    .eco2(dto.getEco2())
                     .rawh2(dto.getRawh2())
                     .rawethanol(dto.getRawethanol())
                     .sensor(sensor)
