@@ -30,7 +30,9 @@ public interface AdminControllerDocs {
             @ApiResponse(responseCode = "403", description = "권한 없음 (관리자 아님)")
     })
     ResponseEntity<Page<RoomDetailResponseDto>> getAllRooms(
-            @Parameter(description = "페이지네이션 정보 (예: ?page=0&size=10&sort=createdAt,desc)",
+            @Parameter(description = "페이지네이션 정보 (예: \"page\": 0,\n" +
+                    "  \"size\": 10,\n" +
+                    "  \"sort\": \"id,desc\")",
                     schema = @Schema(implementation = Pageable.class)) Pageable pageable);
 
     @Operation(summary = "특정 방 상세 조회 (관리자)", description = "특정 방의 상세 정보를 조회합니다. 관리자 권한이 필요합니다.")
@@ -80,7 +82,8 @@ public interface AdminControllerDocs {
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     ResponseEntity<Page<UserDetailResponseDto>> getAllUsers(
-            @Parameter(description = "페이지네이션 정보", schema = @Schema(implementation = Pageable.class)) Pageable pageable);
+            @Parameter(description = "페이지네이션 정보 (예 : \"page\": 0,\n" + "  \"size\": 10,\n" +
+                    "  \"sort\": \"id,desc\")", schema = @Schema(implementation = Pageable.class)) Pageable pageable);
 
     @Operation(summary = "전체 기기 현황 조회 (관리자)", description = "시스템의 모든 기기 목록을 페이징하여 조회합니다. 관리자 권한이 필요합니다.")
     @ApiResponses(value = {
@@ -90,7 +93,9 @@ public interface AdminControllerDocs {
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     ResponseEntity<Page<DeviceDetailDto>> getAllDevices(
-            @Parameter(description = "페이지네이션 정보", schema = @Schema(implementation = Pageable.class)) Pageable pageable);
+            @Parameter(description = "페이지네이션 정보 (예 : \"page\": 0,\n" +
+                    "  \"size\": 10,\n" +
+                    "  \"sort\": \"id,desc\")", schema = @Schema(implementation = Pageable.class)) Pageable pageable);
 
     @Operation(summary = "전체 센서 현황 조회 (관리자)", description = "시스템의 모든 센서 목록을 페이징하여 조회합니다. 관리자 권한이 필요합니다.")
     @ApiResponses(value = {
@@ -100,5 +105,7 @@ public interface AdminControllerDocs {
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     ResponseEntity<Page<SensorDetailDto>> getAllSensors(
-            @Parameter(description = "페이지네이션 정보", schema = @Schema(implementation = Pageable.class)) Pageable pageable);
+            @Parameter(description = "페이지네이션 정보 (예 : \"page\": 0,\n" +
+                    "  \"size\": 10,\n" +
+                    "  \"sort\": \"id,desc\")", schema = @Schema(implementation = Pageable.class)) Pageable pageable);
 } 

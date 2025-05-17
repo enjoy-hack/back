@@ -101,7 +101,7 @@ public class MqttReceiveService {
 
     public AirQualityPayloadDto handleReceiveMessage(String topic, String payload) {
         try {
-            log.info("Received message on topic '{}', payload: {}", topic, payload);
+            log.info("Received message on handleReceiveMessage topic '{}', payload: {}", topic, payload);
 
             // 토픽 구조: smartair/{deviceId}/{roomId}/airquality
             String[] topicParts = topic.split("/");

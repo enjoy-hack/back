@@ -156,6 +156,10 @@ public class RoomService {
             throw new CustomException(ErrorCode.CANNOT_CHANGE_OWNER_DEVICE_CONTROL);
         }
 
+        if (targetParticipant.getCanControlPatDevices() == true && canControlDevices){
+            throw new CustomException(ErrorCode.PAT_PERMISSION_REQUEST_ALREADY_EXISTS);
+        }
+
         targetParticipant.setCanControlPatDevices(canControlDevices);
         roomParticipantRepository.save(targetParticipant);
         return RoomDetailResponseDto.from(room);

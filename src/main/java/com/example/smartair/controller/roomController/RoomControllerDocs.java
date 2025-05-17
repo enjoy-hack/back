@@ -38,7 +38,7 @@ public interface RoomControllerDocs {
             @org.springframework.web.bind.annotation.RequestBody CreateRoomRequestDto createRoomRequestDto,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @Operation(summary = "방 참여", description = "비밀번호와 함께 특정 방에 참여합니다. 참여 시 기기 제어 권한은 방장이 설정한 값으로 설정됩니다.",
+    @Operation(summary = "방 참여", description = "비밀번호와 함께 특정 방에 참여합니다. 참여 시 기기 제어 권한은 방장이 설정한 값으로 설정됩니다. 비밀번호가 설정되지 않은 방이라면 비밀번호를 비우고 참여합니다.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "방 참여 요청 정보", required = true,
                     content = @Content(schema = @Schema(implementation = JoinRoomRequestDto.class))))
     @ApiResponses(value = {
