@@ -1,7 +1,10 @@
 package com.example.smartair.config;
 
+import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
+
 import com.example.smartair.service.mqttService.MqttReceiveService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.messaging.MessageHandler;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,9 +40,6 @@ public class MqttConfig {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
         options.setServerURIs(new String[]{brokerUrl});
-        options.setKeepAliveInterval(60);  // 연결 유지
-        options.setAutomaticReconnect(true);  // 자동 재연결
-        options.setConnectionTimeout(30);  // 연결 타임아웃
         factory.setConnectionOptions(options);
         return factory;
     }
@@ -51,7 +51,6 @@ public class MqttConfig {
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(1);
         adapter.setOutputChannel(mqttInputChannel());
-        adapter.setCompletionTimeout(5000);  // 완료 타임아웃 설정
         return adapter;
     }
 
