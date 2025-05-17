@@ -3,6 +3,7 @@ package com.example.smartair.config;
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 
 import com.example.smartair.service.mqttService.MqttReceiveService;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.messaging.MessageHandler;
@@ -34,12 +35,24 @@ public class MqttConfig {
     @Value("${mqtt.topic}")
     private String topic;
 
+    @PostConstruct
+    public void init() {
+        log.info("MQTT Configuration initialized with:");
+        log.info("Broker URL: {}", brokerUrl);
+        log.info("Client ID: {}", clientId);
+        log.info("Topic: {}", topic);
+    }
+
     //client factory
     @Bean
     public MqttPahoClientFactory mqttClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
         options.setServerURIs(new String[]{brokerUrl});
+        options.setAutomaticReconnect(true);
+        options.setCleanSession(true);
+        options.setConnectionTimeout(30);
+        options.setKeepAliveInterval(60);
         factory.setConnectionOptions(options);
         return factory;
     }
@@ -47,7 +60,8 @@ public class MqttConfig {
     //외부 클라이언트 -> MQTT Broker -> Spring 으로 메시지 전송
     @Bean
     public MessageProducer inbound(){
-        MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(brokerUrl, clientId, topic);
+        MqttPahoMessageDrivenChannelAdapter adapter =
+                new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory(), topic);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(1);
         adapter.setOutputChannel(mqttInputChannel());
