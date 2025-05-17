@@ -54,7 +54,7 @@ mqtt:
   client-id: spring-client-prod # 운영 환경용 고유 ID 권장
   username: ${MQTT_USERNAME_EC2_PROD} # 필요시 설정
   password: ${MQTT_PASSWORD_EC2_PROD} # 필요시 설정 (환경 변수)
-  topic: smartair/+/+/airquality
+  topic: ${MQTT_TOPIC}
 
 firebase:
   config:
