@@ -53,7 +53,7 @@ mqtt:
   client-id: spring-client
   username:
   password:
-  topic: smartair/+/+/airquality
+  topic: smartair/+/airquality
 
 firebase:
   config:
