@@ -31,6 +31,7 @@ public class AirQualityPayloadDto {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class PtData {
         @JsonProperty("pm10_standard")
         private double pm10Standard;
