@@ -1,5 +1,7 @@
 package com.example.smartair.dto.airQualityDataDto;
 
+import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
+import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,49 +13,70 @@ import lombok.Builder;
 @AllArgsConstructor
 @Builder
 public class AirQualityPayloadDto {
-    private double temperature;
-    private double humidity;
-    private int pressure;
-    private int tvoc;
-    private int ppm;
-    private int rawh2;
-    private int rawethanol;
+    private Double temperature;
+    @JsonProperty("hum")
+    private Double humidity;
+    private Integer pressure;
+    private Integer tvoc;
+    private Integer eco2;
+    private Integer rawh2;
+    private Integer rawethanol;
 
-    @JsonProperty("pt1_pm10_standard")
-    private double pt1Pm10Standard;
-    @JsonProperty("pt1_pm25_standard")
-    private double pt1Pm25Standard;
-    @JsonProperty("pt1_pm100_standard")
-    private double pt1Pm100Standard;
-    @JsonProperty("pt1_particles_03um")
-    private int pt1Particles03um;
-    @JsonProperty("pt1_particles_05um")
-    private int pt1Particles05um;
-    @JsonProperty("pt1_particles_10um")
-    private int pt1Particles10um;
-    @JsonProperty("pt1_particles_25um")
-    private int pt1Particles25um;
-    @JsonProperty("pt1_particles_50um")
-    private int pt1Particles50um;
-    @JsonProperty("pt1_particles_100um")
-    private int pt1Particles100um;
+    @JsonProperty("pt1")
+    private PtData pt1;
 
-    @JsonProperty("pt2_pm10_standard")
-    private double pt2Pm10Standard;
-    @JsonProperty("pt2_pm25_standard")
-    private double pt2Pm25Standard;
-    @JsonProperty("pt2_pm100_standard")
-    private double pt2Pm100Standard;
-    @JsonProperty("pt2_particles_03um")
-    private int pt2Particles03um;
-    @JsonProperty("pt2_particles_05um")
-    private int pt2Particles05um;
-    @JsonProperty("pt2_particles_10um")
-    private int pt2Particles10um;
-    @JsonProperty("pt2_particles_25um")
-    private int pt2Particles25um;
-    @JsonProperty("pt2_particles_50um")
-    private int pt2Particles50um;
-    @JsonProperty("pt2_particles_100um")
-    private int pt2Particles100um;
+    @JsonProperty("pt2")
+    private PtData pt2;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PtData {
+        @JsonProperty("pm10_standard")
+        private double pm10Standard;
+        @JsonProperty("pm25_standard")
+        private double pm25Standard;
+        @JsonProperty("pm100_standard")
+        private double pm100Standard;
+        @JsonProperty("particles_03um")
+        private int particles03um;
+        @JsonProperty("particles_05um")
+        private int particles05um;
+        @JsonProperty("particles_10um")
+        private int particles10um;
+        @JsonProperty("particles_25um")
+        private int particles25um;
+        @JsonProperty("particles_50um")
+        private int particles50um;
+        @JsonProperty("particles_100um")
+        private int particles100um;
+    }
+
+    public FineParticlesData toPt1Entity() {
+        return FineParticlesData.builder()
+                .pm10_standard(pt1.getPm10Standard())
+                .pm25_standard(pt1.getPm25Standard())
+                .pm100_standard(pt1.getPm100Standard())
+                .particle_03(pt1.getParticles03um())
+                .particle_05(pt1.getParticles05um())
+                .particle_10(pt1.getParticles10um())
+                .particle_25(pt1.getParticles25um())
+                .particle_50(pt1.getParticles50um())
+                .particle_100(pt1.getParticles100um())
+                .build();
+    }
+
+    public FineParticlesDataPt2 toPt2Entity() {
+        return FineParticlesDataPt2.builder()
+                .pm10_standard(pt2.getPm10Standard())
+                .pm25_standard(pt2.getPm25Standard())
+                .pm100_standard(pt2.getPm100Standard())
+                .particle_03(pt2.getParticles03um())
+                .particle_05(pt2.getParticles05um())
+                .particle_10(pt2.getParticles10um())
+                .particle_25(pt2.getParticles25um())
+                .particle_50(pt2.getParticles50um())
+                .particle_100(pt2.getParticles100um())
+                .build();
+    }
 }
