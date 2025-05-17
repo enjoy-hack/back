@@ -4,6 +4,8 @@ import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomSensor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,7 +21,8 @@ public interface RoomSensorRepository extends JpaRepository<RoomSensor, Long> {
 
     Optional<RoomSensor> findBySensor_SerialNumber(Long serialNumber);
 
-    List<Sensor> findAllSensorByRoom(Room room);
+    @Query("SELECT rs.sensor FROM RoomSensor rs WHERE rs.room = :room")
+    List<Sensor> findAllSensorByRoom(@Param("room") Room room);
 
     Optional<RoomSensor> findBySensor_Id(Long sensorId);
 }

@@ -9,6 +9,7 @@ import com.example.smartair.repository.airQualityRepository.airQualityDataReposi
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.service.airQualityService.AirQualityDataService;
 import com.example.smartair.service.awsFileService.S3Service;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -130,7 +131,9 @@ public class MqttReceiveService {
                 // 실시간으로 들어오는 원본 데이터를 바로 업로드
                 s3Service.uploadJson(deviceIdString, roomIdString, payload);
 
+                log.info("JSON 파싱 시작: {}", payload);
                 AirQualityPayloadDto dto = objectMapper.readValue(payload, AirQualityPayloadDto.class);
+                log.info("JSON 파싱 완료: {}", dto);
 
                 // 데이터 처리 및 저장
                 AirQualityPayloadDto processedDto = airQualityDataService.processAirQualityData(deviceId, roomSensor.getRoom().getId(), dto);
@@ -153,11 +156,12 @@ public class MqttReceiveService {
             throw new CustomException(ErrorCode.MQTT_INVALID_TOPIC_ERROR); 
         } catch (CustomException ce) {
             throw ce;
-        } catch (com.fasterxml.jackson.core.JsonProcessingException jpe) {
+        } catch (JsonProcessingException jpe) {
             log.error("Error parsing JSON payload: Payload={}", payload, jpe);
             throw new CustomException(ErrorCode.MQTT_JSON_PARSING_ERROR); 
         } catch (Exception e) {
-            log.error("Error handling MQTT message: Topic={}, Payload={}", topic, payload, e);
+            log.error("Error handling MQTT message: Topic={}, Payload={}, Exception Type={}, Error={}",
+                    topic, payload, e.getClass().getName(), e.getMessage(), e);
             throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR);
         }
     }
