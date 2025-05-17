@@ -107,7 +107,7 @@ jobs:
       KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
       KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
       KAKAO_REDIRECT_URI_EC2_PROD: ${{ secrets.KAKAO_REDIRECT_URI_EC2_PROD }}
-      MQTT_URL_EC2_PROD: ${{ secrets.MQTT_URL }} # MQTT_URL_FOR_CD Secret 사용
+      MQTT_URL_EC2_PROD: ${{ secrets.MQTT_URL_FOR_CD }} # MQTT_URL_FOR_CD Secret 사용
       MQTT_USERNAME_EC2_PROD: ${{ secrets.MQTT_USERNAME_EC2_PROD }} # Secret 필요시 생성
       MQTT_PASSWORD_EC2_PROD: ${{ secrets.MQTT_PASSWORD_EC2_PROD }} # Secret 필요시 생성
       MQTT_TOPIC: ${{ secrets.MQTT_TOPIC }} # Secret 필요시 생성
