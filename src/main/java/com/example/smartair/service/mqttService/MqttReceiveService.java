@@ -2,9 +2,11 @@ package com.example.smartair.service.mqttService;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
+import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.service.airQualityService.AirQualityDataService;
 import com.example.smartair.service.awsFileService.S3Service;
 import jakarta.transaction.Transactional;
@@ -32,6 +34,7 @@ public class MqttReceiveService {
     private final LinkedList<SensorAirQualityData> recentMessage = new LinkedList<>();
     private final AirQualityDataService airQualityDataService;
     private final AirQualityDataRepository airQualityDataRepository;
+    private final RoomSensorRepository roomSensorRepository;
     private final S3Service s3Service;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -106,13 +109,11 @@ public class MqttReceiveService {
             // 토픽 구조: smartair/{deviceId}/{roomId}/airquality
             String[] topicParts = topic.split("/");
             
-            // 유효성 검사: smartair로 시작하고, 총 4개의 파트가 있으며, 마지막은 airquality인지 확인
-            if (topicParts.length == 4 && "smartair".equals(topicParts[0]) && "airquality".equals(topicParts[3])) {
+            // 유효성 검사: smartair로 시작하고, 총 3개의 파트가 있으며, 마지막은 airquality인지 확인
+            if (topicParts.length == 3 && "smartair".equals(topicParts[0]) && "airquality".equals(topicParts[2])) {
                 // deviceId와 roomId를 String으로 추출
-                String deviceIdString = topicParts[1]; 
-                String roomIdString = topicParts[2];
+                String deviceIdString = topicParts[1];
                 Long deviceId = Long.parseLong(deviceIdString);
-                Long roomId = Long.parseLong(roomIdString);
 
                 //센서별 제한 체크
                 if (isRateLimitExceeded(deviceId)){
@@ -121,13 +122,18 @@ public class MqttReceiveService {
                     throw new CustomException(ErrorCode.MQTT_RATE_LIMIT_EXCEEDED);
                 }
 
+                //RoomSensor를 통해 roomId 찾기
+                RoomSensor roomSensor = roomSensorRepository.findBySensor_Id(deviceId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND));
+                String roomIdString = roomSensor.getRoom().getId().toString();
+
                 // 실시간으로 들어오는 원본 데이터를 바로 업로드
-                s3Service.uploadJson(deviceIdString, roomIdString, payload); 
+                s3Service.uploadJson(deviceIdString, roomIdString, payload);
 
                 AirQualityPayloadDto dto = objectMapper.readValue(payload, AirQualityPayloadDto.class);
 
                 // 데이터 처리 및 저장
-                AirQualityPayloadDto processedDto = airQualityDataService.processAirQualityData(deviceId, roomId, dto);
+                AirQualityPayloadDto processedDto = airQualityDataService.processAirQualityData(deviceId, roomSensor.getRoom().getId(), dto);
 
                 // 처리된 데이터를 SensorAirQualityData로 변환하여 큐에 추가
                 SensorAirQualityData sensorData = airQualityDataService.getSavedAirQualityData(deviceId);
