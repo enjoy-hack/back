@@ -311,6 +311,7 @@ class RoomServiceTest {
         @DisplayName("방장이 방 참여자의 기기 제어 권한을 변경할 때 성공")
         void testUpdateParticipantDeviceControlByOwner() {
             // given
+            normalRoomParticipant.setCanControlPatDevices(false);
             when(userRepository.findById(managerUser.getId())).thenReturn(Optional.of(managerUser));
             when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
             when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
