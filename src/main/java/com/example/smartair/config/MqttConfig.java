@@ -51,6 +51,8 @@ public class MqttConfig {
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(1);
         adapter.setOutputChannel(mqttInputChannel());
+        adapter.setCompletionTimeout(5000);
+        log.info("MQTT inbound adapter created with topic: {}", topic);
         return adapter;
     }
 
@@ -73,6 +75,8 @@ public class MqttConfig {
     //MQTT 구독 채널 생성
     @Bean
     public MessageChannel mqttInputChannel(){
-        return new DirectChannel();
+        DirectChannel channel = new DirectChannel();
+        channel.setDatatypes(String.class);
+        return channel;
     }
 }
