@@ -4,6 +4,7 @@ import com.example.smartair.dto.sensorDto.SensorRequestDto;
 import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
+import com.example.smartair.entity.airData.predictedAirQualityData.PredictedAirQualityData;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
 import com.example.smartair.entity.sensor.Sensor;
@@ -17,6 +18,7 @@ import com.example.smartair.repository.airQualityRepository.airQualityDataReposi
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.WeeklySensorAirQualityReportRepository;
+import com.example.smartair.repository.airQualityRepository.predictedAirQualityRepository.PredictedAirQualityRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
@@ -40,6 +42,7 @@ public class SensorService {
     private final FineParticlesDataPt2Repository fineParticlesDataPt2Repository;
     private final DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
     private final WeeklySensorAirQualityReportRepository weeklySensorAirQualityReportRepository;
+    private final PredictedAirQualityRepository predictedAirQualityRepository;
 
     public Sensor setSensor(User user, SensorRequestDto.setSensorDto sensorRequestDto) throws Exception {
         Sensor sensor = Sensor.builder()
@@ -125,6 +128,10 @@ public class SensorService {
         List<WeeklySensorAirQualityReport> weeklyReports = weeklySensorAirQualityReportRepository.findAllBySensorId(sensor.getId());
         weeklySensorAirQualityReportRepository.deleteAll(weeklyReports);
 
+        //예측된 공기질 데이터 삭제
+        List<PredictedAirQualityData> predictedAirQualityDataList = predictedAirQualityRepository.findBySensorSerialNumber(sensor.getSerialNumber());
+        predictedAirQualityRepository.deleteAll(predictedAirQualityDataList);
+
         sensorRepository.delete(sensor);
         roomSensorRepository.delete(roomSensor);
     }
@@ -196,6 +203,10 @@ public class SensorService {
         //일주일 평균 데이터 삭제
         List<WeeklySensorAirQualityReport> weeklyReports = weeklySensorAirQualityReportRepository.findAllBySensorId(sensor.getId());
         weeklySensorAirQualityReportRepository.deleteAll(weeklyReports);
+
+        // 예측된 공기질 데이터 삭제
+        List<PredictedAirQualityData> predictedAirQualityDataList = predictedAirQualityRepository.findBySensorSerialNumber(sensor.getSerialNumber());
+        predictedAirQualityRepository.deleteAll(predictedAirQualityDataList);
 
         // RoomSensor 매핑 삭제
         roomSensorRepository.delete(roomSensor);
