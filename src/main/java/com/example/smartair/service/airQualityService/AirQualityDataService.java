@@ -36,34 +36,31 @@ public class AirQualityDataService {
     private final AirQualityScoreService airQualityScoreService;
 
     @Transactional
-    public AirQualityPayloadDto processAirQualityData(Long deviceId, Long roomIdFromTopic, AirQualityPayloadDto dto) {
+    public AirQualityPayloadDto processAirQualityData(Long deviceId, Long roomId, AirQualityPayloadDto dto) {
         try {
-
             // 1. Device 추출
             Sensor sensor = sensorRepository.findById(deviceId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
+                    .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND));
 
-            // 2. Room 추출
-            Room actualRoom = roomSensorRepository.findBySensor(sensor)
-                    .map(RoomSensor::getRoom)
-                    .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
-
-            // 토픽에서 파싱된 roomId와 DB에서 조회한 실제 Room의 ID가 일치하는지 확인
-            if (!actualRoom.getId().equals(roomIdFromTopic)) {
-                log.warn("토픽의 Room ID({})와 실제 Device ID {} 가 DB에 매핑된 Room ID({})와 불일치합니다. DB에 매핑된 Room ID '{}'를 기준으로 처리합니다.",
-                        roomIdFromTopic, deviceId, actualRoom.getId(), actualRoom.getId());
+            // 2. Room 정보는 옵셔널하게 처리
+            Room room = null;
+            if (roomId != null){
+                room = roomSensorRepository.findBySensor(sensor)
+                        .map(RoomSensor::getRoom)
+                        .orElse(null);
+                if (room != null) {
+                    log.info("센서 ID {}가 방 ID {}에 매핑되어 있습니다.", deviceId, room.getId());
+                }
             }
 
-
-
-            // 4. FineParticlesData 엔티티 생성 및 저장 
+            // 3. FineParticlesData 엔티티 생성 및 저장
             FineParticlesData fineParticlesData = dto.toPt1Entity();
             FineParticlesData savedFineParticlesData = fineParticlesDataRepository.save(fineParticlesData);
 
             FineParticlesDataPt2 fineParticlesDataPt2 = dto.toPt2Entity();
             FineParticlesDataPt2 savedFineParticlesDataPt2 = fineParticlesDataPt2Repository.save(fineParticlesDataPt2);
 
-            // 5. AirQualityData 엔티티 생성
+            // 4. AirQualityData 엔티티 생성
             SensorAirQualityData airQualityData = SensorAirQualityData.builder()
                     .temperature(dto.getTemperature())
                     .humidity(dto.getHumidity())
@@ -77,10 +74,10 @@ public class AirQualityDataService {
                     .fineParticlesDataPt2(savedFineParticlesDataPt2)
                     .build();
 
-            // 6. AirQualityData 저장
+            // 5. AirQualityData 저장
             SensorAirQualityData savedAirQualityData = airQualityDataRepository.save(airQualityData);
 
-            //즉시 점수 계산
+            // 즉시 점수 계산
             airQualityScoreService.calculateAndSaveDeviceScore(savedAirQualityData);
 
             // 7. 캐싱
