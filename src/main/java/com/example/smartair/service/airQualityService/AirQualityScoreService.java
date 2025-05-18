@@ -59,7 +59,7 @@ public class AirQualityScoreService { //스케줄러를 통해 자동으로 점�
         SensorAirQualityScore calculatedDeviceScore = airQualityCalculator.calculateScore(airQualityData);
         calculatedDeviceScore.setSensorAirQualityData(airQualityData);
         sensorAirQualityScoreRepository.save(calculatedDeviceScore);
-        log.info("DeviceAirQualityScore 저장 완료: ID {}", calculatedDeviceScore.getId());
+        log.info("SensorAirQualityScore 저장 완료: ID {}", calculatedDeviceScore.getId());
 
         // 방 평균 점수 업데이트 트리거
         try {
@@ -75,7 +75,7 @@ public class AirQualityScoreService { //스케줄러를 통해 자동으로 점�
         List<Sensor> sensorList = roomSensorRepository.findAllSensorByRoom(room);
 
         if (sensorList.isEmpty()) {
-            log.warn("Room ID: {} 에 속한 Device가 없습니다. 평균 점수 계산을 건너뛰었습니다.", room.getId());
+            log.warn("Room ID: {} 에 속한 Sensor가 없습니다. 평균 점수 계산을 건너뛰었습니다.", room.getId());
             return; // 처리할 디바이스 없으면 종료
         }
 
@@ -86,7 +86,7 @@ public class AirQualityScoreService { //스케줄러를 통해 자동으로 점�
                         .ifPresent(airQualityScoreList::add);
                 // .orElseThrow() 대신 ifPresent 사용으로 점수 없는 디바이스는 그냥 넘어감
             } catch (Exception e) { // 데이터 조회 중 예외 처리 (예: DB 연결 문제)
-                log.error("Device ID {}의 최신 공기질 점수 조회 중 오류 발생", sensor.getId(), e);
+                log.error("Sensor ID {}의 최신 공기질 점수 조회 중 오류 발생", sensor.getId(), e);
             }
         }
 

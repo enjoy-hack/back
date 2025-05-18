@@ -7,6 +7,7 @@ import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
+import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.service.airQualityService.AirQualityDataService;
 import com.example.smartair.service.awsFileService.S3Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,6 +38,7 @@ public class MqttReceiveService {
     private final AirQualityDataRepository airQualityDataRepository;
     private final RoomSensorRepository roomSensorRepository;
     private final S3Service s3Service;
+    private final SensorRepository sensorRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final int MAX_QUEUE_SIZE = 300; // 최대 큐 사이즈
@@ -107,7 +109,7 @@ public class MqttReceiveService {
         try {
             log.info("Received message on handleReceiveMessage topic '{}', payload: {}", topic, payload);
 
-            // 토픽 구조: smartair/{deviceId}/{roomId}/airquality
+            // 토픽 구조: smartair/{deviceId}/airquality
             String[] topicParts = topic.split("/");
             
             // 유효성 검사: smartair로 시작하고, 총 3개의 파트가 있으며, 마지막은 airquality인지 확인
@@ -115,12 +117,19 @@ public class MqttReceiveService {
                 // deviceId 파싱
                 Long deviceId = Long.parseLong(topicParts[1]);
 
-                // 센서가 방에 등록되어 있는지 확인
-                RoomSensor roomSensor = roomSensorRepository.findBySensor_Id(deviceId)
-                        .orElseThrow(() -> {
-                            log.warn("Sensor {} is not registered to any room. Message ignored.", deviceId);
-                            return new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND);
-                        });
+                if (!sensorRepository.existsById(deviceId)) {
+                    log.warn("존재하지 않는 센서 ID {}로부터 메시지를 수신했습니다.", deviceId);
+                    throw new CustomException(ErrorCode.SENSOR_NOT_FOUND);
+                }
+
+                // 방 매핑 정보 조회 (있으면 사용, 없으면 null)
+                Long roomId = roomSensorRepository.findBySensor_Id(deviceId)
+                        .map(roomSensor -> roomSensor.getRoom().getId())
+                        .orElse(null);
+
+                if (roomId == null) {
+                    log.info("센서 ID {}는 현재 방에 매핑되어 있지 않습니다.", deviceId);
+                }
 
                 //센서별 제한 체크
                 if (isRateLimitExceeded(deviceId)){
@@ -129,7 +138,6 @@ public class MqttReceiveService {
                     throw new CustomException(ErrorCode.MQTT_RATE_LIMIT_EXCEEDED);
                 }
 
-                // roomId, deviceId 추출
                 //String roomIdString = roomSensor.getRoom().getId().toString();
                 String deviceIdString = deviceId.toString();
 
@@ -141,7 +149,7 @@ public class MqttReceiveService {
                 log.info("JSON 파싱 완료: {}", dto);
 
                 // 데이터 처리 및 저장
-                AirQualityPayloadDto processedDto = airQualityDataService.processAirQualityData(deviceId, roomSensor.getRoom().getId(), dto);
+                AirQualityPayloadDto processedDto = airQualityDataService.processAirQualityData(deviceId, roomId, dto);
 
                 // 처리된 데이터를 SensorAirQualityData로 변환하여 큐에 추가
                 SensorAirQualityData sensorData = airQualityDataService.getSavedAirQualityData(deviceId);
