@@ -23,6 +23,7 @@ import com.example.smartair.repository.roomRepository.RoomRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +48,7 @@ public class SensorService {
                 .user(user)
                 .runningStatus(false)
                 .isRegistered(false) //처음 등록시 방에 등록되지 않은 상태
+                .registerDate(LocalDateTime.now())
                 .build();
 
         sensorRepository.save(sensor);
@@ -174,7 +176,25 @@ public class SensorService {
         // 센서의 등록 상태 변경
         Sensor sensor = roomSensor.getSensor();
         sensor.setRegistered(false);
+        sensor.setRegisterDate(LocalDateTime.now().plusSeconds(3)); // 등록 해제 시점 이후 데이터 사용
         sensorRepository.save(sensor);
+
+        //실시간 데이터 삭제
+        Optional<FineParticlesData> optionalFine = fineParticlesDataRepository.findBySensor_Id(sensor.getId());
+        optionalFine.ifPresent(fineParticlesDataRepository::delete);
+
+        Optional<FineParticlesDataPt2> optionalFine2 = fineParticlesDataPt2Repository.findBySensor_Id(sensor.getId());
+        optionalFine2.ifPresent(fineParticlesDataPt2Repository::delete);
+
+        Optional<SensorAirQualityData> qualityDataOptional = airQualityDataRepository.findBySensor_Id(sensor.getId());
+        qualityDataOptional.ifPresent(airQualityDataRepository::delete);
+
+        //하루 평균 데이터 삭제
+        List<DailySensorAirQualityReport> dailyReports = dailySensorAirQualityReportRepository.findAllBySensorId(sensor.getId());
+        dailySensorAirQualityReportRepository.deleteAll(dailyReports);
+        //일주일 평균 데이터 삭제
+        List<WeeklySensorAirQualityReport> weeklyReports = weeklySensorAirQualityReportRepository.findAllBySensorId(sensor.getId());
+        weeklySensorAirQualityReportRepository.deleteAll(weeklyReports);
 
         // RoomSensor 매핑 삭제
         roomSensorRepository.delete(roomSensor);
