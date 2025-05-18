@@ -23,9 +23,9 @@ import com.example.smartair.repository.roomRepository.RoomRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -41,53 +41,69 @@ public class SensorService {
     private final WeeklySensorAirQualityReportRepository weeklySensorAirQualityReportRepository;
 
     public Sensor setSensor(User user, SensorRequestDto.setSensorDto sensorRequestDto) throws Exception {
-
-        Optional<Room> optionalRoom = roomRepository.findRoomById(sensorRequestDto.roomId());
-        if(optionalRoom.isEmpty()) throw new Exception(new CustomException(ErrorCode.ROOM_NOT_FOUND));
-        //방이 존재하지 않은 경우
-
-        Room room = optionalRoom.get();
-
-        if(!room.getOwner().getId().equals(user.getId())) throw new Exception(new CustomException(ErrorCode.NO_AUTHORITY));
-
-        Optional<RoomSensor>  optionalRoomSensor = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(
-                sensorRequestDto.serialNumber(),room.getId());
-        if(optionalRoomSensor.isPresent()) throw new Exception(new CustomException(ErrorCode.SENSOR_ALREADY_EXIST_IN_ROOM));
-        //이미 디바이스가 방에 연결되어 있는 경우
-
-        optionalRoomSensor = roomSensorRepository.findBySensor_SerialNumber(sensorRequestDto.serialNumber());
-        if(optionalRoomSensor.isPresent()) throw new Exception(new CustomException(ErrorCode.SENSOR_ALREADY_EXIST_IN_ANOTHER_ROOM));
-        // 다른 방에 연결되어있는 경우
-
         Sensor sensor = Sensor.builder()
                 .name(sensorRequestDto.name())
                 .serialNumber(sensorRequestDto.serialNumber())
                 .user(user)
                 .runningStatus(false)
+                .isRegistered(false) //처음 등록시 방에 등록되지 않은 상태
                 .build();
 
+        sensorRepository.save(sensor);
+        return sensor;
+    }
+
+    public RoomSensor addSensorToRoom(User user, SensorRequestDto.addSensorToRoomDto sensorDto) throws Exception {
+        Room room = roomRepository.findRoomById(sensorDto.roomId())
+                .orElseThrow(() -> new Exception(new CustomException(ErrorCode.ROOM_NOT_FOUND)));
+
+        Sensor sensor = sensorRepository.findBySerialNumber(sensorDto.serialNumber())
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND));
+
+        // 센서 소유자 검증
+        if (!sensor.getUser().getId().equals(user.getId())) {
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR);
+        }
+
+        // 등록하려는 유저가 방에 등록된 사람인지 확인
+        if (!roomRepository.existsByIdAndParticipants_User(room.getId(), user)){
+            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM);
+        }
+
+        // 이미 방에 등록되어 있는 센서인지 확인
+        if (roomSensorRepository.existsBySensor_SerialNumberAndRoom_Id(sensorDto.serialNumber(), room.getId())) {
+            throw new CustomException(ErrorCode.SENSOR_ALREADY_EXIST_IN_ROOM);
+        }
+        sensor.setRegistered(true);
         sensorRepository.save(sensor);
 
         RoomSensor roomSensor = RoomSensor.builder()
                 .sensor(sensor)
-                .room(optionalRoom.get())
+                .room(room)
                 .build();
 
         roomSensorRepository.save(roomSensor);
-        return sensor;
+        return roomSensor;
     }
 
     public void deleteSensor(User user, SensorRequestDto.deleteSensorDto sensorDto) throws Exception {
         Room room = roomRepository.findRoomById(sensorDto.roomId())
                 .orElseThrow(() -> new Exception(new CustomException(ErrorCode.ROOM_NOT_FOUND)));
 
-        if(!room.getOwner().equals(user)) throw new Exception(new CustomException(ErrorCode.NO_AUTHORITY));
+        // 등록된 참여자인지 확인
+        if (!roomRepository.existsByIdAndParticipants_User(room.getId(), user)) {
+            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM);
+        }
 
-        Optional<RoomSensor> optionalRoomSensor = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(sensorDto.serialNumber(), sensorDto.roomId());
-        if(optionalRoomSensor.isEmpty()) throw new Exception(new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND));
+        RoomSensor roomSensor = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(sensorDto.serialNumber(), sensorDto.roomId())
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND));
 
-        RoomSensor roomSensor = optionalRoomSensor.get();
         Sensor sensor = roomSensor.getSensor();
+
+        // 센서 소유자 검증
+        if (!sensor.getUser().getId().equals(user.getId())) {
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR);
+        }
 
         //실시간 데이터 삭제
         Optional<FineParticlesData> optionalFine = fineParticlesDataRepository.findBySensor_Id(sensor.getId());
@@ -110,14 +126,24 @@ public class SensorService {
         roomSensorRepository.delete(roomSensor);
     }
 
-    public List<Sensor> getSensors(Long roomId){
-
-        List<RoomSensor> roomSensors = roomSensorRepository.findByRoomId(roomId);
-
-        // RoomDevice → Device 추출
-        return roomSensors.stream()
+    public List<Sensor> getSensors(Long roomId, User user){
+        // 해당 방에 등록된 센서 목록
+        List<Sensor> registeredSensors = roomSensorRepository.findByRoomId(roomId)
+                .stream()
                 .map(RoomSensor::getSensor)
-                .collect(Collectors.toList());
+                .toList();
+
+        // 사용자의 모든 센서 중 아직 방에 등록되지 않은 센서 목록
+        List<Sensor> unregisteredSensors = sensorRepository.findByUser(user)
+                .stream()
+                .filter(sensor -> !roomSensorRepository.existsBySensorId(sensor.getId()))
+                .toList();
+
+        // 두 리스트 합치기
+        List<Sensor> allSensors = new ArrayList<>(registeredSensors);
+        allSensors.addAll(unregisteredSensors);
+
+        return allSensors;
     }
 
     public boolean getSensorStatus(Long serialNumber) throws Exception {
@@ -127,5 +153,33 @@ public class SensorService {
 
         return optionalSensor.get().isRunningStatus();
     }
+
+    public void unregisterSensorFromRoom(User user, SensorRequestDto.unregisterSensorFromRoomDto request) throws Exception {
+        Room room = roomRepository.findRoomById(request.roomId())
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+
+        // 등록된 참여자인지 확인
+        if (!roomRepository.existsByIdAndParticipants_User(room.getId(), user)) {
+            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM);
+        }
+
+        RoomSensor roomSensor = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(request.serialNumber(), request.roomId())
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND));
+
+        // 센서 소유자 검증
+        if (!roomSensor.getSensor().getUser().getId().equals(user.getId())) {
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR);
+        }
+
+        // 센서의 등록 상태 변경
+        Sensor sensor = roomSensor.getSensor();
+        sensor.setRegistered(false);
+        sensorRepository.save(sensor);
+
+        // RoomSensor 매핑 삭제
+        roomSensorRepository.delete(roomSensor);
+    }
+
+
 
 }

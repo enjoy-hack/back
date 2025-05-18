@@ -15,6 +15,7 @@ public class SensorResponseDto {
     private LocalDateTime lastUpdatedAt;
     private String ownerUsername;
     private boolean runningStatus;
+    private boolean isRegistered;
 
     public static SensorResponseDto from(Sensor sensor) {
         User owner = sensor.getUser();
@@ -25,6 +26,7 @@ public class SensorResponseDto {
                 .lastUpdatedAt(sensor.getModifiedAt())
                 .ownerUsername(owner != null ? owner.getUsername() : null)
                 .runningStatus(sensor.isRunningStatus())
+                .isRegistered(sensor.isRegistered())
                 .build();
     }
 }

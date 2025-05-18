@@ -1,7 +1,9 @@
 package com.example.smartair.controller.sensorContoller;
 
+import com.example.smartair.dto.roomSensorDto.RoomSensorResponseDto;
 import com.example.smartair.dto.sensorDto.SensorRequestDto;
 import com.example.smartair.dto.sensorDto.SensorResponseDto;
+import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
@@ -37,6 +39,20 @@ public class SensorController implements SensorControllerDocs {
     }
 
     @Override
+    @PostMapping("/sensor/room")
+    public ResponseEntity<RoomSensorResponseDto> addSensorToRoom(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                 @RequestBody SensorRequestDto.addSensorToRoomDto sensorDto) throws Exception {
+        if(userDetails == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userDetails.getUser();
+
+        RoomSensor roomSensor = sensorService.addSensorToRoom(user, sensorDto);
+
+        return ResponseEntity.ok(RoomSensorResponseDto.from(roomSensor));
+    }
+
+    @Override
     @DeleteMapping("/sensor")
     public ResponseEntity<?> deleteSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
                                           @RequestBody SensorRequestDto.deleteSensorDto deviceDto) throws Exception {
@@ -59,7 +75,7 @@ public class SensorController implements SensorControllerDocs {
         }
         User user = userDetails.getUser();
 
-        List<Sensor> sensorList = sensorService.getSensors(roomId);
+        List<Sensor> sensorList = sensorService.getSensors(roomId, user);
 
         return ResponseEntity.ok(sensorList.stream()
                 .map(SensorResponseDto::from)
@@ -78,6 +94,20 @@ public class SensorController implements SensorControllerDocs {
         Boolean status = sensorService.getSensorStatus(deviceSerialNumber);
 
         return ResponseEntity.ok("device"+ deviceSerialNumber + " running state: " + status);
+    }
+
+    @Override
+    @DeleteMapping("/sensor/room")
+    public ResponseEntity<?> unregisterSensorFromRoom(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody SensorRequestDto.unregisterSensorFromRoomDto request) throws Exception {
+        if(userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userDetails.getUser();
+
+        sensorService.unregisterSensorFromRoom(user, request);
+        return ResponseEntity.noContent().build();
     }
 
 }

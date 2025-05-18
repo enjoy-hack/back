@@ -112,9 +112,15 @@ public class MqttReceiveService {
             
             // 유효성 검사: smartair로 시작하고, 총 3개의 파트가 있으며, 마지막은 airquality인지 확인
             if (topicParts.length == 3 && "smartair".equals(topicParts[0]) && "airquality".equals(topicParts[2])) {
-                // deviceId와 roomId를 String으로 추출
-                String deviceIdString = topicParts[1];
-                Long deviceId = Long.parseLong(deviceIdString);
+                // deviceId 파싱
+                Long deviceId = Long.parseLong(topicParts[1]);
+
+                // 센서가 방에 등록되어 있는지 확인
+                RoomSensor roomSensor = roomSensorRepository.findBySensor_Id(deviceId)
+                        .orElseThrow(() -> {
+                            log.warn("Sensor {} is not registered to any room. Message ignored.", deviceId);
+                            return new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND);
+                        });
 
                 //센서별 제한 체크
                 if (isRateLimitExceeded(deviceId)){
@@ -123,10 +129,9 @@ public class MqttReceiveService {
                     throw new CustomException(ErrorCode.MQTT_RATE_LIMIT_EXCEEDED);
                 }
 
-                //RoomSensor를 통해 roomId 찾기
-                RoomSensor roomSensor = roomSensorRepository.findBySensor_Id(deviceId)
-                        .orElseThrow(() -> new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND));
+                // roomId, deviceId 추출
                 String roomIdString = roomSensor.getRoom().getId().toString();
+                String deviceIdString = deviceId.toString();
 
                 // 실시간으로 들어오는 원본 데이터를 바로 업로드
                 s3Service.uploadJson(deviceIdString, roomIdString, payload);

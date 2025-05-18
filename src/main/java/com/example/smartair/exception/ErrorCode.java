@@ -17,6 +17,7 @@ public enum ErrorCode {
     DEVICE_ALREADY_EXIST_IN_ROOM(HttpStatus.CONFLICT, "이미 해당 방에 디바이스가 등록되어있습니다."),
     DEVICE_ALREADY_EXIST_IN_ANOTHER_ROOM(HttpStatus.CONFLICT, "이미 해당 기기가 다른 방에 등록되어있습니다."),
     NO_AUTHORITY(HttpStatus.FORBIDDEN, "권한이 없습니다."),
+    NO_AUTHORITY_TO_ACCESS_SENSOR(HttpStatus.FORBIDDEN, "센서에 접근할 권한이 없습니다."),
     SENSOR_NOT_FOUND(HttpStatus.NOT_FOUND, "센서를 찾을 수 없습니다."),
     SENSOR_ALREADY_EXIST_IN_ROOM(HttpStatus.CONFLICT, "이미 해당 방에 센서가 등록되어있습니다."),
     SENSOR_ALREADY_EXIST_IN_ANOTHER_ROOM(HttpStatus.CONFLICT, "이미 해당 센서가 다른 방에 등록되어있습니다."),
@@ -68,6 +69,7 @@ public enum ErrorCode {
     REQUEST_ALREADY_PENDING(HttpStatus.CONFLICT, "요청이 이미 보류 중입니다."),
     INVALID_REQUEST_STATUS(HttpStatus.BAD_REQUEST, "요청 상태가 유효하지 않습니다."),
     INVALID_TARGET_PARTICIPANT(HttpStatus.BAD_REQUEST, "대상 참여자가 유효하지 않습니다."),
+    ROOM_SENSOR_MAPPING_ALREADY_EXISTS(HttpStatus.CONFLICT, "방과 센서의 매핑 정보가 이미 존재합니다."),
 
     // === PAT 관련 오류 코드 ===
     PAT_NOT_FOUND(HttpStatus.NOT_FOUND, "PAT 정보를 찾을 수 없습니다."),
