@@ -22,7 +22,7 @@ public class Sensor extends BaseEntity {
     private Long serialNumber;
     private boolean runningStatus;
     private boolean isRegistered; //방 등록 여부
-    private LocalDateTime registerDate; //센서 등록 날짜
+    private LocalDateTime roomRegisterDate; //센서 방 등록 날짜
 
     @ManyToOne //기기와 유저 : 다대일 관계
     @JoinColumn(name = "user_id")

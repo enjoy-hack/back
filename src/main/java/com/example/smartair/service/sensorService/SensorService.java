@@ -48,7 +48,7 @@ public class SensorService {
                 .user(user)
                 .runningStatus(false)
                 .isRegistered(false) //처음 등록시 방에 등록되지 않은 상태
-                .registerDate(LocalDateTime.now())
+                .roomRegisterDate(null) // 방에 등록되지 않으니 null
                 .build();
 
         sensorRepository.save(sensor);
@@ -77,6 +77,7 @@ public class SensorService {
             throw new CustomException(ErrorCode.SENSOR_ALREADY_EXIST_IN_ROOM);
         }
         sensor.setRegistered(true);
+        sensor.setRoomRegisterDate(LocalDateTime.now()); // 방에 등록된 시점으로 설정
         sensorRepository.save(sensor);
 
         RoomSensor roomSensor = RoomSensor.builder()
@@ -176,7 +177,7 @@ public class SensorService {
         // 센서의 등록 상태 변경
         Sensor sensor = roomSensor.getSensor();
         sensor.setRegistered(false);
-        sensor.setRegisterDate(LocalDateTime.now().plusSeconds(3)); // 등록 해제 시점 이후 데이터 사용
+        sensor.setRoomRegisterDate(null); // 방에 등록되지 않은 상태로 변경
         sensorRepository.save(sensor);
 
         //실시간 데이터 삭제

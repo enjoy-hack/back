@@ -2,7 +2,9 @@ package com.example.smartair.service.airQualityService;
 
 import com.example.smartair.controller.predictedAirQualityController.PredictedAirQualityControllerDocs;
 import com.example.smartair.dto.predictedAirQualityDto.PredictedAirQualityDto;
+import com.example.smartair.dto.roomSensorDto.SensorRoomMappingDto;
 import com.example.smartair.entity.airData.predictedAirQualityData.PredictedAirQualityData;
+import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.repository.airQualityRepository.predictedAirQualityRepository.PredictedAirQualityRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
@@ -14,8 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -24,9 +25,20 @@ public class PredictedAirQualityService  {
 
     private final PredictedAirQualityRepository predictedAirQualityRepository;
     private final RoomSensorRepository roomSensorRepository;
-
     private static final DateTimeFormatter PREDICTED_TIMESTAMP_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+    public List<SensorRoomMappingDto> getSensorMappingWithRoom() {
+        List<RoomSensor> roomSensors = roomSensorRepository.findAll();
+
+        return roomSensors.stream()
+                .map(rs -> new SensorRoomMappingDto(
+                        rs.getSensor().getSerialNumber(),
+                        rs.getSensor().getRoomRegisterDate()
+                ))
+                .toList();
+    }
+
     public void setPredictedAirQuality(List<PredictedAirQualityDto> predictedAirQualityDtoList) {
 
         for (PredictedAirQualityDto dto : predictedAirQualityDtoList) {
