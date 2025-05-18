@@ -22,7 +22,7 @@ public class PredictedAirQualityController implements PredictedAirQualityControl
 
     private final PredictedAirQualityService predictedAirQualityService;
 
-    @GetMapping
+    @GetMapping("/sensorMappingWithRoom")
     public ResponseEntity<?> getSensorMappingWithRoom() {
 
         // 센서와 방 매핑 정보 가져오기
