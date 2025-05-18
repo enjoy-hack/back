@@ -37,6 +37,7 @@ public class PredictedAirQualityService  {
                         rs.getSensor().getRoomRegisterDate()
                 ))
                 .toList();
+
     }
 
     public void setPredictedAirQuality(List<PredictedAirQualityDto> predictedAirQualityDtoList) {
