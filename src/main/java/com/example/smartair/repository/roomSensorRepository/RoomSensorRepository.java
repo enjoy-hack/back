@@ -25,4 +25,8 @@ public interface RoomSensorRepository extends JpaRepository<RoomSensor, Long> {
     List<Sensor> findAllSensorByRoom(@Param("room") Room room);
 
     Optional<RoomSensor> findBySensor_Id(Long sensorId);
+
+    boolean existsBySensorId(Long sensor_id);
+
+    boolean existsBySensor_SerialNumberAndRoom_Id(Long serialNumber, Long roomId);
 }
