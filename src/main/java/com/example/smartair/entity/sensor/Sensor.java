@@ -19,7 +19,7 @@ public class Sensor extends BaseEntity {
     private String name;
     private Long serialNumber;
     private boolean runningStatus;
-    private String currentValue;
+    private boolean isRegistered; //방 등록 여부
 
     @ManyToOne //기기와 유저 : 다대일 관계
     @JoinColumn(name = "user_id")
