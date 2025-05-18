@@ -130,11 +130,11 @@ public class MqttReceiveService {
                 }
 
                 // roomId, deviceId 추출
-                String roomIdString = roomSensor.getRoom().getId().toString();
+                //String roomIdString = roomSensor.getRoom().getId().toString();
                 String deviceIdString = deviceId.toString();
 
                 // 실시간으로 들어오는 원본 데이터를 바로 업로드
-                s3Service.uploadJson(deviceIdString, roomIdString, payload);
+                s3Service.uploadJson(deviceIdString, payload);
 
                 log.info("JSON 파싱 시작: {}", payload);
                 AirQualityPayloadDto dto = objectMapper.readValue(payload, AirQualityPayloadDto.class);
