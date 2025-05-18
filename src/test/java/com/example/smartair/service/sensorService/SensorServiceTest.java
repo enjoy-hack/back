@@ -1,9 +1,11 @@
 package com.example.smartair.service.sensorService;
 
 import com.example.smartair.dto.sensorDto.SensorRequestDto;
+import com.example.smartair.entity.roomParticipant.RoomParticipant;
 import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
+import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
@@ -58,18 +60,23 @@ public class SensorServiceTest {
                 .owner(testUser)
                 .build();
         roomRepository.save(testRoom);
+
+        RoomSensor roomSensor = RoomSensor.builder()
+                .room(testRoom)
+                .sensor(null)
+                .build();
     }
 
     @Test
     void 디바이스_등록_후_조회() throws Exception {
         // given
-        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(1001L, "TestDevice", testRoom.getId());
+        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(1001L, "TestDevice");
 
         // when
         sensorService.setSensor(testUser, dto);
 
         // then
-        List<Sensor> sensors = sensorService.getSensors(testRoom.getId());
+        List<Sensor> sensors = sensorService.getSensors(testRoom.getId(), testUser);
         assertThat(sensors).hasSize(1);
         assertThat(sensors.get(0).getSerialNumber()).isEqualTo(1001L);
         assertThat(sensors.get(0).getName()).isEqualTo("TestDevice");
@@ -78,8 +85,17 @@ public class SensorServiceTest {
     @Test
     void 디바이스_삭제() throws Exception {
         // given
-        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(2002L, "ToDeleteDevice", testRoom.getId());
+        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(2002L, "ToDeleteDevice");
         sensorService.setSensor(testUser, dto);
+        RoomParticipant roomParticipant = RoomParticipant.builder()
+                .user(testUser)
+                .room(testRoom)
+                .canControlPatDevices(true)
+                .roleInRoom(Role.USER)
+                .build();
+        testRoom.addParticipant(roomParticipant);
+
+        sensorService.addSensorToRoom(testUser, new SensorRequestDto.addSensorToRoomDto(2002L, testRoom.getId()));
 
         SensorRequestDto.deleteSensorDto deleteDto = new SensorRequestDto.deleteSensorDto(2002L, testRoom.getId());
 
@@ -87,7 +103,7 @@ public class SensorServiceTest {
         sensorService.deleteSensor(testUser, deleteDto);
 
         // then
-        List<Sensor> sensors = sensorService.getSensors(testRoom.getId());
+        List<Sensor> sensors = sensorService.getSensors(testRoom.getId(), testUser);
         assertThat(sensors).isEmpty();
     }
 
@@ -95,7 +111,7 @@ public class SensorServiceTest {
     void 디바이스_상태_확인() throws Exception {
         // given
         Long serialNumber = 3003L;
-        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(serialNumber, "StatusCheck", testRoom.getId());
+        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(serialNumber, "StatusCheck");
         sensorService.setSensor(testUser, dto);
 
         // when
