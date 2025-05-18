@@ -48,7 +48,7 @@ public class AnomalyReportService {
                 .findBySensorAndReportDate(sensor, LocalDate.from(anomalyDate))
                 .orElseThrow(() -> new IllegalArgumentException("Daily report not found for sensor: " + sensor.getSerialNumber() + " at date: " + LocalDate.from(anomalyDate)));
 
-        String description = generateDescription(dto.getPollutant(), dto.getPollutantValue(), dto.getPredictedValue());
+        String description = generateDescription(dto.getPollutant(), dto.getPollutantValue(), dto.getPredictedValue()); // 예측값과 실제값 비교하여 설명 생성
 
         AnomalyReport anomalyReport = AnomalyReport.builder()
                 .sensor(sensor)
@@ -63,7 +63,7 @@ public class AnomalyReportService {
         anomalyReportRepository.save(anomalyReport);
         log.info("Anomaly report saved: {}", anomalyReport);
 
-        String targetToken = sensor.getUser().getFcmToken();
+        String targetToken = sensor.getUser().getFcmToken(); // 알림 대상 FCM 토큰 가져오기
 
         Message message = Message.builder()
                 .setToken(targetToken)

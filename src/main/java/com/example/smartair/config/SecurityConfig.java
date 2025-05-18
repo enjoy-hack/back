@@ -55,6 +55,7 @@ public class SecurityConfig {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOrigins(Collections.singletonList("http://localhost:3000")); // 허용할 도메인
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE")); // 허용할 HTTP 메서드
+                    config.setAllowedOriginPatterns(Collections.singletonList("https://smartair.site")); // 허용할 도메인 패턴
                     config.setAllowCredentials(true);
                     config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type")); // 허용할 헤더
                     config.setExposedHeaders(Collections.singletonList("Authorization")); // 노출할 헤더

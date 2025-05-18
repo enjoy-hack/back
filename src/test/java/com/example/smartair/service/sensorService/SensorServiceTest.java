@@ -1,123 +1,152 @@
 package com.example.smartair.service.sensorService;
 
 import com.example.smartair.dto.sensorDto.SensorRequestDto;
-import com.example.smartair.entity.roomParticipant.RoomParticipant;
+import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
-import com.example.smartair.entity.room.Room;
-import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
-import com.example.smartair.repository.sensorRepository.SensorRepository;
-import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataPt2Repository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.WeeklySensorAirQualityReportRepository;
+import com.example.smartair.repository.airQualityRepository.predictedAirQualityRepository.PredictedAirQualityRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
-import com.example.smartair.repository.userRepository.UserRepository;
-import jakarta.transaction.Transactional;
+import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
+import com.example.smartair.repository.sensorRepository.SensorRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@Transactional
-public class SensorServiceTest {
+class SensorServiceTest {
 
-    @Autowired
-    private SensorService sensorService;
-
-    @Autowired
-    private RoomRepository roomRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
+    @Mock
     private SensorRepository sensorRepository;
 
-    @Autowired
+    @Mock
+    private RoomRepository roomRepository;
+
+    @Mock
     private RoomSensorRepository roomSensorRepository;
+
+    @Mock
+    private FineParticlesDataRepository fineParticlesDataRepository;
+
+    @Mock
+    private FineParticlesDataPt2Repository fineParticlesDataPt2Repository;
+
+    @Mock
+    private AirQualityDataRepository airQualityDataRepository;
+
+    @Mock
+    private DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
+
+    @Mock
+    private WeeklySensorAirQualityReportRepository weeklySensorAirQualityReportRepository;
+
+    @Mock
+    private PredictedAirQualityRepository predictedAirQualityRepository;
+
+    @InjectMocks
+    private SensorService sensorService;
 
     private User testUser;
     private Room testRoom;
+    private Sensor testSensor;
 
     @BeforeEach
     void setUp() {
-        // 사용자 생성
-        testUser = User.builder()
-                .username("testuser")
-                .email("test@example.com")
-                .password("secure")
-                .role(com.example.smartair.entity.user.Role.MANAGER)
-                .build();
-        userRepository.save(testUser);
+        MockitoAnnotations.openMocks(this);
 
-        // 방 생성
+        testUser = User.builder()
+                .id(1L)
+                .username("testuser")
+                .build();
+
         testRoom = Room.builder()
+                .id(1L)
                 .name("Test Room")
                 .owner(testUser)
                 .build();
-        roomRepository.save(testRoom);
+
+        testSensor = Sensor.builder()
+                .id(1L)
+                .serialNumber(12345L)
+                .name("Test Sensor")
+                .user(testUser)
+                .isRegistered(false)
+                .runningStatus(false)
+                .build();
+    }
+
+    @Test
+    void setSensor_성공() throws Exception {
+        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(12345L, "Test Sensor");
+
+        when(sensorRepository.save(any(Sensor.class))).thenReturn(testSensor);
+
+        Sensor result = sensorService.setSensor(testUser, dto);
+
+        assertNotNull(result);
+        assertEquals(dto.serialNumber(), result.getSerialNumber());
+        assertEquals(dto.name(), result.getName());
+        verify(sensorRepository, times(1)).save(any(Sensor.class));
+    }
+
+    @Test
+    void addSensorToRoom_성공() throws Exception {
+        SensorRequestDto.addSensorToRoomDto dto = new SensorRequestDto.addSensorToRoomDto(12345L, 1L);
+
+        when(roomRepository.findRoomById(dto.roomId())).thenReturn(Optional.of(testRoom));
+        when(sensorRepository.findBySerialNumber(dto.serialNumber())).thenReturn(Optional.of(testSensor));
+        when(roomRepository.existsByIdAndParticipants_User(testRoom.getId(), testUser)).thenReturn(true);
+        when(roomSensorRepository.existsBySensor_SerialNumberAndRoom_Id(dto.serialNumber(), testRoom.getId())).thenReturn(false);
+
+        RoomSensor result = sensorService.addSensorToRoom(testUser, dto);
+
+        assertNotNull(result);
+        assertEquals(testRoom, result.getRoom());
+        assertEquals(testSensor, result.getSensor());
+        verify(sensorRepository, times(1)).save(testSensor);
+        verify(roomSensorRepository, times(1)).save(any(RoomSensor.class));
+    }
+
+    @Test
+    void deleteSensor_성공() throws Exception {
+        SensorRequestDto.deleteSensorDto dto = new SensorRequestDto.deleteSensorDto(12345L, 1L);
 
         RoomSensor roomSensor = RoomSensor.builder()
+                .sensor(testSensor)
                 .room(testRoom)
-                .sensor(null)
                 .build();
+
+        when(roomRepository.findRoomById(dto.roomId())).thenReturn(Optional.of(testRoom));
+        when(roomRepository.existsByIdAndParticipants_User(testRoom.getId(), testUser)).thenReturn(true);
+        when(roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(dto.serialNumber(), dto.roomId()))
+                .thenReturn(Optional.of(roomSensor));
+
+        sensorService.deleteSensor(testUser, dto);
+
+        verify(sensorRepository, times(1)).delete(testSensor);
+        verify(roomSensorRepository, times(1)).delete(roomSensor);
     }
 
     @Test
-    void 디바이스_등록_후_조회() throws Exception {
-        // given
-        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(1001L, "TestDevice");
+    void getSensorStatus_성공() throws Exception {
+        when(sensorRepository.findBySerialNumber(testSensor.getSerialNumber())).thenReturn(Optional.of(testSensor));
 
-        // when
-        sensorService.setSensor(testUser, dto);
+        boolean status = sensorService.getSensorStatus(testSensor.getSerialNumber());
 
-        // then
-        List<Sensor> sensors = sensorService.getSensors(testRoom.getId(), testUser);
-        assertThat(sensors).hasSize(1);
-        assertThat(sensors.get(0).getSerialNumber()).isEqualTo(1001L);
-        assertThat(sensors.get(0).getName()).isEqualTo("TestDevice");
-    }
-
-    @Test
-    void 디바이스_삭제() throws Exception {
-        // given
-        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(2002L, "ToDeleteDevice");
-        sensorService.setSensor(testUser, dto);
-        RoomParticipant roomParticipant = RoomParticipant.builder()
-                .user(testUser)
-                .room(testRoom)
-                .canControlPatDevices(true)
-                .roleInRoom(Role.USER)
-                .build();
-        testRoom.addParticipant(roomParticipant);
-
-        sensorService.addSensorToRoom(testUser, new SensorRequestDto.addSensorToRoomDto(2002L, testRoom.getId()));
-
-        SensorRequestDto.deleteSensorDto deleteDto = new SensorRequestDto.deleteSensorDto(2002L, testRoom.getId());
-
-        // when
-        sensorService.deleteSensor(testUser, deleteDto);
-
-        // then
-        List<Sensor> sensors = sensorService.getSensors(testRoom.getId(), testUser);
-        assertThat(sensors).isEmpty();
-    }
-
-    @Test
-    void 디바이스_상태_확인() throws Exception {
-        // given
-        Long serialNumber = 3003L;
-        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(serialNumber, "StatusCheck");
-        sensorService.setSensor(testUser, dto);
-
-        // when
-        boolean status = sensorService.getSensorStatus(serialNumber);
-
-        // then
-        assertThat(status).isFalse(); // 등록 시 runningStatus = false
+        assertFalse(status);
+        verify(sensorRepository, times(1)).findBySerialNumber(testSensor.getSerialNumber());
     }
 }

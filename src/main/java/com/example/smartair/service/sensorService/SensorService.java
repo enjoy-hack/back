@@ -4,6 +4,7 @@ import com.example.smartair.dto.sensorDto.SensorRequestDto;
 import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
+import com.example.smartair.entity.airData.predictedAirQualityData.PredictedAirQualityData;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
 import com.example.smartair.entity.sensor.Sensor;
@@ -17,12 +18,14 @@ import com.example.smartair.repository.airQualityRepository.airQualityDataReposi
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.WeeklySensorAirQualityReportRepository;
+import com.example.smartair.repository.airQualityRepository.predictedAirQualityRepository.PredictedAirQualityRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +42,7 @@ public class SensorService {
     private final FineParticlesDataPt2Repository fineParticlesDataPt2Repository;
     private final DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
     private final WeeklySensorAirQualityReportRepository weeklySensorAirQualityReportRepository;
+    private final PredictedAirQualityRepository predictedAirQualityRepository;
 
     public Sensor setSensor(User user, SensorRequestDto.setSensorDto sensorRequestDto) throws Exception {
         Sensor sensor = Sensor.builder()
@@ -47,6 +51,7 @@ public class SensorService {
                 .user(user)
                 .runningStatus(false)
                 .isRegistered(false) //처음 등록시 방에 등록되지 않은 상태
+                .roomRegisterDate(null) // 방에 등록되지 않으니 null
                 .build();
 
         sensorRepository.save(sensor);
@@ -75,6 +80,7 @@ public class SensorService {
             throw new CustomException(ErrorCode.SENSOR_ALREADY_EXIST_IN_ROOM);
         }
         sensor.setRegistered(true);
+        sensor.setRoomRegisterDate(LocalDateTime.now()); // 방에 등록된 시점으로 설정
         sensorRepository.save(sensor);
 
         RoomSensor roomSensor = RoomSensor.builder()
@@ -121,6 +127,10 @@ public class SensorService {
         //일주일 평균 데이터 삭제
         List<WeeklySensorAirQualityReport> weeklyReports = weeklySensorAirQualityReportRepository.findAllBySensorId(sensor.getId());
         weeklySensorAirQualityReportRepository.deleteAll(weeklyReports);
+
+        //예측된 공기질 데이터 삭제
+        List<PredictedAirQualityData> predictedAirQualityDataList = predictedAirQualityRepository.findBySensorSerialNumber(sensor.getSerialNumber());
+        predictedAirQualityRepository.deleteAll(predictedAirQualityDataList);
 
         sensorRepository.delete(sensor);
         roomSensorRepository.delete(roomSensor);
@@ -174,7 +184,29 @@ public class SensorService {
         // 센서의 등록 상태 변경
         Sensor sensor = roomSensor.getSensor();
         sensor.setRegistered(false);
+        sensor.setRoomRegisterDate(null); // 방에 등록되지 않은 상태로 변경
         sensorRepository.save(sensor);
+
+        //실시간 데이터 삭제
+        Optional<FineParticlesData> optionalFine = fineParticlesDataRepository.findBySensor_Id(sensor.getId());
+        optionalFine.ifPresent(fineParticlesDataRepository::delete);
+
+        Optional<FineParticlesDataPt2> optionalFine2 = fineParticlesDataPt2Repository.findBySensor_Id(sensor.getId());
+        optionalFine2.ifPresent(fineParticlesDataPt2Repository::delete);
+
+        Optional<SensorAirQualityData> qualityDataOptional = airQualityDataRepository.findBySensor_Id(sensor.getId());
+        qualityDataOptional.ifPresent(airQualityDataRepository::delete);
+
+        //하루 평균 데이터 삭제
+        List<DailySensorAirQualityReport> dailyReports = dailySensorAirQualityReportRepository.findAllBySensorId(sensor.getId());
+        dailySensorAirQualityReportRepository.deleteAll(dailyReports);
+        //일주일 평균 데이터 삭제
+        List<WeeklySensorAirQualityReport> weeklyReports = weeklySensorAirQualityReportRepository.findAllBySensorId(sensor.getId());
+        weeklySensorAirQualityReportRepository.deleteAll(weeklyReports);
+
+        // 예측된 공기질 데이터 삭제
+        List<PredictedAirQualityData> predictedAirQualityDataList = predictedAirQualityRepository.findBySensorSerialNumber(sensor.getSerialNumber());
+        predictedAirQualityRepository.deleteAll(predictedAirQualityDataList);
 
         // RoomSensor 매핑 삭제
         roomSensorRepository.delete(roomSensor);

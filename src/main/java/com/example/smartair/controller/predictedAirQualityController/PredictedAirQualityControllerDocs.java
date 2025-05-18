@@ -14,7 +14,24 @@ import java.util.List;
 
 @Tag(name = "예측 공기질 API", description = "예측된 공기질 데이터를 저장하고 조회하는 API")
 public interface PredictedAirQualityControllerDocs {
+    @Operation(
+            summary = "센서와 방 매핑 정보 조회",
+            description = """
+            ## 센서와 방 매핑 정보 조회
+            센서와 방의 매핑 정보를 조회합니다.
 
+            ---
+            **응답 예시**
+            ```json
+            [
+              {
+                "sensorSerialNumber": 12345,
+                "sensorRegisterDate": "2025-05-13T12:00:00"
+              }
+            ]
+            ```
+            """
+    )ResponseEntity<?> getSensorMappingWithRoom();
     @Operation(
             summary = "예측 공기질 데이터 저장",
             description = """

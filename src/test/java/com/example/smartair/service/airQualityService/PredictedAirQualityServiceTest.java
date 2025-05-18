@@ -1,9 +1,11 @@
 package com.example.smartair.service.airQualityService;
 
 import com.example.smartair.dto.predictedAirQualityDto.PredictedAirQualityDto;
+import com.example.smartair.dto.roomSensorDto.SensorRoomMappingDto;
 import com.example.smartair.entity.airData.predictedAirQualityData.PredictedAirQualityData;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomSensor;
+import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.repository.airQualityRepository.predictedAirQualityRepository.PredictedAirQualityRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +40,51 @@ class PredictedAirQualityServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
+
+    @Test
+    void getSensorMappingWithRoom_ReturnsMappedData() {
+        // Mock 데이터 생성
+        Sensor sensor1 = Sensor.builder()
+                .serialNumber(12345L)
+                .id(1L)
+                .name("Sensor1")
+                .roomRegisterDate(LocalDateTime.of(2025, 3, 15, 10, 30))
+                .build();
+        Sensor sensor2 = Sensor.builder()
+                .serialNumber(67890L)
+                .id(2L)
+                .name("Sensor2")
+                .roomRegisterDate(LocalDateTime.of(2025, 3, 16, 14, 45))
+                .build();
+
+        RoomSensor roomSensor1 = new RoomSensor();
+        roomSensor1.setSensor(sensor1);
+        roomSensor1.setRoom(new Room());
+        roomSensor1.getRoom().setId(1L);
+        roomSensor1.getRoom().setName("Room1");
+
+        RoomSensor roomSensor2 = new RoomSensor();
+        roomSensor2.setSensor(sensor2);
+        roomSensor2.setRoom(new Room());
+        roomSensor2.getRoom().setId(2L);
+        roomSensor2.getRoom().setName("Room2");
+        // Mock RoomSensor 리스트 생성
+
+        List<RoomSensor> mockRoomSensors = Arrays.asList(roomSensor1, roomSensor2);
+
+        // Mock 동작 설정
+        when(roomSensorRepository.findAll()).thenReturn(mockRoomSensors);
+
+        // 메서드 호출
+        List<SensorRoomMappingDto> result = predictedAirQualityService.getSensorMappingWithRoom();
+
+        // 결과 검증
+        assertEquals(2, result.size());
+        assertEquals(12345L, result.get(0).getSensorSerialNumber());
+        assertEquals(LocalDateTime.of(2025, 3, 15, 10, 30), result.get(0).getSensorRegisterDate());
+        assertEquals(67890L, result.get(1).getSensorSerialNumber());
+        assertEquals(LocalDateTime.of(2025, 3, 16, 14, 45), result.get(1).getSensorRegisterDate());
+    }
     @Test
     void testSetPredictedAirQuality() {
         // given

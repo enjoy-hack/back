@@ -28,20 +28,20 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
     // JSON 데이터 업로드
-    public String uploadJson(String deviceId, String roomId, String jsonPayload) throws Exception {
+    public String uploadJson(String serialNumber, String jsonPayload) throws Exception {
         try{
-            String now = LocalDateTime.now().toString();  // "2025-05-10T21:36:00.123"
-            String key = String.format("airQuality/%s/%s/%s.json", roomId, deviceId, now);
+            String now = LocalDateTime.now().toString();  // "2025-05-10T21:36:00"
+            String key = String.format("airQuality/%s/%s.json", serialNumber, now);
 
-        InputStream inputStream = new ByteArrayInputStream(jsonPayload.getBytes(StandardCharsets.UTF_8));
+            InputStream inputStream = new ByteArrayInputStream(jsonPayload.getBytes(StandardCharsets.UTF_8));
 
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType("application/json");
-        metadata.setContentLength(jsonPayload.length());
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType("application/json");
+            metadata.setContentLength(jsonPayload.length());
 
-        amazonS3Client.putObject(new PutObjectRequest(bucket, key, inputStream, metadata));
+            amazonS3Client.putObject(new PutObjectRequest(bucket, key, inputStream, metadata));
 
-        return key;
+            return key;
         } catch (AmazonS3Exception e) {
             log.error("S3 Upload Error: {}", e.getErrorMessage());
             throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
