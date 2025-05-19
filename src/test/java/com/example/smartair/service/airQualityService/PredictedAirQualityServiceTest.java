@@ -51,7 +51,7 @@ class PredictedAirQualityServiceTest {
                 .roomRegisterDate(LocalDateTime.of(2025, 3, 15, 10, 30))
                 .build();
         Sensor sensor2 = Sensor.builder()
-                .serialNumber("12345")
+                .serialNumber("67890")
                 .id(2L)
                 .name("Sensor2")
                 .roomRegisterDate(LocalDateTime.of(2025, 3, 16, 14, 45))
@@ -80,9 +80,9 @@ class PredictedAirQualityServiceTest {
 
         // 결과 검증
         assertEquals(2, result.size());
-        assertEquals(12345L, result.get(0).getSensorSerialNumber());
+        assertEquals("12345", result.get(0).getSensorSerialNumber());
         assertEquals(LocalDateTime.of(2025, 3, 15, 10, 30), result.get(0).getSensorRegisterDate());
-        assertEquals(67890L, result.get(1).getSensorSerialNumber());
+        assertEquals("67890", result.get(1).getSensorSerialNumber());
         assertEquals(LocalDateTime.of(2025, 3, 16, 14, 45), result.get(1).getSensorRegisterDate());
     }
     @Test
