@@ -39,12 +39,6 @@ public enum ErrorCode {
     UNKNOWN_POLLUTANT_TYPE(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 오염 물질 타입으로 점수를 계산할 수 없습니다."),
     CALCULATION_LOGIC_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "점수 계산 로직 오류가 발생했습니다 (농도 구간 매칭 실패 등)."),
 
-    // === mqtt 관련 오류 코드 ===
-    MQTT_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "MQTT 데이터 처리 중 오류 발생"),
-    MQTT_INVALID_TOPIC_ERROR(HttpStatus.BAD_REQUEST, "MQTT 토픽 형식이 유효하지 않습니다."),
-    MQTT_JSON_PARSING_ERROR(HttpStatus.BAD_REQUEST, "MQTT 데이터 파싱 중 오류 발생"),
-    MQTT_RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "시간당 메시지 제한을 초과했습니다."),
-
     // === AirQualityScoreService 관련 오류 코드 ===
     ROOM_AIR_QUALITY_SCORE_IS_EMPTY(HttpStatus.NO_CONTENT, "Room 점수 데이터가 비어있습니다."),
     ROOM_SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 방의 공기질 점수 정보를 찾을 수 없습니다."),

@@ -2,21 +2,17 @@ package com.example.smartair.controller.mqttController;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 import com.example.smartair.dto.mqttMessageDto.MqttMessageRequestDto;
-import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.service.mqttService.MqttReceiveService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -30,25 +26,15 @@ public class MqttReceiveController implements MqttReceiveControllerDocs{
         this.mqttReceiveService = mqttReceiveService;
     }
 
-    @Operation(
-            summary = "MQTT 메시지 수신 및 처리",
-            description = "센서에서 수신한 MQTT 메시지를 JSON으로 처리합니다..."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "성공"),
-            @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음"),
-            @ApiResponse(responseCode = "422", description = "MQTT 데이터 파싱 오류"),
-            @ApiResponse(responseCode = "429", description = "시간당 메시지 제한 초과"),
-            @ApiResponse(responseCode = "503", description = "서비스 처리 오류")
-    })
+
     @Override
     @PostMapping
-    public ResponseEntity<String> receiveMqttMessage(
+    public ResponseEntity<?> receiveMqttMessage(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody MqttMessageRequestDto requestDto) {
 
         if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 없습니다.");
+            return buildErrorResponse("M000", "인증 정보가 없습니다", 582);
         }
 
         try {
@@ -58,16 +44,28 @@ public class MqttReceiveController implements MqttReceiveControllerDocs{
             );
             return ResponseEntity.ok("테스트 메시지 처리 완료 " + dto);
 
-        } catch (ResponseStatusException e) {
-            // ResponseStatusException이 던져지면 HTTP 상태 코드와 메시지를 그대로 반환
-            return ResponseEntity.status(e.getStatusCode())
-                    .body(e.getReason());
-
+        } catch (JsonProcessingException e) {
+            log.error("JSON 파싱 오류", e);
+            return buildErrorResponse("M004", e.getMessage(), 583);
+        } catch (IllegalArgumentException e) {
+            log.error("잘못된 토픽 형식", e);
+            return buildErrorResponse("M001", "유효하지 않은 MQTT 토픽 형식입니다: " + e.getMessage(), 580);
+        } catch (EntityNotFoundException e) {
+            log.error("센서를 찾을 수 없음", e);
+            return buildErrorResponse("M002", "센서를 찾을 수 없습니다: " + e.getMessage(), 581);
         } catch (Exception e) {
-            log.error("Error processing MQTT message", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("메시지 처리 중 서버 오류 발생: " + e.getMessage());
+            log.error("예상치 못한 오류", e);
+            return buildErrorResponse("M005", "처리 중 오류가 발생했습니다: " + e.getMessage(), 584);
         }
+    }
+
+    private ResponseEntity<Map<String, String>> buildErrorResponse(String code, String message, int status) {
+        return ResponseEntity.status(status).body(Map.of(
+                "code", code,
+                "error", message,
+                "status", String.valueOf(status)
+
+        ));
     }
 
 }

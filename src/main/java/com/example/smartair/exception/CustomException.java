@@ -15,4 +15,5 @@ public class CustomException  extends RuntimeException{
         super(detail);
         this.errorCode = errorCode;
     }
+
 }

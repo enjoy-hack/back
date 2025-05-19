@@ -80,5 +80,5 @@ public interface MqttReceiveControllerDocs {
             @ApiResponse(responseCode = "503", description = "서비스 처리 오류")
     })
     @PostMapping
-    ResponseEntity<String> receiveMqttMessage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody MqttMessageRequestDto requestDto);
+    ResponseEntity<?> receiveMqttMessage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody MqttMessageRequestDto requestDto);
 }
