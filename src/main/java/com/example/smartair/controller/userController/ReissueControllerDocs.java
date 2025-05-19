@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 
 @Tag(name = "토큰 재발급 API", description = "Access 및 Refresh 토큰을 재발급하는 API입니다.")
-@RequestMapping("/reissue")
+@RequestMapping
 public interface ReissueControllerDocs {
 
     @Operation(
