@@ -19,21 +19,15 @@ public interface MqttReceiveControllerDocs {
 
                     MQTT 메시지를 JSON 형식으로 전달받아 처리하고, 관련 데이터를 데이터베이스에 저장합니다.
                     요청 본문은 `topic`과 `payload` 객체를 포함해야 합니다.
-                    센서에서 전송된 MQTT 메시지를 처리하고, 필요한 경우 센서를 자동으로 등록합니다.
+                    센서에서 전송된 MQTT 메시지를 처리
                     
                     **토픽 구조**
-                    - 형식: smartair/{userId}/{deviceId}/airquality
-                    - userId: 데이터를 전송하는 사용자의 ID
+                    - 형식: smartair/{deviceId}/airquality
                     - deviceId: 센서의 고유 식별자
 
                     **자동 센서 등록 프로세스**
                     1. 토픽에서 userId와 deviceId 추출
-                    2. userId가 유효한지 확인
-                    3. deviceId로 등록된 센서가 없는 경우:
-                        - 새로운 센서 자동 등록
-                        - 기본 이름 설정: "자동 등록 센서{deviceId}"
-                        - 기본 상태 설정 (runningStatus: true, isRegistered: false)
-                        - 해당 userId를 가진 사용자를 소유자로 설정
+                    2. deviceId로 센서 정보 조회
 
                     **메시지 처리 제한**
                     - 센서별 시간당 메시지 제한 적용
@@ -42,7 +36,7 @@ public interface MqttReceiveControllerDocs {
                     **입력 형식 예시:**
                     ```json
                     {
-                      "topic": "smartair/1/1/airQuality",
+                      "topic": "smartair/1/airQuality",
                       "payload": {
                         "pt1": {
                           "pm10_standard": 22,
