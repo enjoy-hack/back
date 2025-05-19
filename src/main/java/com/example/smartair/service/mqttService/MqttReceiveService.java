@@ -86,25 +86,25 @@ public class MqttReceiveService {
     }
 
     @Transactional
-    public AirQualityPayloadDto handleReceiveMessage(String topic, String payload) {
+    public AirQualityPayloadDto handleReceiveMessage(String topic, String payload) throws Exception {
         try {
             log.info("Received message on handleReceiveMessage topic '{}', payload: {}", topic, payload);
             String[] topicParts = topic.split("/");
 
             if (topicParts.length != 3 || !"smartair".equals(topicParts[0]) || !"airquality".equals(topicParts[2])) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid topic format");
+                throw new ResponseStatusException(HttpStatus.valueOf(400), "MQTT 토픽 형식이 유효하지 않습니다.");
             }
 
             Long deviceId = Long.parseLong(topicParts[1]);
             Sensor sensor = sensorRepository.findById(deviceId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sensor not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.valueOf(404), "센서를 찾을 수 없습니다."));
 
             Long roomId = roomSensorRepository.findBySensor_Id(sensor.getId())
-                            .map(roomSensor -> roomSensor.getRoom().getId())
-                            .orElse(null);
+                    .map(roomSensor -> roomSensor.getRoom().getId())
+                    .orElse(null);
 
             if (isRateLimitExceeded(deviceId)) {
-                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Rate limit exceeded");
+                throw new ResponseStatusException(HttpStatus.valueOf(429), "시간당 메시지 제한을 초과했습니다.");
             }
 
             s3Service.uploadJson(deviceId.toString(), payload);
@@ -121,14 +121,17 @@ public class MqttReceiveService {
             }
 
             return processedDto;
-                } catch (JsonProcessingException e) {
-                    log.error("JSON 파싱 오류: Topic={}, Payload={}, Error={}", topic, payload, e.getMessage(), e);
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-                } catch (Exception e) {
-                    log.error("메시지 처리 중 오류 발생: Topic={}, Payload={}, Error={}", topic, payload, e.getMessage(), e);
-                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-                }
+        } catch (JsonProcessingException e) {
+            log.error("JSON 파싱 오류: Topic={}, Payload={}, Error={}", topic, payload, e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.valueOf(422), "MQTT 데이터 파싱 중 오류 발생: " + e.getMessage());
+        } catch (Exception e) {
+            if (e instanceof ResponseStatusException) {
+                throw e;  // 이미 ResponseStatusException인 경우 그대로 전달
             }
+            log.error("메시지 처리 중 오류 발생: Topic={}, Payload={}, Error={}", topic, payload, e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.valueOf(503), "MQTT 데이터 처리 중 오류 발생: " + e.getMessage());
+        }
+    }
 
 
 
