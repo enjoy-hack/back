@@ -98,7 +98,7 @@ public class ThinQService {
 
         ResponseEntity<String> statusResponse = getDeviceState(user, dto);
         if (!statusResponse.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalStateException("디바이스 상태 조회 실패");
+            throw new IllegalStateException("디바이스 ID {} 상태 조회 실패" + dto.deviceId());
         }
 
         DeviceStateResponseDto state = objectMapper.readValue(statusResponse.getBody(), DeviceStateResponseDto.class);
@@ -117,14 +117,14 @@ public class ThinQService {
         PATEntity pat = patRepository.findByRoomId(roomId)
                 .orElseThrow(() -> {
                     log.warn("방 ID {}에 대한 PAT가 존재하지 않습니다.", roomId);
-                    return new IllegalStateException("PAT를 찾을 수 없습니다.");
+                    return new IllegalStateException("방 ID " + roomId + "에 대한 PAT가 존재하지 않습니다.");
                 });
 
         if(validateAccess(user, pat)) {
             log.info("사용자 ID {}가 방 ID {}에 대한 PAT에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
         } else {
             log.warn("사용자 ID {}가 방 ID {}에 대한 PAT에 접근할 수 있는 권한이 없습니다.", user.getId(), roomId);
-            throw new CustomException(ErrorCode.NO_AUTHORITY);
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 방에 대한 접근 권한이 없습니다.");
         }
         return pat;
     }
@@ -132,7 +132,7 @@ public class ThinQService {
     private Boolean validateAccess(User user, PATEntity patEntity) {
         //  PAT 엔티티로부터 Room ID를 가져와 Room 정보 조회
         Room room = roomRepository.findById(patEntity.getRoomId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "Room ID: " + patEntity.getRoomId()));
 
         boolean hasPermission = false;
 

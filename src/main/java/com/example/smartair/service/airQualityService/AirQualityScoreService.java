@@ -45,15 +45,12 @@ public class AirQualityScoreService { //스케줄러를 통해 자동으로 점�
     @Transactional
     public void calculateAndSaveDeviceScore(SensorAirQualityData airQualityData) { //개별 데이터 실시간 점수 계산
         if (airQualityData == null) {
-            throw new CustomException(ErrorCode.INVALID_INPUT_DATA);
+            throw new CustomException(ErrorCode.INVALID_INPUT_DATA, "AirQualityData is null");
         }
         Sensor sensor = airQualityData.getSensor();
         if (sensor == null) {
-            throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
+            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor not found for AirQualityData");
         }
-        Room room = roomSensorRepository.findBySensor(sensor)
-                .map(RoomSensor::getRoom)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
 
         // 개별 DeviceAirQualityScore 계산 및 저장
         SensorAirQualityScore calculatedDeviceScore = airQualityCalculator.calculateScore(airQualityData);
@@ -61,13 +58,21 @@ public class AirQualityScoreService { //스케줄러를 통해 자동으로 점�
         sensorAirQualityScoreRepository.save(calculatedDeviceScore);
         log.info("SensorAirQualityScore 저장 완료: ID {}", calculatedDeviceScore.getId());
 
-        // 방 평균 점수 업데이트 트리거
-        try {
-            updateRoomAverageScore(room); // room 객체 전달
-        } catch (Exception e) {
+        // Room 정보 조회 (없을 수 있음)
+        Optional<Room> roomOptional = roomSensorRepository.findBySensor(sensor)
+                .map(RoomSensor::getRoom);
+
+        // 방 정보가 존재하는 경우에만 평균 점수 업데이트
+        roomOptional.ifPresent(room -> {
+            try{
+                updateRoomAverageScore(room);
+            }catch (Exception e){
             log.error("Room ID {}의 평균 점수 업데이트 중 오류 발생", room.getId(), e);
         }
-    }
+        });
+}
+
+
 
     public void updateRoomAverageScore(Room room) { //방 평균 점수 업데이트
         log.info("Updating average score for Room ID: {}", room.getId());

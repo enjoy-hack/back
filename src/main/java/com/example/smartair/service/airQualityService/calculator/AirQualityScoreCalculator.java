@@ -37,7 +37,7 @@ public class AirQualityScoreCalculator implements AirQualityCalculator {
     @Override
     public SensorAirQualityScore calculateScore(SensorAirQualityData airQualityData) {
         if (airQualityData == null) {
-           throw new CustomException(ErrorCode.INVALID_INPUT_DATA);
+           throw new CustomException(ErrorCode.INVALID_INPUT_DATA, "공기질 데이터가 null입니다.");
         }
 
         FineParticlesData fineParticlesData = airQualityData.getFineParticlesData();
@@ -104,7 +104,7 @@ public class AirQualityScoreCalculator implements AirQualityCalculator {
 
         // 음수 농도 예외 처리
         if (concentration < 0) {
-            throw new CustomException(ErrorCode.INVALID_CONCENTRATION_RANGE);
+            throw new CustomException(ErrorCode.INVALID_CONCENTRATION_RANGE, "concentration: " + concentration);
         }
 
         for (int i = 0; i < concentrationBreakpoints.length; i++) {

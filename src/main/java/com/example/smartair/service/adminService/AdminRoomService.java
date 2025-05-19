@@ -24,7 +24,6 @@ import java.util.List;
 public class AdminRoomService {
 
     private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
     private final RoomParticipantRepository roomParticipantRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -46,7 +45,7 @@ public class AdminRoomService {
     @Transactional(readOnly = true)
     public RoomDetailResponseDto getRoomDetailForAdmin(Long roomId) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "Room ID: " + roomId));
         return RoomDetailResponseDto.from(room);
     }
 
@@ -59,7 +58,7 @@ public class AdminRoomService {
     @Transactional
     public RoomDetailResponseDto updateRoomForAdmin(Long roomId, CreateRoomRequestDto requestDto) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "Room ID: " + roomId));
 
         if (requestDto.getName() != null && !requestDto.getName().isEmpty()) {
             room.setName(requestDto.getName());
@@ -91,7 +90,7 @@ public class AdminRoomService {
     @Transactional
     public void deleteRoomForAdmin(Long roomId) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "Room ID: " + roomId));
 
         List<RoomParticipant> participants = roomParticipantRepository.findByRoom(room);
         roomParticipantRepository.deleteAll(participants);

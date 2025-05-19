@@ -42,7 +42,7 @@ public class RoomService {
         
         // 권한 검증: ADMIN 또는 MANAGER만 방 생성 가능
         if (!(requestingUser.getRole() == Role.ADMIN || requestingUser.getRole() == Role.MANAGER)) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY);
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "User does not have authority to create room");
         }
 
         Room room = Room.builder()
@@ -75,7 +75,7 @@ public class RoomService {
         // 권한 검증: 요청자가 해당 방의 소유자(owner)인지 확인
         if (!room.getOwner().getId().equals(ownerUserId)) {
             // ADMIN은 이 API를 사용하지 않고 AdminService의 getRoomDetail을 사용한다고 가정
-            throw new CustomException(ErrorCode.NO_AUTHORITY); 
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "User does not have authority to view participants in this room");
         }
 
         return room.getParticipants().stream()
@@ -268,7 +268,9 @@ public class RoomService {
                 // 재발급된 이전 토큰인 경우, 오류 코드를 반환
                 return e.getMessagingErrorCode().toString();
             } else { // 그 외, 오류는 런타임 예외로 처리
-                throw new RuntimeException(e);
+                throw new CustomException( ErrorCode.FCM_MESSAGE_SEND_ERROR,
+                        String.format("FCM 메시지 전송 중 오류가 발생했습니다 (에러: %s)", e.getMessage())
+                );
             }
         }
     }
@@ -329,7 +331,9 @@ public class RoomService {
                 // 재발급된 이전 토큰인 경우, 오류 코드를 반환
                 return e.getMessagingErrorCode().toString();
             } else { // 그 외, 오류는 런타임 예외로 처리
-                throw new RuntimeException(e);
+                throw new CustomException(ErrorCode.FCM_MESSAGE_SEND_ERROR,
+                        String.format("FCM 메시지 전송 중 오류가 발생했습니다 (에러: %s)", e.getMessage())
+                );
             }
         }
 
@@ -388,7 +392,9 @@ public class RoomService {
                 // 재발급된 이전 토큰인 경우, 오류 코드를 반환
                 return e.getMessagingErrorCode().toString();
             } else { // 그 외, 오류는 런타임 예외로 처리
-                throw new RuntimeException(e);
+                throw new CustomException(ErrorCode.FCM_MESSAGE_SEND_ERROR,
+                        String.format("FCM 메시지 전송 중 오류가 발생했습니다 (에러: %s)", e.getMessage())
+                );
             }
         }
     }

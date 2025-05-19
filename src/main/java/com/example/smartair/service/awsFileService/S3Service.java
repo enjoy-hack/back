@@ -44,7 +44,7 @@ public class S3Service {
             return key;
         } catch (AmazonS3Exception e) {
             log.error("S3 Upload Error: {}", e.getErrorMessage());
-            throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
+            throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR, "S3 Upload Error: " + e.getErrorMessage());
         }
     }
 

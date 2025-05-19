@@ -81,7 +81,7 @@ public class AnomalyReportService {
                 // 재발급된 이전 토큰인 경우, 오류 코드를 반환
                 return e.getMessagingErrorCode().toString();
             } else { // 그 외, 오류는 런타임 예외로 처리
-                throw new RuntimeException(e);
+                throw new RuntimeException("Error sending FCM message: " + e.getMessage());
             }
         }
 

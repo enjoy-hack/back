@@ -77,6 +77,7 @@ public interface SensorControllerDocs {
     ResponseEntity<RoomSensorResponseDto> addSensorToRoom(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                           @RequestBody SensorRequestDto.addSensorToRoomDto sensorDto) throws Exception;
 
+
     @Operation(
             summary = "센서 삭제",
             description = """

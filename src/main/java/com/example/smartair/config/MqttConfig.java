@@ -2,6 +2,9 @@ package com.example.smartair.config;
 
 import com.example.smartair.dto.airQualityDataDto.AirQualityPayloadDto;
 
+import com.example.smartair.entity.login.CustomUserDetails;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.service.mqttService.MqttReceiveService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +23,8 @@ import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 
 @Configuration
@@ -78,9 +83,11 @@ public class MqttConfig {
             try {
                 String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
                 String payload = (String) message.getPayload();
+
                 log.info("Received MQTT message - Topic: {}, Payload: {}", topic, payload);
                 mqttReceiveService.handleReceiveMessage(topic, payload);
-            } catch (Exception e) {
+                }
+            catch (Exception e) {
                 log.error("Error handling MQTT message: ", e);
             }
         };

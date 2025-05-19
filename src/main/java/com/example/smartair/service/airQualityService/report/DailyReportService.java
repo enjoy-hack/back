@@ -39,7 +39,7 @@ public class DailyReportService {
     @Transactional
     public DailySensorAirQualityReport createOrUpdateDailyReport(Long deviceId, LocalDate date) {
         Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
 
         Optional<DailySensorAirQualityReport> existingReportOpt =
                 dailyReportRepository.findBySensorAndReportDate(sensor, date);
@@ -55,13 +55,13 @@ public class DailyReportService {
             // 기존 보고서도 없고 스냅샷도 없으면 생성 불가
             if (!existingReportOpt.isPresent()) {
                 log.warn("Device ID: {}의 {} 날짜에 스냅샷이 없어 일별 보고서를 생성할 수 없습니다.", deviceId, date);
-                throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND);
+                throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND, "Sensor ID: {}의 {} 날짜에 스냅샷이 없어 일별 보고서를 생성할 수 없습니다." + deviceId + date);
             }
             // 기존 보고서는 있는데 스냅샷이 없는 경우 (예: 스냅샷이 삭제된 경우)
             // 이 경우 기존 보고서를 유지하거나, 비우거나, 삭제할 수 있음. 여기서는 일단 에러 처리.
             log.warn("Device ID: {}의 {} 날짜에 대한 기존 보고서(ID:{})는 있으나, 업데이트할 스냅샷이 없습니다.",
                     deviceId, date, existingReportOpt.get().getId());
-            throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND);
+            throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND, "Sensor ID: {}의 {} 날짜에 대한 기존 보고서(ID:{})는 있으나, 업데이트할 스냅샷이 없습니다." + deviceId + date + existingReportOpt.get().getId());
         }
 
         DailySensorAirQualityReport report = existingReportOpt.orElseGet(() -> {
@@ -90,9 +90,9 @@ public class DailyReportService {
     @Transactional(readOnly = true)
     public DailySensorAirQualityReport getDailyReport(Long deviceId, LocalDate date) {
         Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
         return dailyReportRepository.findBySensorAndReportDate(sensor, date)
-                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND, "report not found with SensorId: " + deviceId + ", date: " + date));
     }
 
     /**
@@ -104,7 +104,7 @@ public class DailyReportService {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
         Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
         return dailyReportRepository.findBySensorAndReportDateBetweenOrderByReportDateAsc(sensor, startDate, endDate);
     }
 
@@ -116,7 +116,7 @@ public class DailyReportService {
     @Transactional
     public void deleteDailyReport(Long reportId) {
         DailySensorAirQualityReport report = dailyReportRepository.findById(reportId)
-                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND, "report id: " + reportId));
 
         dailyReportRepository.delete(report);
         log.info("일별 보고서 ID: {} 삭제 완료", reportId);
@@ -128,7 +128,7 @@ public class DailyReportService {
     @Transactional
     public int deleteOldDailyReports(int daysOld) {
         if (daysOld <= 0) {
-            throw new CustomException(ErrorCode.INVALID_INPUT_DATA);
+            throw new CustomException(ErrorCode.INVALID_INPUT_DATA,  "daysOld는 1 이상이어야 합니다.");
         }
         LocalDate cutoffDate = LocalDate.now().minusDays(daysOld);
         log.info("{} 이전의 일별 보고서 삭제 시작 ({}일 이전 데이터)", cutoffDate, daysOld);
@@ -150,7 +150,7 @@ public class DailyReportService {
     @Transactional
     public int deleteDailyReportsByDeviceId(Long deviceId) {
         if (!sensorRepository.existsById(deviceId)) {
-            throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
+            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId);
         }
         log.info("Device ID: {} 관련 모든 일별 보고서 삭제 시작", deviceId);
         List<DailySensorAirQualityReport> reportsToDelete = dailyReportRepository.findAllBySensorId(deviceId);

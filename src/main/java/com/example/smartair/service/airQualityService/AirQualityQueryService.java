@@ -100,7 +100,7 @@ public class AirQualityQueryService { //공기질 점수 조회
 
 
         if (!sensorRepository.existsById(sensorId)) {
-            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND);
+            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + sensorId);
         }
 
         return sensorAirQualityScoreRepository
@@ -122,7 +122,7 @@ public class AirQualityQueryService { //공기질 점수 조회
      */
     public Page<RoomAirQualityScoreDto> getRoomAirQualityScores(Long roomId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable) {
         if (!roomRepository.existsById(roomId)) {
-            throw new CustomException(ErrorCode.ROOM_NOT_FOUND);
+            throw new CustomException(ErrorCode.ROOM_NOT_FOUND, "Room ID: " + roomId);
         }
 
         // 기본값: 최근 24시간
@@ -156,10 +156,10 @@ public class AirQualityQueryService { //공기질 점수 조회
 //    }
 
     public SensorAirQualityScoreDto getLatestSensorAirQualityScore(Long sensorId) {
-        Sensor sensor = sensorRepository.findById(sensorId).orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND));
+        Sensor sensor = sensorRepository.findById(sensorId).orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + sensorId));
 
         SensorAirQualityScore latestSensorScore = sensorAirQualityScoreRepository.findFirstBySensorAirQualityData_SensorOrderByCreatedAtDesc(sensor).orElseThrow(
-                ()-> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND)
+                ()-> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor ID: " + sensorId)
         );
 
         return SensorAirQualityScoreDto.fromEntity(latestSensorScore);
@@ -171,10 +171,10 @@ public class AirQualityQueryService { //공기질 점수 조회
      * @return RoomAirQualityScoreDto
      */
     public RoomAirQualityScoreDto getLatestRoomAirQualityScore(Long roomId) {
-        Room room = roomRepository.findById(roomId).orElseThrow(()-> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+        Room room = roomRepository.findById(roomId).orElseThrow(()-> new CustomException(ErrorCode.ROOM_NOT_FOUND, "Room ID: " + roomId));
 
         RoomAirQualityScore latestRoomScore = roomAirQualityScoreRepository.findFirstByRoomOrderByCreatedAtDesc(room).orElseThrow(
-                () -> new CustomException(ErrorCode.ROOM_SCORE_NOT_FOUND)
+                () -> new CustomException(ErrorCode.ROOM_SCORE_NOT_FOUND, "Room air quality score not found for ID: " + roomId)
         );
 
         return RoomAirQualityScoreDto.fromEntity(latestRoomScore);
