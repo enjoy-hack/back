@@ -107,7 +107,7 @@ public class AnomalyReportService {
         );
     }
 
-    public List<AnomalyReport> getAnomalyReports(Long sensorSerialNumber, LocalDate startDate, LocalDate endDate) {
+    public List<AnomalyReport> getAnomalyReports(String sensorSerialNumber, LocalDate startDate, LocalDate endDate) {
         Sensor sensor = sensorRepository.findBySerialNumber(sensorSerialNumber)
                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND,String.format("시리얼 번호에 맞는 센서를 찾을 수 없습니다. 시리얼 번호: %s", sensorSerialNumber)));
 

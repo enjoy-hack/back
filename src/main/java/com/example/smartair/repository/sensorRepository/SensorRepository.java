@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface SensorRepository extends JpaRepository<Sensor, Long> {
-    Optional<Sensor> findBySerialNumber(Long serialNumber);
+    Optional<Sensor> findBySerialNumber(String serialNumber);
 
     List<Sensor> findAllByRunningStatusIsTrue();
 
