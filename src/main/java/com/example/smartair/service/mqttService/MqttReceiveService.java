@@ -18,6 +18,7 @@ import com.example.smartair.service.sensorService.SensorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -90,19 +92,19 @@ public class MqttReceiveService {
             String[] topicParts = topic.split("/");
 
             if (topicParts.length != 3 || !"smartair".equals(topicParts[0]) || !"airquality".equals(topicParts[2])) {
-                throw new CustomException(ErrorCode.MQTT_INVALID_TOPIC_ERROR, "Invalid topic format");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid topic format");
             }
 
             Long deviceId = Long.parseLong(topicParts[1]);
             Sensor sensor = sensorRepository.findById(deviceId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sensor not found"));
 
             Long roomId = roomSensorRepository.findBySensor_Id(sensor.getId())
                             .map(roomSensor -> roomSensor.getRoom().getId())
                             .orElse(null);
 
             if (isRateLimitExceeded(deviceId)) {
-                throw new CustomException(ErrorCode.MQTT_RATE_LIMIT_EXCEEDED);
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Rate limit exceeded");
             }
 
             s3Service.uploadJson(deviceId.toString(), payload);
@@ -121,10 +123,10 @@ public class MqttReceiveService {
             return processedDto;
                 } catch (JsonProcessingException e) {
                     log.error("JSON 파싱 오류: Topic={}, Payload={}, Error={}", topic, payload, e.getMessage(), e);
-                    throw new CustomException(ErrorCode.MQTT_JSON_PARSING_ERROR, e.getMessage());
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
                 } catch (Exception e) {
                     log.error("메시지 처리 중 오류 발생: Topic={}, Payload={}, Error={}", topic, payload, e.getMessage(), e);
-                    throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage());
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
                 }
             }
 
