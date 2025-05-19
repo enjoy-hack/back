@@ -39,7 +39,7 @@ public class UserSatisfactionService {
 
         Optional<RoomAirQualityScore> optionalRoomAirQualityScore = roomAirQualityScoreRepository.findFirstByRoomIdOrderByCreatedAtDesc(roomId);
         if(optionalRoomAirQualityScore.isEmpty()){
-            throw new Exception(new CustomException(ROOM_AIR_QUALITY_SCORE_IS_EMPTY, "roomId: " + roomId));
+            throw new CustomException(ROOM_AIR_QUALITY_SCORE_IS_EMPTY, "roomId에 맞는 공기질 점수가 없습니다.");
         }
         RoomAirQualityScore roomAirQualityScore = optionalRoomAirQualityScore.get();
         //airData 해야함
@@ -87,13 +87,13 @@ public class UserSatisfactionService {
     public void updateUserSatisfaction(User user, Long satisfactionId, Double newSatisfaction) throws Exception {
         Optional<UserSatisfaction> optional = userSatisfactionRepository.findById(satisfactionId);
         if (optional.isEmpty()) {
-            throw new Exception(new CustomException(SATISFACTION_NOT_FOUND, "Satisfaction ID: " + satisfactionId));
+            throw new CustomException(SATISFACTION_NOT_FOUND, "사용자의 만족도 이력이 없습니다.");
         }
 
         UserSatisfaction us = optional.get();
 
         if (!us.getUserId().equals(user.getId())) {
-            throw new Exception(new CustomException(INVALID_REQUEST, "User does not have authority to update this satisfaction"));
+            throw new CustomException(INVALID_REQUEST, "사용자가 해당 만족도를 수정할 권한이 없습니다.");
         }
 
         us.setSatisfaction(newSatisfaction);
@@ -104,13 +104,13 @@ public class UserSatisfactionService {
     public void deleteUserSatisfaction(User user, Long satisfactionId) throws Exception {
         Optional<UserSatisfaction> optional = userSatisfactionRepository.findById(satisfactionId);
         if (optional.isEmpty()) {
-            throw  new Exception(new CustomException(SATISFACTION_NOT_FOUND, "Satisfaction ID: " + satisfactionId));
+            throw new CustomException(SATISFACTION_NOT_FOUND, "사용자의 만족도 이력이 없습니다.");
         }
 
         UserSatisfaction us = optional.get();
 
         if (!us.getUserId().equals(user.getId())) {
-            throw new Exception(new CustomException(INVALID_REQUEST, "User does not have authority to delete this satisfaction"));
+            throw new CustomException(INVALID_REQUEST, "사용자가 해당 만족도를 삭제할 권한이 없습니다.");
         }
 
         userSatisfactionRepository.delete(us);
