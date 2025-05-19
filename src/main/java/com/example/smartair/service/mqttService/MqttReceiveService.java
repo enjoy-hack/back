@@ -17,6 +17,7 @@ import com.example.smartair.service.awsFileService.S3Service;
 import com.example.smartair.service.sensorService.SensorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -91,19 +92,19 @@ public class MqttReceiveService {
             String[] topicParts = topic.split("/");
 
             if (topicParts.length != 3 || !"smartair".equals(topicParts[0]) || !"airquality".equals(topicParts[2])) {
-                throw new ResponseStatusException(HttpStatus.valueOf(400), "MQTT 토픽 형식이 유효하지 않습니다.");
+                throw new IllegalArgumentException("토픽 형식은 'smartair/[sensorId]/airquality' 이어야 합니다.");
             }
 
             Long deviceId = Long.parseLong(topicParts[1]);
             Sensor sensor = sensorRepository.findById(deviceId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.valueOf(404), "센서를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new EntityNotFoundException("Sensor ID: " + deviceId));
 
             Long roomId = roomSensorRepository.findBySensor_Id(sensor.getId())
                     .map(roomSensor -> roomSensor.getRoom().getId())
                     .orElse(null);
 
             if (isRateLimitExceeded(deviceId)) {
-                throw new ResponseStatusException(HttpStatus.valueOf(429), "시간당 메시지 제한을 초과했습니다.");
+                throw new IllegalArgumentException("Sensor ID: " + deviceId + " (제한: " + HOURLY_LIMIT_PER_SENSOR + "/hour)");
             }
 
             s3Service.uploadJson(deviceId.toString(), payload);
