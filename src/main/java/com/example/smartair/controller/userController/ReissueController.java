@@ -4,117 +4,136 @@ import com.example.smartair.entity.login.RefreshEntity;
 import com.example.smartair.jwt.JWTUtil;
 import com.example.smartair.repository.userRepository.RefreshRepository;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Map;
 
 @RestController
-@ResponseBody
 @RequestMapping("/reissue")
+@Slf4j
 public class ReissueController implements ReissueControllerDocs {
 
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+
+    private final long ACCESS_TOKEN_EXP = 1000L * 60 * 30; // 30분
+    private final long REFRESH_TOKEN_EXP = 1000L * 60 * 60 * 24 * 7; // 7일
 
     public ReissueController(JWTUtil jwtUtil, RefreshRepository refreshRepository) {
         this.jwtUtil = jwtUtil;
         this.refreshRepository = refreshRepository;
     }
 
+    /**
+     * Refresh 토큰을 이용한 Access 토큰 재발급
+     */
     @PostMapping
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
 
-        //get refresh token
-        String refresh = null;
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("refresh")) {
-                refresh = cookie.getValue();
-                System.out.println("refresh토큰 쿠키에서 찾음");
-                break;
-            }
-        }
-
+        // 1. 쿠키에서 refresh token 추출
+        String refresh = extractRefreshTokenFromCookie(request);
         if (refresh == null) {
-            System.out.println("refresh토큰 쿠키에서 못 찾음");
-            return new ResponseEntity<>("refresh token null", HttpStatus.BAD_REQUEST);
+            return buildErrorResponse("E001", "Refresh token not found in cookies", HttpStatus.BAD_REQUEST);
         }
 
-        //expired check
+        // 2. 토큰 유효성 검사
         try {
             jwtUtil.isExpired(refresh);
         } catch (ExpiredJwtException e) {
-            System.out.println("refresh토큰 만료");
-            return new ResponseEntity<>("refresh token expired", HttpStatus.BAD_REQUEST);
+            log.warn("Refresh token expired: {}", refresh);
+            return buildErrorResponse("E002", "Refresh token expired", HttpStatus.UNAUTHORIZED);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("Invalid refresh token format: {}", e.getMessage());
+            return buildErrorResponse("E003", "Invalid refresh token", HttpStatus.UNAUTHORIZED);
         }
 
-        // 토큰이 refresh인지 확인 (발급시 페이로드에 명시)
-        String category = jwtUtil.getCategory(refresh);
-
-        if (!category.equals("refresh")) {
-            System.out.println("refresh토큰 아니야");
-            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+        // 3. 토큰 유형 확인 (access or refresh)
+        if (!"refresh".equals(jwtUtil.getCategory(refresh))) {
+            return buildErrorResponse("E004", "Token is not a refresh token", HttpStatus.UNAUTHORIZED);
         }
 
-        System.out.println("refresh토큰 db 확인");
-        //DB에 저장되어 있는지 확인
-        Boolean isExist = refreshRepository.existsByRefresh(refresh);
-        System.out.println("refresh토큰 db 존재 여부 " + isExist);
-        if (!isExist) {
-            System.out.println("refresh토큰 db에 없어요");
-            //response body
-            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+        // 4. DB에서 refresh 토큰 존재 확인
+        if (!refreshRepository.existsByRefresh(refresh)) {
+            return buildErrorResponse("E005", "Refresh token not found in DB", HttpStatus.UNAUTHORIZED);
         }
 
+        // 5. 사용자 정보 추출
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
         String email = jwtUtil.getEmail(refresh);
 
-        //make new JWT
-        System.out.println(role + username);
-        String newAccess = jwtUtil.createJwt("access", username, role, email, 600000L);
-        String newRefresh = jwtUtil.createJwt("refresh", username, role, email,86400000L);
-        System.out.println(role);
+        // 6. 새 토큰 생성
+        String newAccess = jwtUtil.createJwt("access", username, role, email, ACCESS_TOKEN_EXP);
+        String newRefresh = jwtUtil.createJwt("refresh", username, role, email, REFRESH_TOKEN_EXP);
 
-        //Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
+        // 7. 기존 refresh 삭제 후 새 refresh 저장
         refreshRepository.deleteByRefresh(refresh);
-        addRefreshEntity(username, newRefresh, 86400000L);
+        saveNewRefreshToken(username, newRefresh, REFRESH_TOKEN_EXP);
 
-        //response
+        // 8. 새 토큰 전송
         response.setHeader("access", newAccess);
         response.addCookie(createCookie("refresh", newRefresh));
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        log.info("New tokens issued for user '{}'", username);
+        return ResponseEntity.ok(Map.of(
+                "code", "S001",
+                "message", "New tokens issued"
+        ));
     }
 
-    private void addRefreshEntity(String username, String refresh, Long expiredMs) {
-
-        Date date = new Date(System.currentTimeMillis() + expiredMs);
-
-        RefreshEntity refreshEntity = new RefreshEntity();
-        refreshEntity.setUsername(username);
-        refreshEntity.setRefresh(refresh);
-        refreshEntity.setExpiration(date.toString());
-
-        refreshRepository.save(refreshEntity);
+    /**
+     * 쿠키에서 refresh 토큰 추출
+     */
+    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (Cookie cookie : cookies) {
+            if ("refresh".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
+
+    /**
+     * 새 Refresh 토큰 저장
+     */
+    private void saveNewRefreshToken(String username, String refresh, long expireMs) {
+        Date expiration = new Date(System.currentTimeMillis() + expireMs);
+        RefreshEntity entity = new RefreshEntity();
+        entity.setUsername(username);
+        entity.setRefresh(refresh);
+        entity.setExpiration(expiration.toString());
+        refreshRepository.save(entity);
+    }
+
+    /**
+     * Refresh 토큰을 담는 HttpOnly 쿠키 생성
+     */
     private Cookie createCookie(String key, String value) {
-
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
-        //cookie.setSecure(true);
-        //cookie.setPath("/");
+        cookie.setMaxAge((int) (REFRESH_TOKEN_EXP / 1000));
+        cookie.setSecure(true);
         cookie.setHttpOnly(true);
-
+        cookie.setPath("/");
         return cookie;
+    }
+
+    /**
+     * 에러 응답 생성기
+     */
+    private ResponseEntity<Map<String, String>> buildErrorResponse(String code, String message, HttpStatus status) {
+        return ResponseEntity.status(status).body(Map.of(
+                "code", code,
+                "error", message
+        ));
     }
 }
