@@ -31,7 +31,7 @@ public class CustomUserService {
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
         if (!room.getOwner().equals(user)) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY);
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "User does not have authority to update Temp for this room");
         }
 
         room.setTemperature(customTemp);
@@ -42,7 +42,7 @@ public class CustomUserService {
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
         if (!room.getOwner().equals(user)) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY);
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "User does not have authority to update Moi for this room");
         }
 
         room.setMoisture(customMoi);

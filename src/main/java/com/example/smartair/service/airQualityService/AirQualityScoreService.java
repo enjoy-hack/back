@@ -45,15 +45,15 @@ public class AirQualityScoreService { //스케줄러를 통해 자동으로 점�
     @Transactional
     public void calculateAndSaveDeviceScore(SensorAirQualityData airQualityData) { //개별 데이터 실시간 점수 계산
         if (airQualityData == null) {
-            throw new CustomException(ErrorCode.INVALID_INPUT_DATA);
+            throw new CustomException(ErrorCode.INVALID_INPUT_DATA, "AirQualityData is null");
         }
         Sensor sensor = airQualityData.getSensor();
         if (sensor == null) {
-            throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
+            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor not found for AirQualityData");
         }
         Room room = roomSensorRepository.findBySensor(sensor)
                 .map(RoomSensor::getRoom)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_DEVICE_MAPPING_NOT_FOUND, "Room not found for Sensor ID: " + sensor.getId()));
 
         // 개별 DeviceAirQualityScore 계산 및 저장
         SensorAirQualityScore calculatedDeviceScore = airQualityCalculator.calculateScore(airQualityData);

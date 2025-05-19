@@ -40,7 +40,7 @@ public class AirQualityDataService {
         try {
             // 1. Device 추출
             Sensor sensor = sensorRepository.findById(deviceId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND));
+                    .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor Id: " + deviceId));
 
             // 2. Room 정보는 옵셔널하게 처리
             Room room = null;
@@ -90,10 +90,10 @@ public class AirQualityDataService {
             throw ce;
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
             log.error("MQTT 토픽 구문 분석 또는 처리 오류: {}", e.getMessage());
-            throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR);
+            throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR, String.format("MQTT 처리 오류: %s", e.getMessage()));
         } catch (Exception e) {
             log.error("MQTT 데이터 처리 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, String.format("내부 서버 오류: %s", e.getMessage()));
 
         }
     }
@@ -112,7 +112,7 @@ public class AirQualityDataService {
             SensorAirQualityData latestData = airQualityDataRepository.findTopBySensorIdOrderByCreatedAtDesc(deviceId)
                     .orElseThrow(() -> {
                         log.warn("Device ID {}의 최근 데이터를 찾을 수 없습니다.", deviceId);
-                        return new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND);
+                        return new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor ID {}" + deviceId);
                     });
 
             // 3. 조회된 데이터를 캐시에 저장
@@ -124,7 +124,7 @@ public class AirQualityDataService {
             throw ce;
         } catch (Exception e) {
             log.error("Device ID {}의 데이터 조회 중 오류 발생", deviceId, e);
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, String.format("내부 서버 오류: %s", e.getMessage()));
         }
     }
 

@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
+    INTERNAL_SERVER_ERROR(501, "서버 내부 오류가 발생했습니다: %s"),
+
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청이 들어왔습니다"),
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 사용자입니다"),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
@@ -23,8 +25,9 @@ public enum ErrorCode {
     SENSOR_ALREADY_EXIST_IN_ANOTHER_ROOM(HttpStatus.CONFLICT, "이미 해당 센서가 다른 방에 등록되어있습니다."),
     ROOM_SENSOR_MAPPING_NOT_FOUND(HttpStatus.NOT_FOUND, "방과 센서의 매핑 정보를 찾을 수 없습니다."),
     SENSOR_AIR_DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "센서의 공기질 데이터를 찾을 수 없습니다."),
+    OPTIMISTIC_LOCK_FAILURE(HttpStatus.CONFLICT, "데이터 동기화 오류가 발생했습니다. 다시 시도해주세요."),
+    SENSOR_REGISTRATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "센서 등록에 실패했습니다."),
 
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     ROOM_DEVICE_MAPPING_NOT_FOUND(HttpStatus.NOT_FOUND, "방과 디바이스의 매핑 정보를 찾을 수 없습니다."),
     
     // === AirQualityScoreCalculator 관련 오류 코드 ===
@@ -74,11 +77,26 @@ public enum ErrorCode {
     // === PAT 관련 오류 코드 ===
     PAT_NOT_FOUND(HttpStatus.NOT_FOUND, "PAT 정보를 찾을 수 없습니다."),
     FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "FCM 토큰을 찾을 수 없습니다."),
+    FCM_MESSAGE_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FCM 메시지 전송 중 오류가 발생했습니다."),
 
     // === Satisfaction 관련 오류 코드 ===
     SATISFACTION_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 만족도 정보가 존재하지 않습니다."),
 
     FILE_UPLOAD_ERROR(HttpStatus.CONFLICT, "S3 파일 업로드 중 오류가 발생하였습니다.");
-    private final HttpStatus status;
+
     private final String message;
+    private final int status;
+
+    // int 생성자
+    ErrorCode(int status, String message) {
+        this.status = status;
+        this.message = message;
+    }
+
+    // HttpStatus 생성자
+    ErrorCode(HttpStatus httpStatus, String message) {
+        this.status = httpStatus.value();
+        this.message = message;
+    }
+
 }

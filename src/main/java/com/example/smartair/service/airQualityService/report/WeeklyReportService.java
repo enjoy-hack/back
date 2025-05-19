@@ -35,7 +35,7 @@ public class WeeklyReportService {
     @Transactional
     public WeeklySensorAirQualityReport createOrUpdateWeeklyReport(Long deviceId, int year, int weekOfYear) {
         Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
 
         Optional<WeeklySensorAirQualityReport> existingReportOpt =
                 weeklyReportRepository.findBySensorAndYearOfWeekAndWeekOfYear(sensor, year, weekOfYear);
@@ -72,14 +72,14 @@ public class WeeklyReportService {
         // 일별 보고서가 하나도 없는 경우, 주간 보고서를 생성/업데이트 할 수 없음
         if (dailyReportsForWeek.isEmpty() && !existingReportOpt.isPresent()) {
             log.warn("Device ID: {}의 {}년 {}주차에 유효한 일별 보고서가 없어 주간 보고서를 생성할 수 없습니다.", deviceId, year, weekOfYear);
-            throw new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND);
+            throw new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND, "Sensor ID: {}의 {}년 {}주차에 유효한 일별 보고서가 없어 주간 보고서를 생성할 수 없습니다." + deviceId + year + weekOfYear);
         }
         if (dailyReportsForWeek.isEmpty() && existingReportOpt.isPresent()) {
             log.warn("Device ID: {}의 {}년 {}주차에 대한 기존 주간 보고서(ID:{})는 있으나, 업데이트할 유효한 일별 보고서가 없습니다.",
                     deviceId, year, weekOfYear, existingReportOpt.get().getId());
             // 업데이트 할 내용이 없으므로 기존 보고서를 반환하거나, 데이터를 비우고 저장할 수 있습니다.
             // 일단 예외 처리
-            throw new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND);
+            throw new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND, "Sensor ID: {}의 {}년 {}주차에 대한 기존 주간 보고서(ID:{})는 있으나, 업데이트할 유효한 일별 보고서가 없습니다."  + deviceId + year + weekOfYear + existingReportOpt.get().getId());
         }
 
         WeeklySensorAirQualityReport report = existingReportOpt.orElseGet(() -> {
@@ -130,9 +130,9 @@ public class WeeklyReportService {
     @Transactional(readOnly = true)
     public WeeklySensorAirQualityReport getWeeklyReport(Long deviceId, int year, int weekOfYear) {
         Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
         return weeklyReportRepository.findBySensorAndYearOfWeekAndWeekOfYear(sensor, year, weekOfYear)
-                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND, "report not found with sensorId: " + deviceId + ", year: " + year + ", weekOfYear: " + weekOfYear));
     }
 
     /**
@@ -141,10 +141,10 @@ public class WeeklyReportService {
     @Transactional(readOnly = true)
     public List<WeeklySensorAirQualityReport> getWeeklyReportsForPeriod(Long deviceId, LocalDate startDate, LocalDate endDate) {
         if (startDate.isAfter(endDate)) {
-            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+            throw new CustomException(ErrorCode.INVALID_DATE_RANGE, "시작일이 종료일보다 늦을 수 없습니다.");
         }
         Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
 
         // 주간 보고서의 시작일이 주어진 기간 내에 있는 모든 주간 보고서 조회
         List<WeeklySensorAirQualityReport> reportsInPeriod =
@@ -161,7 +161,7 @@ public class WeeklyReportService {
     @Transactional
     public void deleteWeeklyReport(Long reportId) {
         WeeklySensorAirQualityReport report = weeklyReportRepository.findById(reportId)
-                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND, "report not found with id: " + reportId));
         weeklyReportRepository.delete(report);
 
         log.info("주간 보고서 ID: {} 삭제 완료", reportId);
@@ -173,7 +173,7 @@ public class WeeklyReportService {
     @Transactional
     public int deleteOldWeeklyReports(int weeksOld) {
         if (weeksOld <= 0) {
-            throw new CustomException(ErrorCode.INVALID_INPUT_DATA);
+            throw new CustomException(ErrorCode.INVALID_INPUT_DATA, "weeksOld는 1 이상이어야 합니다.");
         }
         // 주의 시작일을 기준으로 weeksOld 이전의 보고서를 찾음
         LocalDate cutoffDate = LocalDate.now().minusWeeks(weeksOld).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -195,7 +195,7 @@ public class WeeklyReportService {
     @Transactional
     public int deleteWeeklyReportsByDeviceId(Long deviceId) {
         if (!sensorRepository.existsById(deviceId)) {
-            throw new CustomException(ErrorCode.DEVICE_NOT_FOUND);
+            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId);
         }
         log.info("Device ID: {} 관련 모든 주간 보고서 삭제 시작", deviceId);
         List<WeeklySensorAirQualityReport> reportsToDelete = weeklyReportRepository.findAllBySensorId(deviceId);

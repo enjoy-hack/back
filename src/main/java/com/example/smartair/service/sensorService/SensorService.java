@@ -1,6 +1,7 @@
 package com.example.smartair.service.sensorService;
 
 import com.example.smartair.dto.sensorDto.SensorRequestDto;
+import com.example.smartair.dto.sensorDto.SensorResponseDto;
 import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesData;
 import com.example.smartair.entity.airData.fineParticlesData.FineParticlesDataPt2;
@@ -22,7 +23,14 @@ import com.example.smartair.repository.airQualityRepository.predictedAirQualityR
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
+import com.example.smartair.repository.userRepository.UserRepository;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,6 +40,7 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class SensorService {
 
     private final SensorRepository sensorRepository;
@@ -43,6 +52,7 @@ public class SensorService {
     private final DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
     private final WeeklySensorAirQualityReportRepository weeklySensorAirQualityReportRepository;
     private final PredictedAirQualityRepository predictedAirQualityRepository;
+    private final UserRepository userRepository;
 
     public Sensor setSensor(User user, SensorRequestDto.setSensorDto sensorRequestDto) throws Exception {
         Sensor sensor = Sensor.builder()
@@ -71,7 +81,7 @@ public class SensorService {
         }
 
         // 등록하려는 유저가 방에 등록된 사람인지 확인
-        if (!roomRepository.existsByIdAndParticipants_User(room.getId(), user)){
+        if (!roomRepository.existsByIdAndParticipants_User(room.getId(), user)) {
             throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM);
         }
 
@@ -136,7 +146,7 @@ public class SensorService {
         roomSensorRepository.delete(roomSensor);
     }
 
-    public List<Sensor> getSensors(Long roomId, User user){
+    public List<Sensor> getSensors(Long roomId, User user) {
         // 해당 방에 등록된 센서 목록
         List<Sensor> registeredSensors = roomSensorRepository.findByRoomId(roomId)
                 .stream()
@@ -159,7 +169,7 @@ public class SensorService {
     public boolean getSensorStatus(Long serialNumber) throws Exception {
         Optional<Sensor> optionalSensor = sensorRepository.findBySerialNumber(serialNumber);
 
-        if(optionalSensor.isEmpty()) throw new Exception(new CustomException(ErrorCode.INVALID_REQUEST));
+        if (optionalSensor.isEmpty()) throw new Exception(new CustomException(ErrorCode.INVALID_REQUEST));
 
         return optionalSensor.get().isRunningStatus();
     }
@@ -211,7 +221,4 @@ public class SensorService {
         // RoomSensor 매핑 삭제
         roomSensorRepository.delete(roomSensor);
     }
-
-
-
 }
