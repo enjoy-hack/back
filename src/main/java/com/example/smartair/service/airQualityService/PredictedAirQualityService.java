@@ -6,6 +6,8 @@ import com.example.smartair.dto.roomSensorDto.SensorRoomMappingDto;
 import com.example.smartair.entity.airData.predictedAirQualityData.PredictedAirQualityData;
 import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.predictedAirQualityRepository.PredictedAirQualityRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
@@ -51,7 +53,10 @@ public class PredictedAirQualityService  {
 
             // 센서 시리얼 번호로 방 ID 조회
             Long roomId = roomSensorRepository.findBySensor_SerialNumber(sensorSerialNumber)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 센서 일련번호 {} 를 찾을 수 없습니다." + sensorSerialNumber))
+                    .orElseThrow(() -> new CustomException(
+                            ErrorCode.SENSOR_NOT_FOUND,
+                            String.format("해당 센서 일련번호 %d를 찾을 수 없습니다.", sensorSerialNumber)
+                    ))
                     .getRoom()
                     .getId();
 
