@@ -6,6 +6,9 @@ import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.service.mqttService.MqttReceiveService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +29,17 @@ public class MqttReceiveController implements MqttReceiveControllerDocs{
         this.mqttReceiveService = mqttReceiveService;
     }
 
+    @Operation(
+            summary = "MQTT 메시지 수신 및 처리",
+            description = "센서에서 수신한 MQTT 메시지를 JSON으로 처리합니다..."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음"),
+            @ApiResponse(responseCode = "422", description = "MQTT 데이터 파싱 오류"),
+            @ApiResponse(responseCode = "429", description = "시간당 메시지 제한 초과"),
+            @ApiResponse(responseCode = "503", description = "서비스 처리 오류")
+    })
     @Override
     @PostMapping
     public ResponseEntity<String> receiveMqttMessage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody MqttMessageRequestDto requestDto) {

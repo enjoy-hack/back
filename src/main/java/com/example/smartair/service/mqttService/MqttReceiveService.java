@@ -85,7 +85,6 @@ public class MqttReceiveService {
         }
     }
 
-    @Transactional
     public AirQualityPayloadDto handleReceiveMessage(String topic, String payload) throws Exception {
         try {
             log.info("Received message on handleReceiveMessage topic '{}', payload: {}", topic, payload);
@@ -121,19 +120,10 @@ public class MqttReceiveService {
             }
 
             return processedDto;
-        } catch (JsonProcessingException e) {
-            log.error("JSON 파싱 오류: Topic={}, Payload={}, Error={}", topic, payload, e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.valueOf(422), "MQTT 데이터 파싱 중 오류 발생: " + e.getMessage());
-        } catch (Exception e) {
-            if (e instanceof ResponseStatusException) {
-                throw e;  // 이미 ResponseStatusException인 경우 그대로 전달
-            }
-            log.error("메시지 처리 중 오류 발생: Topic={}, Payload={}, Error={}", topic, payload, e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.valueOf(503), "MQTT 데이터 처리 중 오류 발생: " + e.getMessage());
+        }  catch (ResponseStatusException e) {
+            throw e;  // ResponseStatusException을 그대로 전달
         }
     }
-
-
 
 
     private boolean isRateLimitExceeded(Long deviceId) {

@@ -73,11 +73,11 @@ public interface MqttReceiveControllerDocs {
                     """
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "메시지 처리 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 형식"),
-            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-            @ApiResponse(responseCode = "429", description = "메시지 전송 제한 초과"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음"),
+            @ApiResponse(responseCode = "422", description = "MQTT 데이터 파싱 오류"),
+            @ApiResponse(responseCode = "429", description = "시간당 메시지 제한 초과"),
+            @ApiResponse(responseCode = "503", description = "서비스 처리 오류")
     })
     @PostMapping
     ResponseEntity<String> receiveMqttMessage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody MqttMessageRequestDto requestDto);
