@@ -6,6 +6,8 @@ import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
 import com.example.smartair.entity.sensor.Sensor;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.AnomalyReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
@@ -35,18 +37,18 @@ public class AnomalyReportService {
 
     public String setAnomalyReport(AnomalyReportDto dto) {
         Sensor sensor = sensorRepository.findBySerialNumber(dto.getSensorSerialNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Sensor not found with serial number: " + dto.getSensorSerialNumber()));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, String.format("시리얼 번호에 맞는 센서가 존재하지 않습니다.")));
 
         LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER);
 
 
         HourlySensorAirQualitySnapshot hourlySnapshot = hourlyDeviceAirQualitySnapshotRepository
                 .findBySensorAndSnapshotHour(sensor, anomalyDate)
-                .orElseThrow(() -> new IllegalArgumentException("Hourly snapshot not found for sensor: " + sensor.getSerialNumber() + " at date: " + anomalyDate));
+                .orElseThrow(() -> new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND, String.format("해당 센서의 시간별 스냅샷을 찾을 수 없습니다. 시리얼 번호: %s, 날짜: %s", sensor.getSerialNumber(), anomalyDate)));
 
         DailySensorAirQualityReport dailyReport = dailySensorAirQualityReportRepository
                 .findBySensorAndReportDate(sensor, LocalDate.from(anomalyDate))
-                .orElseThrow(() -> new IllegalArgumentException("Daily report not found for sensor: " + sensor.getSerialNumber() + " at date: " + LocalDate.from(anomalyDate)));
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND, String.format("해당 센서의 일일 보고서를 찾을 수 없습니다. 시리얼 번호: %s, 날짜: %s", sensor.getSerialNumber(), LocalDate.from(anomalyDate))));
 
         String description = generateDescription(dto.getPollutant(), dto.getPollutantValue(), dto.getPredictedValue()); // 예측값과 실제값 비교하여 설명 생성
 
@@ -81,7 +83,7 @@ public class AnomalyReportService {
                 // 재발급된 이전 토큰인 경우, 오류 코드를 반환
                 return e.getMessagingErrorCode().toString();
             } else { // 그 외, 오류는 런타임 예외로 처리
-                throw new RuntimeException("Error sending FCM message: " + e.getMessage());
+                throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "Error sending FCM message: " + e.getMessage());
             }
         }
 
@@ -107,7 +109,7 @@ public class AnomalyReportService {
 
     public List<AnomalyReport> getAnomalyReports(Long sensorSerialNumber, LocalDate startDate, LocalDate endDate) {
         Sensor sensor = sensorRepository.findBySerialNumber(sensorSerialNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Sensor not found with serial number: " + sensorSerialNumber));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND,String.format("시리얼 번호에 맞는 센서를 찾을 수 없습니다. 시리얼 번호: %s", sensorSerialNumber)));
 
         LocalDateTime startDateTime = startDate.atStartOfDay(); // 00:00:00
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX); // 23:59:59.999999999

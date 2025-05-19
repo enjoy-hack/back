@@ -98,7 +98,7 @@ public class ThinQService {
 
         ResponseEntity<String> statusResponse = getDeviceState(user, dto);
         if (!statusResponse.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalStateException("디바이스 ID {} 상태 조회 실패" + dto.deviceId());
+            throw new CustomException(ErrorCode.DEVICE_STATE_NOT_FOUND, "디바이스 상태를 가져오는 데 실패했습니다.");
         }
 
         DeviceStateResponseDto state = objectMapper.readValue(statusResponse.getBody(), DeviceStateResponseDto.class);
@@ -117,7 +117,7 @@ public class ThinQService {
         PATEntity pat = patRepository.findByRoomId(roomId)
                 .orElseThrow(() -> {
                     log.warn("방 ID {}에 대한 PAT가 존재하지 않습니다.", roomId);
-                    return new IllegalStateException("방 ID " + roomId + "에 대한 PAT가 존재하지 않습니다.");
+                    return new CustomException(ErrorCode.PAT_NOT_FOUND, "해당 방에 대한 PAT가 존재하지 않습니다.");
                 });
 
         if(validateAccess(user, pat)) {
@@ -189,7 +189,7 @@ public class ThinQService {
             return response;
         } catch (Exception e) {
             log.error("LG ThinQ API 요청 실패 [{} {}]: {}", method, url, e.getMessage(), e);
-            throw new RuntimeException("LG ThinQ API 요청 중 오류 발생", e);
+            throw new CustomException(ErrorCode.DEVICE_API_ERROR, "LG ThinQ API 요청 실패" + e.getMessage());
         }
     }
 

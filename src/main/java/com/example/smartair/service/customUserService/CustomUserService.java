@@ -18,7 +18,7 @@ public class CustomUserService {
     private final RoomRepository roomRepository;
 
     public CustomResponseDTO getCustom(User user, Long roomId){
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "roomId에 맞는 방이 없습니다."));
 
         CustomResponseDTO response = new CustomResponseDTO();
 
@@ -28,10 +28,10 @@ public class CustomUserService {
     }
     public void saveOrUpdateCustomTemp(User user, Double customTemp, Long roomId) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "roomId에 맞는 방이 없습니다."));
 
         if (!room.getOwner().equals(user)) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY, "User does not have authority to update Temp for this room");
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 사용자는 방에 대한 권한이 없습니다.");
         }
 
         room.setTemperature(customTemp);
@@ -39,10 +39,10 @@ public class CustomUserService {
     }
     public void saveOrUpdateCustomMoi(User user, Double customMoi, Long roomId) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, String.format("roomId에 맞는 방이 없습니다.", roomId)));
 
         if (!room.getOwner().equals(user)) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY, "User does not have authority to update Moi for this room");
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 사용자는 방에 대한 권한이 없습니다.");
         }
 
         room.setMoisture(customMoi);

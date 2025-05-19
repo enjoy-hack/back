@@ -1,5 +1,7 @@
 package com.example.smartair.util;
 
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,12 +18,12 @@ public class EncryptionUtil {
 
     public EncryptionUtil(@Value("${pat.secret-key}") String key) {
         if (key == null) {
-            throw new IllegalArgumentException("환경 변수 'PAT_SECRET_KEY'가 비어 있습니다.");
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "암호화 환경 변수 'PAT_SECRET_KEY'가 비어 있습니다.");
         }
 
         byte[] decodedKey = Base64.getDecoder().decode(key);
         if (decodedKey.length != 32) {
-            throw new IllegalArgumentException("환경 변수 'PAT_SECRET_KEY'는 Base64 인코딩된 32바이트(256비트) 값이어야 합니다.");
+            throw new CustomException(ErrorCode.INVALID_REQUEST,"암호화 환경 변수 'PAT_SECRET_KEY'는 Base64 인코딩된 32바이트(256비트) 값이어야 합니다.");
         }
 
         this.key = decodedKey;

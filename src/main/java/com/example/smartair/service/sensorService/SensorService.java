@@ -70,24 +70,24 @@ public class SensorService {
 
     public RoomSensor addSensorToRoom(User user, SensorRequestDto.addSensorToRoomDto sensorDto) throws Exception {
         Room room = roomRepository.findRoomById(sensorDto.roomId())
-                .orElseThrow(() -> new Exception(new CustomException(ErrorCode.ROOM_NOT_FOUND)));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "roomId에 맞는 방이 없습니다."));
 
         Sensor sensor = sensorRepository.findBySerialNumber(sensorDto.serialNumber())
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "serialNumber에 맞는 센서가 없습니다."));
 
         // 센서 소유자 검증
         if (!sensor.getUser().getId().equals(user.getId())) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR);
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR, "해당 센서에 대한 권한이 없습니다.");
         }
 
         // 등록하려는 유저가 방에 등록된 사람인지 확인
         if (!roomRepository.existsByIdAndParticipants_User(room.getId(), user)) {
-            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM);
+            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM, "해당 방에 등록된 사용자가 아닙니다.");
         }
 
         // 이미 방에 등록되어 있는 센서인지 확인
         if (roomSensorRepository.existsBySensor_SerialNumberAndRoom_Id(sensorDto.serialNumber(), room.getId())) {
-            throw new CustomException(ErrorCode.SENSOR_ALREADY_EXIST_IN_ROOM);
+            throw new CustomException(ErrorCode.SENSOR_ALREADY_EXIST_IN_ROOM, "이미 방에 등록된 센서입니다.");
         }
         sensor.setRegistered(true);
         sensor.setRoomRegisterDate(LocalDateTime.now()); // 방에 등록된 시점으로 설정
@@ -104,21 +104,21 @@ public class SensorService {
 
     public void deleteSensor(User user, SensorRequestDto.deleteSensorDto sensorDto) throws Exception {
         Room room = roomRepository.findRoomById(sensorDto.roomId())
-                .orElseThrow(() -> new Exception(new CustomException(ErrorCode.ROOM_NOT_FOUND)));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "roomId에 맞는 방이 없습니다."));
 
         // 등록된 참여자인지 확인
         if (!roomRepository.existsByIdAndParticipants_User(room.getId(), user)) {
-            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM);
+            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM, "해당 방에 등록된 사용자가 아닙니다.");
         }
 
         RoomSensor roomSensor = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(sensorDto.serialNumber(), sensorDto.roomId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND, "roomId에 맞는 방에 등록된 센서가 없습니다."));
 
         Sensor sensor = roomSensor.getSensor();
 
         // 센서 소유자 검증
         if (!sensor.getUser().getId().equals(user.getId())) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR);
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR, "해당 센서에 대한 권한이 없습니다.");
         }
 
         //실시간 데이터 삭제
@@ -169,26 +169,26 @@ public class SensorService {
     public boolean getSensorStatus(Long serialNumber) throws Exception {
         Optional<Sensor> optionalSensor = sensorRepository.findBySerialNumber(serialNumber);
 
-        if (optionalSensor.isEmpty()) throw new Exception(new CustomException(ErrorCode.INVALID_REQUEST));
+        if (optionalSensor.isEmpty()) throw new CustomException(ErrorCode.INVALID_REQUEST, "해당 센서가 존재하지 않습니다.");
 
         return optionalSensor.get().isRunningStatus();
     }
 
     public void unregisterSensorFromRoom(User user, SensorRequestDto.unregisterSensorFromRoomDto request) throws Exception {
         Room room = roomRepository.findRoomById(request.roomId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "roomId에 맞는 방이 없습니다."));
 
         // 등록된 참여자인지 확인
         if (!roomRepository.existsByIdAndParticipants_User(room.getId(), user)) {
-            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM);
+            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM, "해당 방에 등록된 사용자가 아닙니다.");
         }
 
         RoomSensor roomSensor = roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(request.serialNumber(), request.roomId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND, "roomId에 맞는 방에 등록된 센서가 없습니다."));
 
         // 센서 소유자 검증
         if (!roomSensor.getSensor().getUser().getId().equals(user.getId())) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR);
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR, "해당 센서에 대한 권한이 없습니다.");
         }
 
         // 센서의 등록 상태 변경
