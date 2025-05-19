@@ -92,30 +92,32 @@ public class MqttReceiveService {
             String[] topicParts = topic.split("/");
 
             if (topicParts.length != 3 || !"smartair".equals(topicParts[0]) || !"airquality".equals(topicParts[2])) {
-                throw new IllegalArgumentException("토픽 형식은 'smartair/[sensorId]/airquality' 이어야 합니다.");
+                throw new IllegalArgumentException("토픽 형식은 'smartair/[serialNumber]/airquality' 이어야 합니다.");
             }
 
-            Long deviceId = Long.parseLong(topicParts[1]);
-            Sensor sensor = sensorRepository.findById(deviceId)
-                    .orElseThrow(() -> new EntityNotFoundException("Sensor ID: " + deviceId));
+            String serialNumber = topicParts[1];
+            Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                    .orElseThrow(() -> new EntityNotFoundException("Sensor serialNumber: " + serialNumber));
+
+            Long sensorId = sensor.getId();
 
             Long roomId = roomSensorRepository.findBySensor_Id(sensor.getId())
                     .map(roomSensor -> roomSensor.getRoom().getId())
                     .orElse(null);
 
-            if (isRateLimitExceeded(deviceId)) {
-                throw new IllegalArgumentException("Sensor ID: " + deviceId + " (제한: " + HOURLY_LIMIT_PER_SENSOR + "/hour)");
+            if (isRateLimitExceeded(sensorId)) {
+                throw new IllegalArgumentException("Sensor ID: " + sensorId + " (제한: " + HOURLY_LIMIT_PER_SENSOR + "/hour)");
             }
 
-            s3Service.uploadJson(deviceId.toString(), payload);
+            s3Service.uploadJson(serialNumber, payload);
 
             log.info("JSON 파싱 시작: {}", payload);
             AirQualityPayloadDto dto = objectMapper.readValue(payload, AirQualityPayloadDto.class);
             log.info("JSON 파싱 완료: {}", dto);
 
-            AirQualityPayloadDto processedDto = airQualityDataService.processAirQualityData(deviceId, roomId, dto);
+            AirQualityPayloadDto processedDto = airQualityDataService.processAirQualityData(sensorId, roomId, dto);
 
-            SensorAirQualityData sensorData = airQualityDataService.getSavedAirQualityData(deviceId);
+            SensorAirQualityData sensorData = airQualityDataService.getSavedAirQualityData(sensorId);
             if (sensorData != null) {
                 addToMessageQueue(sensorData);
             }
@@ -127,18 +129,18 @@ public class MqttReceiveService {
     }
 
 
-    private boolean isRateLimitExceeded(Long deviceId) {
+    private boolean isRateLimitExceeded(Long sensorId) {
         LocalDateTime now = LocalDateTime.now();
-        sensorLastResetTimes.computeIfAbsent(deviceId, k -> now);
-        sensorMessageCounters.computeIfAbsent(deviceId, k -> new AtomicInteger(0));
+        sensorLastResetTimes.computeIfAbsent(sensorId, k -> now);
+        sensorMessageCounters.computeIfAbsent(sensorId, k -> new AtomicInteger(0));
 
-        if (Duration.between(sensorLastResetTimes.get(deviceId), now).toHours() >= 1) {
-            sensorMessageCounters.get(deviceId).set(0);
-            sensorLastResetTimes.put(deviceId, now);
-            log.debug("센서 ID: {} 의 메시지 카운터를 리셋했습니다.", deviceId);
+        if (Duration.between(sensorLastResetTimes.get(sensorId), now).toHours() >= 1) {
+            sensorMessageCounters.get(sensorId).set(0);
+            sensorLastResetTimes.put(sensorId, now);
+            log.debug("센서 ID: {} 의 메시지 카운터를 리셋했습니다.", sensorId);
         }
 
-        int currentCount = sensorMessageCounters.get(deviceId).incrementAndGet();
+        int currentCount = sensorMessageCounters.get(sensorId).incrementAndGet();
         return currentCount > HOURLY_LIMIT_PER_SENSOR;
     }
 
