@@ -16,7 +16,7 @@ public class SensorDetailDto {
     private Long ownerUserId; 
     private String ownerUsername; 
     private boolean runningStatus; 
-    private Long serialNumber; 
+    private String serialNumber;
 
     public static SensorDetailDto from(Sensor sensor) {
         User owner = sensor.getUser();

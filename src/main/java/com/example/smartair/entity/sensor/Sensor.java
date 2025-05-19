@@ -19,7 +19,8 @@ public class Sensor extends BaseEntity {
     private Long id;
 
     private String name;
-    private Long serialNumber;
+    @Column(unique = true)
+    private String serialNumber;
     private boolean runningStatus;
     private boolean isRegistered; //방 등록 여부
     private LocalDateTime roomRegisterDate; //센서 방 등록 날짜

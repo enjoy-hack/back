@@ -151,7 +151,7 @@ public interface SensorControllerDocs {
         - 인증 정보는 `@AuthenticationPrincipal` 을 통해 자동 주입됩니다.
 
         **요청 본문 (`RequestBody`)**
-        - `deviceSerialNumber` (Long): 조회할 센서의 일련번호
+        - `sensorSerialNumber` (String): 조회할 센서의 일련번호
 
         ---
 
@@ -161,7 +161,7 @@ public interface SensorControllerDocs {
         """
     )
     ResponseEntity<?> getSensorStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                      @RequestBody Long deviceSerialNumber) throws Exception;
+                                      @RequestBody String deviceSerialNumber) throws Exception;
 
     @DeleteMapping("/sensor/room")
     @Operation(summary = "방에서 센서 등록 해제", description = "특정 방에서 센서의 등록을 해제합니다.")

@@ -10,22 +10,22 @@ import lombok.Getter;
 public class SensorRequestDto {
 
     public record setSensorDto(
-            Long serialNumber,
+            String serialNumber,
             String name
     ){}
 
     public record deleteSensorDto(
-            Long serialNumber,
+            String serialNumber,
             Long roomId
     ){}
 
     public record addSensorToRoomDto(
-            Long serialNumber,
+            String serialNumber,
             Long roomId
     ){}
 
     public record unregisterSensorFromRoomDto(
-            Long serialNumber,
+            String serialNumber,
             Long roomId
     ){}
 }

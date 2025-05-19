@@ -45,7 +45,7 @@ public class PredictedAirQualityService  {
     public void setPredictedAirQuality(List<PredictedAirQualityDto> predictedAirQualityDtoList) {
 
         for (PredictedAirQualityDto dto : predictedAirQualityDtoList) {
-            Long sensorSerialNumber = dto.getSensorSerialNumber();
+            String sensorSerialNumber = dto.getSensorSerialNumber();
             LocalDateTime timestamp = LocalDateTime.parse(dto.getTimestamp(), PREDICTED_TIMESTAMP_FORMATTER);
             float pm10 = dto.getPm10();
             float co2 = dto.getCo2();
@@ -55,7 +55,7 @@ public class PredictedAirQualityService  {
             Long roomId = roomSensorRepository.findBySensor_SerialNumber(sensorSerialNumber)
                     .orElseThrow(() -> new CustomException(
                             ErrorCode.SENSOR_NOT_FOUND,
-                            String.format("해당 센서 일련번호 %d를 찾을 수 없습니다.", sensorSerialNumber)
+                            String.format("해당 센서 일련번호 %s를 찾을 수 없습니다.", sensorSerialNumber)
                     ))
                     .getRoom()
                     .getId();
@@ -86,7 +86,7 @@ public class PredictedAirQualityService  {
     }
 
     // 예측된 공기질 데이터를 조회하는 메소드
-    public List<PredictedAirQualityData> getPredictedAirQuality(Long sensorSerialNumber) {
+    public List<PredictedAirQualityData> getPredictedAirQuality(String sensorSerialNumber) {
         return predictedAirQualityRepository.findBySensorSerialNumberOrderByTimestamp(sensorSerialNumber);
     }
 

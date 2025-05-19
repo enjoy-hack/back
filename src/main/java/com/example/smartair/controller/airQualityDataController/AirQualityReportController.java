@@ -99,14 +99,14 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
         return ResponseEntity.ok(anomalyReportService.setAnomalyReport(anomalyReportDto));
     }
 
-    @GetMapping("/anomaly/{sensorId}/{startDate}/{endDate}")
+    @GetMapping("/anomaly/{serialNumber}/{startDate}/{endDate}")
     public ResponseEntity<List<AnomalyReport>> getAnomalyReports(
-            @Parameter(description = "리포트를 조회할 센서의 ID", required = true, example = "1") @PathVariable Long sensorId,
+            @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        List<AnomalyReport> anomalyReports = anomalyReportService.getAnomalyReports(sensorId, startDate, endDate);
+        List<AnomalyReport> anomalyReports = anomalyReportService.getAnomalyReports(serialNumber, startDate, endDate);
         return ResponseEntity.ok(anomalyReports);
     }
 
