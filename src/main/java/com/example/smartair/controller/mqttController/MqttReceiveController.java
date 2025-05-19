@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -42,21 +43,31 @@ public class MqttReceiveController implements MqttReceiveControllerDocs{
     })
     @Override
     @PostMapping
-    public ResponseEntity<String> receiveMqttMessage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody MqttMessageRequestDto requestDto) {
+    public ResponseEntity<String> receiveMqttMessage(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody MqttMessageRequestDto requestDto) {
+
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 없습니다.");
         }
+
         try {
             AirQualityPayloadDto dto = mqttReceiveService.handleReceiveMessage(
                     requestDto.getTopic(),
                     objectMapper.writeValueAsString(requestDto.getPayload())
-                    );
+            );
             return ResponseEntity.ok("테스트 메시지 처리 완료 " + dto);
+
+        } catch (ResponseStatusException e) {
+            // ResponseStatusException이 던져지면 HTTP 상태 코드와 메시지를 그대로 반환
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(e.getReason());
 
         } catch (Exception e) {
             log.error("Error processing MQTT message", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("메시지 처리 중 오류 발생: " + e.getMessage());
+                    .body("메시지 처리 중 서버 오류 발생: " + e.getMessage());
         }
     }
+
 }
