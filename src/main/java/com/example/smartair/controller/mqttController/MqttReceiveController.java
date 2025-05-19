@@ -34,7 +34,7 @@ public class MqttReceiveController implements MqttReceiveControllerDocs{
             @RequestBody MqttMessageRequestDto requestDto) {
 
         if (userDetails == null) {
-            return buildErrorResponse("M000", "인증 정보가 없습니다", 582);
+            return buildErrorResponse( "인증 정보가 없습니다", 582);
         }
 
         try {
@@ -46,22 +46,21 @@ public class MqttReceiveController implements MqttReceiveControllerDocs{
 
         } catch (JsonProcessingException e) {
             log.error("JSON 파싱 오류", e);
-            return buildErrorResponse("M004", e.getMessage(), 583);
+            return buildErrorResponse( e.getMessage(), 583);
         } catch (IllegalArgumentException e) {
             log.error("잘못된 토픽 형식", e);
-            return buildErrorResponse("M001", "유효하지 않은 MQTT 토픽 형식입니다: " + e.getMessage(), 580);
+            return buildErrorResponse("유효하지 않은 MQTT 토픽 형식입니다: " + e.getMessage(), 580);
         } catch (EntityNotFoundException e) {
             log.error("센서를 찾을 수 없음", e);
-            return buildErrorResponse("M002", "센서를 찾을 수 없습니다: " + e.getMessage(), 581);
+            return buildErrorResponse("센서를 찾을 수 없습니다: " + e.getMessage(), 581);
         } catch (Exception e) {
             log.error("예상치 못한 오류", e);
-            return buildErrorResponse("M005", "처리 중 오류가 발생했습니다: " + e.getMessage(), 584);
+            return buildErrorResponse("처리 중 오류가 발생했습니다: " + e.getMessage(), 584);
         }
     }
 
-    private ResponseEntity<Map<String, String>> buildErrorResponse(String code, String message, int status) {
+    private ResponseEntity<Map<String, String>> buildErrorResponse(String message, int status) {
         return ResponseEntity.status(status).body(Map.of(
-                "code", code,
                 "error", message,
                 "status", String.valueOf(status)
 
