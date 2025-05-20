@@ -63,7 +63,7 @@ class PATControllerTest {
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("PAT 토큰이 유효하지 않습니다.", response.getBody());
+        assertEquals("Invalid Request", response.getBody());
         verify(patService, never()).savePAT(any(), any());
     }
 
