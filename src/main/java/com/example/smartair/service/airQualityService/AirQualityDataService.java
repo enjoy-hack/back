@@ -72,7 +72,6 @@ public class AirQualityDataService {
                     .sensor(sensor)
                     .fineParticlesData(savedFineParticlesData)
                     .fineParticlesDataPt2(savedFineParticlesDataPt2)
-                    .serialNumber(sensor.getSerialNumber())
                     .build();
 
             // 5. AirQualityData 저장
