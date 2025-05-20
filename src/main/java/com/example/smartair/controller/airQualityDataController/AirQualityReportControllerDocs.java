@@ -113,17 +113,50 @@ public interface AirQualityReportControllerDocs {
     ResponseEntity<Integer> deleteOldDailyReports(
             @Parameter(description = "삭제할 일별 리포트의 ID", required = true, example = "100") Integer days);
 
-    @Operation(summary = "이상치 리포트 생성",
-            description = "이상치 데이터를 기반으로 새로운 이상치 리포트를 생성합니다.",
+    @Operation(
+            summary = "이상치 리포트 생성",
+            description = """
+        ## 설명
+        - 이 API는 **AI 또는 외부 시스템에서 감지한 이상치 데이터를 기반**으로 이상치 리포트를 생성합니다.
+        - 내부적으로 다음 정보를 기반으로 리포트를 생성합니다:
+          - 센서 일치 여부 (serialNumber)
+          - 해당 시각의 시간별 측정값 (`HourlySensorAirQualitySnapshot`)
+          - 해당 날짜의 일별 보고서 (`DailySensorAirQualityReport`)
+        - 또한, 예측값과 실제 측정값을 비교해 자동으로 설명(`description`)도 생성됩니다.
+
+        ## 필드 설명
+        - `sensorSerialNumber` (Long): 센서 고유 번호 (등록된 센서여야 함)
+        - `anomalyTimestamp` (String, 예: "2023-10-10T10:00:00"): 이상치 발생 시각 (시간 단위까지 포함)
+        - `pollutant` (String): 측정 항목 (예: "PM10", "TVOC", "CO2")
+        - `pollutantValue` (Double): 실제 측정된 이상치 수치
+        - `predictedValue` (Double): 예측된 수치
+
+        ## 응답
+        - 성공 시 Firebase 알림 전송 후 해당 메시지 ID 반환
+        - 실패 시 상태 코드별 오류 반환
+    """,
             responses = {
-                    @ApiResponse(responseCode = "200", description = "이상치 리포트 생성 성공",
-                            content = @Content(schema = @Schema(type = "string", example = "messageId"))),
-                    @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터",
-                            content = @Content(schema = @Schema(hidden = true))),
-                    @ApiResponse(responseCode = "404", description = "센서 또는 관련 데이터가 존재하지 않음",
-                            content = @Content(schema = @Schema(hidden = true)))
-            })
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "이상치 리포트 생성 성공",
+                            content = @Content(
+                                    schema = @Schema(type = "string", example = "fcmMessageId12345")
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "잘못된 요청 데이터 (필수값 누락, 포맷 오류 등)",
+                            content = @Content(schema = @Schema(hidden = true))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "센서 또는 관련 스냅샷/일일 리포트 없음",
+                            content = @Content(schema = @Schema(hidden = true))
+                    )
+            }
+    )
     ResponseEntity<?> setAnomalyDailyReport(@RequestBody AnomalyReportDto anomalyReportDto);
+
 
     @Operation(summary = "이상치 리포트 조회",
             description = "특정 센서의 지정된 기간 동안의 모든 이상치 리포트를 조회합니다.",
