@@ -72,6 +72,7 @@ public interface MqttReceiveControllerDocs {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "580", description = "잘못된 토픽 형식"),
             @ApiResponse(responseCode = "581", description = "센서를 찾을 수 없음"),
+            @ApiResponse(responseCode = "582", description = "센서 메시지 제한 초과"),
             @ApiResponse(responseCode = "583", description = "MQTT 데이터 파싱 오류"),
             @ApiResponse(responseCode = "584", description = "서비스 처리 오류")
     })

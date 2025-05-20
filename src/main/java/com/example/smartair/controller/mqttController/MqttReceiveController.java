@@ -53,6 +53,9 @@ public class MqttReceiveController implements MqttReceiveControllerDocs{
         } catch (EntityNotFoundException e) {
             log.error("센서를 찾을 수 없음", e);
             return buildErrorResponse("센서를 찾을 수 없습니다: " + e.getMessage(), 581);
+        } catch (IllegalStateException e){
+            log.error("과도한 요청", e);
+            return buildErrorResponse("과도한 요청입니다: " + e.getMessage(), 582);
         } catch (Exception e) {
             log.error("예상치 못한 오류", e);
             return buildErrorResponse("처리 중 오류가 발생했습니다: " + e.getMessage(), 584);
