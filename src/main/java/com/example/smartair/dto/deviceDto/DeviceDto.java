@@ -8,10 +8,10 @@ import lombok.Setter;
 @Setter
 @Builder
 public class DeviceDto {
-    private String deviceId;
+    private Long deviceId;
     private String alias;
 
-    public DeviceDto(String deviceId, String alias) {
+    public DeviceDto(Long deviceId, String alias) {
         this.deviceId = deviceId;
         this.alias = alias; // 디바이스 이름
     }

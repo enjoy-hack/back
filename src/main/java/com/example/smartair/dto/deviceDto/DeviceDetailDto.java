@@ -26,8 +26,8 @@ public class DeviceDetailDto {
                 .deviceType(device.getDeviceType())
                 .modelName(device.getModelName())
                 .alias(device.getAlias())
-                .roomId(device.getRoomId())
-                .registeredUserId(device.getUserId())
+                .roomId(device.getRoom().getId())
+                .registeredUserId(device.getUser().getId())
                 .build();
     }
 } 

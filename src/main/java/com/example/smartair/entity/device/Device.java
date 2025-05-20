@@ -11,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Setter
 public class Device extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -24,10 +24,7 @@ public interface PATControllerDocs {
         - 인증 정보는 `@AuthenticationPrincipal`을 통해 자동 주입됩니다.
 
         **요청 본문 (`RequestBody`)**
-        - `patToken` (String): 저장할 PAT 토큰
-        - `roomId` (Long): PAT와 연결된 방 ID
-        - `setting` (Boolean): PAT 설정 (true: 공개키, false: 비공개키/PAT 주인만 사용)
-
+        - `pat` (String): 저장할 PAT 토큰
         ---
 
         **응답**

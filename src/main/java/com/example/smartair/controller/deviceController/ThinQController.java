@@ -13,27 +13,27 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/thinq")
 @AllArgsConstructor
-public class ThinQController implements ThinQControllerDocs {
+public class ThinQController  {
 
     private final ThinQService thinQService;
 
     // 방 ID를 통해 디바이스 목록 조회
-    @GetMapping("/devices/{deviceId}")
+    @GetMapping("/devices/{roomId}")
     public ResponseEntity<?> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                            @RequestParam("deviceId") Long deviceId) throws Exception {
+                                            @PathVariable("roomId") Long roomId) throws Exception {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
         }
 
         User user = userDetails.getUser();
 
-        return ResponseEntity.ok(thinQService.getDeviceList(user, deviceId));
+        return ResponseEntity.ok(thinQService.getDeviceList(user, roomId));
     }
 
     // 특정 디바이스의 상태 조회
     @GetMapping("/status/{deviceId}")
     public ResponseEntity<?> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                             @RequestParam("deviceId") Long deviceId) throws Exception {
+                                             @PathVariable("deviceId") Long deviceId) throws Exception {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
         }
@@ -48,7 +48,7 @@ public class ThinQController implements ThinQControllerDocs {
      */
     @PostMapping("/power/{deviceId}")
     public ResponseEntity<?> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                               @RequestParam("deviceId") Long deviceId) throws Exception {
+                                               @PathVariable("deviceId") Long deviceId) throws Exception {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
         }

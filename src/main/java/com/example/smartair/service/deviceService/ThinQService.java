@@ -70,54 +70,68 @@ public class ThinQService {
     }
 
     public List<DeviceDto> getDeviceList(User user, Long roomId) throws Exception {
-        PATEntity patEntity = getPatEntityOrThrow(user, roomId);
-        String patToken = decryptPatToken(patEntity);
+        Room room = roomRepository.findRoomById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
+
+        PATEntity patEntity = getPatEntityOrThrow(user, roomId); // PATEntity 가져오기
+        String patToken = encryptionUtil.decrypt(patEntity.getEncryptedPat());
 
         String responseJson = sendRequest("/devices", HttpMethod.GET, null, patToken).getBody();
         DeviceResponseWrapper wrapper = objectMapper.readValue(responseJson, DeviceResponseWrapper.class);
 
-        List<Device> settings = wrapper.getResponse().stream()
-                .map(device -> toHvacSetting(user, roomId, device))
-                .collect(Collectors.toList()); // 디바이스 설정을 Device 객체로 변환
+        List<DeviceDto> result = new ArrayList<>(); // 반환할 디바이스 DTO 리스트
 
-        deviceRepository.saveAll(settings);
-        log.info("사용자 ID {}의 방 {}에 대해 {}개의 디바이스를 저장했습니다.", user.getId(), roomId, settings.size());
+        for (DeviceResponseWrapper.DeviceResponse deviceRes : wrapper.getResponse()) {
+            String serialNumber = deviceRes.getDeviceId();
+            Long deviceId;
+            DeviceResponseWrapper.DeviceInfo info = deviceRes.getDeviceInfo();
 
-        return settings.stream()
-                .map(device -> {
-                    String id = device.getDeviceSerialNumber();
-                    String alias = device.getAlias();
-                    log.info("디바이스 ID: {}, 디바이스 이름: {}", id, alias);
-                    return new DeviceDto(id, alias);
-                })
-                .collect(Collectors.toList()); // 디바이스 ID와 이름을 포함한 DeviceDto 리스트 반환
+            Optional<Device> existingOpt = deviceRepository.findByDeviceSerialNumber(serialNumber);
+
+            if (existingOpt.isPresent()) {
+                // 기존 디바이스: 필드 전체 업데이트
+                Device existing = existingOpt.get();
+                existing.setUser(user);
+                existing.setRoom(room);
+                existing.setDeviceSerialNumber(serialNumber);
+                existing.setModelName(info.getModelName());
+                existing.setDeviceType(info.getDeviceType());
+                existing.setAlias(info.getAlias());
+                deviceRepository.save(existing);
+                deviceId = existing.getId();
+                log.info("기존 디바이스 업데이트됨: {}", serialNumber);
+            } else {
+                // 신규 디바이스 생성
+                Device newDevice = new Device();
+                newDevice.setUser(user);
+                newDevice.setRoom(room);
+                newDevice.setDeviceSerialNumber(serialNumber);
+                newDevice.setModelName(info.getModelName());
+                newDevice.setDeviceType(info.getDeviceType());
+                newDevice.setAlias(info.getAlias());
+                deviceRepository.save(newDevice);
+                deviceId = newDevice.getId();
+                log.info("새 디바이스 저장됨: {}", serialNumber);
+            }
+
+            // 반환용 DTO 구성
+            result.add(new DeviceDto(deviceId, info.getAlias()));
+        }
+
+        return result;
     }
 
-    private Device toHvacSetting(User user, Long roomId, DeviceResponseWrapper.DeviceResponse device) {
-        DeviceResponseWrapper.DeviceInfo info = device.getDeviceInfo();
-        Room room = roomRepository.findRoomById(roomId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
-
-        return Device.builder()
-                .user(user)
-                .room(room)
-                .deviceSerialNumber(device.getDeviceId())
-                .deviceType(info.getDeviceType())
-                .modelName(info.getModelName())
-                .alias(info.getAlias())
-                .build();
-    }
-
-    public ResponseEntity<String> getDeviceState(User user, Long deviceId) throws Exception {
+    public String getDeviceState(User user, Long deviceId) throws Exception {
         Device device = deviceRepository.findById(deviceId).orElseThrow(
                 () -> new CustomException(ErrorCode.DEVICE_NOT_FOUND, "디바이스를 찾을 수 없습니다.")
         );
 
         PATEntity patEntity = getPatEntityOrThrow(user, device.getRoom().getId());
-        String patToken = decryptPatToken(patEntity);
+        String patToken = encryptionUtil.decrypt(patEntity.getEncryptedPat());
 
         String endpoint = "/devices/" + device.getDeviceSerialNumber()+ "/state";
-        return sendRequest(endpoint, HttpMethod.GET, null, patToken);
+
+        return sendRequest(endpoint, HttpMethod.GET, null, patToken).getBody();
     }
 
     public ResponseEntity<String> controlAirPurifierPower(User user, Long deviceId) throws Exception {
@@ -126,14 +140,14 @@ public class ThinQService {
         );
 
         PATEntity patEntity = getPatEntityOrThrow(user, device.getRoom().getId());
-        String patToken = decryptPatToken(patEntity);
+        String patToken = encryptionUtil.decrypt(patEntity.getEncryptedPat());
 
-        ResponseEntity<String> statusResponse = getDeviceState(user, deviceId);
-        if (!statusResponse.getStatusCode().is2xxSuccessful()) {
+        String statusResponse = getDeviceState(user, deviceId); // 디바이스 상태 가져오기
+        if (statusResponse == null) {
             throw new CustomException(ErrorCode.DEVICE_STATE_NOT_FOUND, "디바이스 상태를 가져오는 데 실패했습니다.");
         }
 
-        DeviceStateResponseDto state = objectMapper.readValue(statusResponse.getBody(), DeviceStateResponseDto.class); // 디바이스 상태 DTO로 변환
+        DeviceStateResponseDto state = objectMapper.readValue(statusResponse, DeviceStateResponseDto.class); // 디바이스 상태 DTO로 변환
         String currentMode = state.getResponse().getOperation().getAirFanOperationMode(); // 현재 모드 가져오기
         String newMode = currentMode.equals("POWER_ON") ? "POWER_OFF" : "POWER_ON"; // 전원 상태 반전
 
@@ -146,13 +160,16 @@ public class ThinQService {
     }
 
     private PATEntity getPatEntityOrThrow(User user, Long roomId) {
-        PATEntity pat = patRepository.findByRoomId(roomId)
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
+
+        PATEntity pat = patRepository.findByUserId(user.getId())
                 .orElseThrow(() -> {
-                    log.warn("방 ID {}에 대한 PAT가 존재하지 않습니다.", roomId);
-                    return new CustomException(ErrorCode.PAT_NOT_FOUND, "해당 방에 대한 PAT가 존재하지 않습니다.");
+                    log.warn("PAT가 존재하지 않습니다.", roomId);
+                    return new CustomException(ErrorCode.PAT_NOT_FOUND, "PAT가 존재하지 않습니다.");
                 });
 
-        if(validateAccess(user, pat)) {
+        if(validateAccess(user,room)) {
             log.info("사용자 ID {}가 방 ID {}에 대한 PAT에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
         } else {
             log.warn("사용자 ID {}가 방 ID {}에 대한 PAT에 접근할 수 있는 권한이 없습니다.", user.getId(), roomId);
@@ -161,10 +178,7 @@ public class ThinQService {
         return pat;
     }
 
-    private Boolean validateAccess(User user, PATEntity patEntity) {
-        //  PAT 엔티티로부터 Room ID를 가져와 Room 정보 조회
-        Room room = roomRepository.findById(patEntity.getRoomId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "Room ID: " + patEntity.getRoomId()));
+    private Boolean validateAccess(User user, Room room) {
 
         boolean hasPermission = false;
 
@@ -192,11 +206,6 @@ public class ThinQService {
         return hasPermission;
 
     }
-
-    private String decryptPatToken(PATEntity patEntity) throws Exception {
-        return encryptionUtil.decrypt(patEntity.getEncryptedPat());
-    }
-
     private ResponseEntity<String> sendRequest(String endpoint, HttpMethod method, Object body, String patToken) { // API 요청 메서드
         HttpEntity<Object> request = new HttpEntity<>(body, buildHeaders(patToken));
         String url = baseUrl + endpoint;
