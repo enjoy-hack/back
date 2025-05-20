@@ -26,7 +26,7 @@ public interface AirQualityScoreControllerDocs {
             @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음")
     })
     ResponseEntity<AverageScoreDto> getSensorAverageScore(
-            @Parameter(description = "센서 ID", required = true) Long sensorId,
+            @Parameter(description = "센서 일련번호", required = true) String serialNumber,
             @Parameter(description = "조회 시작 시간 (기본값: 24시간 전)") LocalDateTime startTime,
             @Parameter(description = "조회 종료 시간 (기본값: 현재 시간)") LocalDateTime endTime
     );
@@ -48,7 +48,7 @@ public interface AirQualityScoreControllerDocs {
             @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음")
     })
     ResponseEntity<Page<SensorAirQualityScoreDto>> getSensorAirQualityScores(
-            @Parameter(description = "센서 ID", required = true) Long sensorId,
+            @Parameter(description = "센서 일련번호", required = true) String serialNumber,
             @Parameter(description = "조회 시작 시간") LocalDateTime startTime,
             @Parameter(description = "조회 종료 시간") LocalDateTime endTime,
             @Parameter(description = "페이징 정보") Pageable pageable
@@ -72,7 +72,7 @@ public interface AirQualityScoreControllerDocs {
             @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음")
     })
     ResponseEntity<SensorAirQualityScoreDto> getLatestSensorAirQualityScore(
-            @Parameter(description = "센서 ID", required = true) Long sensorId
+            @Parameter(description = "센서 일련번호", required = true) String serialNumber
     );
 
     @Operation(summary = "방 최신 공기질 점수 조회", description = "특정 방의 가장 최근 공기질 점수를 조회합니다.")
