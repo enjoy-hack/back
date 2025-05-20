@@ -4,6 +4,7 @@ import com.example.smartair.dto.airQualityScoreDto.AverageScoreDto;
 import com.example.smartair.dto.airQualityScoreDto.SensorAirQualityScoreDto;
 import com.example.smartair.dto.airQualityScoreDto.PlaceAirQualityScoreDto;
 import com.example.smartair.dto.airQualityScoreDto.RoomAirQualityScoreDto;
+import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.airScore.airQualityScore.SensorAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
@@ -12,6 +13,7 @@ import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.SensorAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.PlaceAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
@@ -37,10 +39,9 @@ public class AirQualityQueryService { //공기질 점수 조회
 
     private final SensorAirQualityScoreRepository sensorAirQualityScoreRepository;
     private final RoomAirQualityScoreRepository roomAirQualityScoreRepository;
-    private final PlaceAirQualityScoreRepository placeAirQualityScoreRepository;
     private final SensorRepository sensorRepository;
     private final RoomRepository roomRepository;
-    private final PlaceRepository placeRepository;
+    private final AirQualityDataRepository airQualityDataRepository;
     private final AirQualityScoreService airQualityScoreService;
 
     /**
@@ -85,7 +86,7 @@ public class AirQualityQueryService { //공기질 점수 조회
 
 
     /**
-     * 특정 센서의 공기질 점수 기록을 시간 범위와 페이징 정보로 조회합니다.
+     * 특정 센서의 대기질 점수 기록을 시간 범위와 페이징 정보로 조회합니다.
      * @param serialNumber
      * @param startTime 조회 시작 시간
      * @param endTime 조회 종료 시간
@@ -113,7 +114,7 @@ public class AirQualityQueryService { //공기질 점수 조회
     }
 
     /**
-     * 특정 방의 공기질 점수 기록을 시간 범위와 페이징 정보로 조회합니다.
+     * 특정 방의 대기질 점수 기록을 시간 범위와 페이징 정보로 조회합니다.
      * @param roomId 대상 방 ID
      * @param startTime 조회 시작 시간 
      * @param endTime 조회 종료 시간 
@@ -166,7 +167,7 @@ public class AirQualityQueryService { //공기질 점수 조회
     }
 
     /**
-     * 대상 방의 가장 최신의 공기질 데이터를 조회합니다.
+     * 대상 방의 가장 최신 대기질 데이터를 조회합니다.
      * @param roomId 대상 방 ID
      * @return RoomAirQualityScoreDto
      */
