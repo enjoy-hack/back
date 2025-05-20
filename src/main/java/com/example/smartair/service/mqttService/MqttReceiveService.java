@@ -86,6 +86,7 @@ public class MqttReceiveService {
         }
     }
 
+    @Transactional
     public AirQualityPayloadDto handleReceiveMessage(String topic, String payload) throws Exception {
         try {
             log.info("Received message on handleReceiveMessage topic '{}', payload: {}", topic, payload);
@@ -96,7 +97,9 @@ public class MqttReceiveService {
             }
 
             String serialNumber = topicParts[1];
-            Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+
+            synchronized (serialNumber.intern()){
+            Sensor sensor = sensorRepository.findBySerialNumberWithLock(serialNumber)
                     .orElseThrow(() -> new EntityNotFoundException("Sensor serialNumber: " + serialNumber));
 
             Long sensorId = sensor.getId();
@@ -122,7 +125,7 @@ public class MqttReceiveService {
                 addToMessageQueue(sensorData);
             }
 
-            return processedDto;
+            return processedDto; }
         }  catch (ResponseStatusException e) {
             throw e;  // ResponseStatusException을 그대로 전달
         }
