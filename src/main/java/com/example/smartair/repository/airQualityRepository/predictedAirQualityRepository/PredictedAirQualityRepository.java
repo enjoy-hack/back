@@ -16,8 +16,8 @@ public interface PredictedAirQualityRepository extends JpaRepository<PredictedAi
     // 예측된 공기질 데이터를 조회하는 메소드
     List<PredictedAirQualityData> findByRoomId(Long roomId);
 
-    List<PredictedAirQualityData> findBySensorSerialNumberOrderByTimestamp(Long sensorSerialNumber);
+    List<PredictedAirQualityData> findBySensorSerialNumberOrderByTimestamp(String sensorSerialNumber);
 
-    List<PredictedAirQualityData> findBySensorSerialNumber(Long sensorSerialNumber);
-    Optional<PredictedAirQualityData> findBySensorSerialNumberAndTimestamp(Long sensorSerialNumber, LocalDateTime timestamp);
+    List<PredictedAirQualityData> findBySensorSerialNumber(String sensorSerialNumber);
+    Optional<PredictedAirQualityData> findBySensorSerialNumberAndTimestamp(String sensorSerialNumber, LocalDateTime timestamp);
 }

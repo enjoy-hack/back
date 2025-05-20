@@ -80,7 +80,7 @@ class SensorServiceTest {
 
         testSensor = Sensor.builder()
                 .id(1L)
-                .serialNumber(12345L)
+                .serialNumber("12345")
                 .name("Test Sensor")
                 .user(testUser)
                 .isRegistered(false)
@@ -90,7 +90,7 @@ class SensorServiceTest {
 
     @Test
     void setSensor_성공() throws Exception {
-        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto(12345L, "Test Sensor");
+        SensorRequestDto.setSensorDto dto = new SensorRequestDto.setSensorDto("12345", "Test Sensor");
 
         when(sensorRepository.save(any(Sensor.class))).thenReturn(testSensor);
 
@@ -104,7 +104,7 @@ class SensorServiceTest {
 
     @Test
     void addSensorToRoom_성공() throws Exception {
-        SensorRequestDto.addSensorToRoomDto dto = new SensorRequestDto.addSensorToRoomDto(12345L, 1L);
+        SensorRequestDto.addSensorToRoomDto dto = new SensorRequestDto.addSensorToRoomDto("12345", 1L);
 
         when(roomRepository.findRoomById(dto.roomId())).thenReturn(Optional.of(testRoom));
         when(sensorRepository.findBySerialNumber(dto.serialNumber())).thenReturn(Optional.of(testSensor));
@@ -122,7 +122,7 @@ class SensorServiceTest {
 
     @Test
     void deleteSensor_성공() throws Exception {
-        SensorRequestDto.deleteSensorDto dto = new SensorRequestDto.deleteSensorDto(12345L, 1L);
+        SensorRequestDto.deleteSensorDto dto = new SensorRequestDto.deleteSensorDto("12345", 1L);
 
         RoomSensor roomSensor = RoomSensor.builder()
                 .sensor(testSensor)

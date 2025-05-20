@@ -15,11 +15,11 @@ import java.util.Optional;
 public interface RoomSensorRepository extends JpaRepository<RoomSensor, Long> {
     Optional<RoomSensor> findBySensor(Sensor sensor);
 
-    Optional<RoomSensor> findBySensor_SerialNumberAndRoom_Id(Long sensorSerialNumber, Long roomId);
+    Optional<RoomSensor> findBySensor_SerialNumberAndRoom_Id(String sensorSerialNumber, Long roomId);
 
     List<RoomSensor> findByRoomId(Long roomId);
 
-    Optional<RoomSensor> findBySensor_SerialNumber(Long serialNumber);
+    Optional<RoomSensor> findBySensor_SerialNumber(String serialNumber);
 
     @Query("SELECT rs.sensor FROM RoomSensor rs WHERE rs.room = :room")
     List<Sensor> findAllSensorByRoom(@Param("room") Room room);
@@ -28,5 +28,5 @@ public interface RoomSensorRepository extends JpaRepository<RoomSensor, Long> {
 
     boolean existsBySensorId(Long sensor_id);
 
-    boolean existsBySensor_SerialNumberAndRoom_Id(Long serialNumber, Long roomId);
+    boolean existsBySensor_SerialNumberAndRoom_Id(String serialNumber, Long roomId);
 }

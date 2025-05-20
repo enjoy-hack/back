@@ -107,9 +107,9 @@ public class AnomalyReportService {
         );
     }
 
-    public List<AnomalyReport> getAnomalyReports(Long sensorSerialNumber, LocalDate startDate, LocalDate endDate) {
-        Sensor sensor = sensorRepository.findBySerialNumber(sensorSerialNumber)
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND,String.format("시리얼 번호에 맞는 센서를 찾을 수 없습니다. 시리얼 번호: %s", sensorSerialNumber)));
+    public List<AnomalyReport> getAnomalyReports(String serialNumber, LocalDate startDate, LocalDate endDate) {
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND,String.format("해당 센서를 찾을 수 없습니다. serialNumber: %d", serialNumber)));
 
         LocalDateTime startDateTime = startDate.atStartOfDay(); // 00:00:00
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX); // 23:59:59.999999999

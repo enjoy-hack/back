@@ -85,7 +85,7 @@ public class SensorController implements SensorControllerDocs {
     @Override
     @GetMapping("/sensor/status")
     public ResponseEntity<?> getSensorStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                             @RequestParam Long deviceSerialNumber) throws Exception {
+                                             @RequestParam String deviceSerialNumber) throws Exception {
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }

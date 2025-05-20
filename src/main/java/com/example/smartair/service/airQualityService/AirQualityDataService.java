@@ -90,11 +90,10 @@ public class AirQualityDataService {
             throw ce;
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
             log.error("MQTT 토픽 구문 분석 또는 처리 오류: {}", e.getMessage());
-            throw new CustomException(ErrorCode.MQTT_PROCESSING_ERROR, String.format("MQTT 처리 오류: %s", e.getMessage()));
+            throw e;
         } catch (Exception e) {
             log.error("MQTT 데이터 처리 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, String.format("내부 서버 오류: %s", e.getMessage()));
-
+            throw e;
         }
     }
 

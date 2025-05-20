@@ -15,9 +15,15 @@ import java.util.Optional;
 
 @Repository
 public interface SensorRepository extends JpaRepository<Sensor, Long> {
-    Optional<Sensor> findBySerialNumber(Long serialNumber);
+    Optional<Sensor> findBySerialNumber(String serialNumber);
 
     List<Sensor> findAllByRunningStatusIsTrue();
 
     List<Sensor> findByUser(User user);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Sensor s WHERE s.serialNumber = :serialNumber")
+    Optional<Sensor> findBySerialNumberWithLock(@Param("serialNumber") String serialNumber);
+
+    boolean existsBySerialNumber(String serialNumber);
 }

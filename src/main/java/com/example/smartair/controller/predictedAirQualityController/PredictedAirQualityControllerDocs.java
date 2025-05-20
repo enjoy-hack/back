@@ -40,7 +40,7 @@ public interface PredictedAirQualityControllerDocs {
 
             ---
             **요청 본문**
-            - sensorSerialNumber (Long): 센서 일련번호
+            - sensorSerialNumber (String): 센서 일련번호
             - timestamp (String): 예측 시각 (형식: yyyy-MM-ddTHH:mm:ss)
             - pm10 (float): 예측된 PM10 농도
             - co2 (float): 예측된 CO2 농도
@@ -61,7 +61,7 @@ public interface PredictedAirQualityControllerDocs {
 
             ---
             **요청 파라미터**
-            - sensorSerialNumber (Long): 센서 일련번호
+            - sensorSerialNumber (String): 센서 일련번호
 
             ---
             **응답 예시**
@@ -80,5 +80,5 @@ public interface PredictedAirQualityControllerDocs {
             ```
             """
     )
-    ResponseEntity<?> getPredictedAirQuality(@RequestParam Long sensorSerialNumber);
+    ResponseEntity<?> getPredictedAirQuality(@RequestParam String sensorSerialNumber);
 }

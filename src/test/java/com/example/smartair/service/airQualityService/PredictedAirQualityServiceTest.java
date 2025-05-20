@@ -45,13 +45,13 @@ class PredictedAirQualityServiceTest {
     void getSensorMappingWithRoom_ReturnsMappedData() {
         // Mock 데이터 생성
         Sensor sensor1 = Sensor.builder()
-                .serialNumber(12345L)
+                .serialNumber("12345")
                 .id(1L)
                 .name("Sensor1")
                 .roomRegisterDate(LocalDateTime.of(2025, 3, 15, 10, 30))
                 .build();
         Sensor sensor2 = Sensor.builder()
-                .serialNumber(67890L)
+                .serialNumber("67890")
                 .id(2L)
                 .name("Sensor2")
                 .roomRegisterDate(LocalDateTime.of(2025, 3, 16, 14, 45))
@@ -80,25 +80,25 @@ class PredictedAirQualityServiceTest {
 
         // 결과 검증
         assertEquals(2, result.size());
-        assertEquals(12345L, result.get(0).getSensorSerialNumber());
+        assertEquals("12345", result.get(0).getSensorSerialNumber());
         assertEquals(LocalDateTime.of(2025, 3, 15, 10, 30), result.get(0).getSensorRegisterDate());
-        assertEquals(67890L, result.get(1).getSensorSerialNumber());
+        assertEquals("67890", result.get(1).getSensorSerialNumber());
         assertEquals(LocalDateTime.of(2025, 3, 16, 14, 45), result.get(1).getSensorRegisterDate());
     }
     @Test
     void testSetPredictedAirQuality() {
         // given
         PredictedAirQualityDto dto = new PredictedAirQualityDto();
-        dto.setSensorSerialNumber(1L);
+        dto.setSensorSerialNumber("1");
         dto.setTimestamp("2023-10-01T12:00:00");
         dto.setPm10(10.5f);
         dto.setCo2(400.0f);
         dto.setTvoc(0.5f);
 
-        when(roomSensorRepository.findBySensor_SerialNumber(1L))
+        when(roomSensorRepository.findBySensor_SerialNumber("1"))
                 .thenReturn(Optional.of(mockRoomSensor(1L)));
 
-        when(predictedAirQualityRepository.findBySensorSerialNumberAndTimestamp(1L, LocalDateTime.parse("2023-10-01T12:00:00")))
+        when(predictedAirQualityRepository.findBySensorSerialNumberAndTimestamp("1", LocalDateTime.parse("2023-10-01T12:00:00")))
                 .thenReturn(Optional.empty());
 
         // when
@@ -111,7 +111,7 @@ class PredictedAirQualityServiceTest {
     @Test
     void testGetPredictedAirQuality() {
         // given
-        Long sensorSerialNumber = 1L;
+        String sensorSerialNumber = "1";
         when(predictedAirQualityRepository.findBySensorSerialNumberOrderByTimestamp(sensorSerialNumber))
                 .thenReturn(List.of(mockPredictedAirQualityData()));
 
@@ -121,13 +121,13 @@ class PredictedAirQualityServiceTest {
         // then
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(1L, result.get(0).getSensorSerialNumber());
+        assertEquals("1", result.get(0).getSensorSerialNumber());
     }
 
     private PredictedAirQualityData mockPredictedAirQualityData() {
         return PredictedAirQualityData.builder()
                 .id(1L)
-                .sensorSerialNumber(1L)
+                .sensorSerialNumber("1")
                 .roomId(1L)
                 .timestamp(LocalDateTime.now())
                 .pm10(10.5f)

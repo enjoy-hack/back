@@ -166,7 +166,7 @@ public class SensorService {
         return allSensors;
     }
 
-    public boolean getSensorStatus(Long serialNumber) throws Exception {
+    public boolean getSensorStatus(String serialNumber) throws Exception {
         Optional<Sensor> optionalSensor = sensorRepository.findBySerialNumber(serialNumber);
 
         if (optionalSensor.isEmpty()) throw new CustomException(ErrorCode.INVALID_REQUEST, "해당 센서가 존재하지 않습니다.");

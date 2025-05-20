@@ -8,6 +8,6 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class SensorRoomMappingDto { //인공지능쪽 보낼 dto
-    private Long sensorSerialNumber;
+    private String sensorSerialNumber;
     private LocalDateTime sensorRegisterDate;
 }

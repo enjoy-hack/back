@@ -88,23 +88,23 @@ public class DailyReportService {
      * 특정 장치의 특정 날짜에 대한 일별 보고서를 조회합니다.
      */
     @Transactional(readOnly = true)
-    public DailySensorAirQualityReport getDailyReport(Long deviceId, LocalDate date) {
-        Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
+    public DailySensorAirQualityReport getDailyReport(String serialNumber, LocalDate date) {
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + serialNumber));
         return dailyReportRepository.findBySensorAndReportDate(sensor, date)
-                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND, "report not found with SensorId: " + deviceId + ", date: " + date));
+                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND, "report not found with SensorId: " + serialNumber + ", date: " + date));
     }
 
     /**
      * 특정 장치의 특정 기간 동안의 일별 보고서 목록을 조회합니다.
      */
     @Transactional(readOnly = true)
-    public List<DailySensorAirQualityReport> getDailyReportsForPeriod(Long deviceId, LocalDate startDate, LocalDate endDate) {
+    public List<DailySensorAirQualityReport> getDailyReportsForPeriod(String serialNumber, LocalDate startDate, LocalDate endDate) {
         if (startDate.isAfter(endDate)) {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
-        Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor serialNumber: " + serialNumber));
         return dailyReportRepository.findBySensorAndReportDateBetweenOrderByReportDateAsc(sensor, startDate, endDate);
     }
 
@@ -148,18 +148,18 @@ public class DailyReportService {
      * Device 삭제 시 호출될 수 있습니다.
      */
     @Transactional
-    public int deleteDailyReportsByDeviceId(Long deviceId) {
-        if (!sensorRepository.existsById(deviceId)) {
-            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId);
+    public int deleteDailyReportsByDeviceId(String serialNumber) {
+        if (!sensorRepository.existsBySerialNumber(serialNumber)) {
+            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor serialNumber: " + serialNumber);
         }
-        log.info("Device ID: {} 관련 모든 일별 보고서 삭제 시작", deviceId);
-        List<DailySensorAirQualityReport> reportsToDelete = dailyReportRepository.findAllBySensorId(deviceId);
+        log.info("Sensor serialNumber: {} 관련 모든 일별 보고서 삭제 시작", serialNumber);
+        List<DailySensorAirQualityReport> reportsToDelete = dailyReportRepository.findAllBySensorSerialNumber(serialNumber);
         if (reportsToDelete.isEmpty()) {
-            log.info("Device ID: {} 관련 삭제할 일별 보고서가 없습니다.", deviceId);
+            log.info("Device ID: {} 관련 삭제할 일별 보고서가 없습니다.", serialNumber);
             return 0;
         }
         dailyReportRepository.deleteAllInBatch(reportsToDelete);
-        log.info("Device ID: {} 관련 일별 보고서 {}개 삭제 완료", deviceId, reportsToDelete.size());
+        log.info("Sensor serialNumber: {} 관련 일별 보고서 {}개 삭제 완료", serialNumber, reportsToDelete.size());
         return reportsToDelete.size();
     }
 

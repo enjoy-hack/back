@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Data
 public class PredictedAirQualityDto {
-    private Long sensorSerialNumber;
+    private String sensorSerialNumber;
     private String timestamp;
     private float pm10;
     private float co2;

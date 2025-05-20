@@ -44,7 +44,7 @@ public class PredictedAirQualityController implements PredictedAirQualityControl
     }
 
     @GetMapping("/predictedAirQuality")
-    public ResponseEntity<?> getPredictedAirQuality(Long sensorSerialNumber) {
+    public ResponseEntity<?> getPredictedAirQuality(String sensorSerialNumber) {
         // 예측된 공기질 데이터 가져오기
         List<PredictedAirQualityData> predictedAirQualityData = predictedAirQualityService.getPredictedAirQuality(sensorSerialNumber);
         if (predictedAirQualityData == null || predictedAirQualityData.isEmpty()) {

@@ -18,20 +18,24 @@ public interface SensorAirQualityScoreRepository extends JpaRepository<SensorAir
     Optional<SensorAirQualityScore> findFirstBySensorAirQualityData_SensorOrderByCreatedAtDesc(Sensor sensor);
 
     @Query("SELECT das FROM SensorAirQualityScore das JOIN das.sensorAirQualityData aqd " +
-           "WHERE aqd.sensor.id = :sensorId " +
+           "WHERE aqd.sensor.serialNumber = :serialNumber " +
            "AND (:startTime IS NULL OR das.createdAt >= :startTime) " +
            "AND (:endTime IS NULL OR das.createdAt <= :endTime)")
     Page<SensorAirQualityScore> findScoresBySensorAndTimeRange(
-            @Param("sensorId") Long sensorId,
+            @Param("serialNumber") String serialNumber,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime,
             Pageable pageable
     );
 
-    List<SensorAirQualityScore> findBySensorAirQualityData_SensorAndCreatedAtAfter(Sensor sensor, LocalDateTime createdAt);
-
     Optional<SensorAirQualityScore> findTopBySensorAirQualityData_SensorOrderByCreatedAtDesc(Sensor sensor);
 
-    List<SensorAirQualityScore> findBySensorAirQualityData_SensorIdAndCreatedAtBetween(Long sensorId, LocalDateTime startTime, LocalDateTime endTime);
-
+    @Query("SELECT das FROM SensorAirQualityScore das JOIN das.sensorAirQualityData aqd " +
+           "WHERE aqd.sensor.serialNumber = :serialNumber " +
+           "AND (:startTime IS NULL OR das.createdAt >= :startTime) " +
+           "AND (:endTime IS NULL OR das.createdAt <= :endTime)")
+    List<SensorAirQualityScore> findScoresBySensorSerialNumberAndTimeRange(
+            @Param("serialNumber") String serialNumber,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime);
 } 

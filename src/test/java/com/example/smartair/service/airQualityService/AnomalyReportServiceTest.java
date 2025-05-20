@@ -60,14 +60,14 @@ class AnomalyReportServiceTest {
     void testSetAnomalyReport_Success() throws FirebaseMessagingException {
         // given
         AnomalyReportDto dto = new AnomalyReportDto();
-        dto.setSensorSerialNumber(12345L);
+        dto.setSensorSerialNumber("12345");
         dto.setAnomalyTimestamp("2023-10-10 10:00:00");
         dto.setPollutant("PM10");
         dto.setPollutantValue(150.0);
         dto.setPredictedValue(100.0);
 
         Sensor sensor = new Sensor();
-        sensor.setSerialNumber(12345L);
+        sensor.setSerialNumber("12345");
         User user = mock(User.class);
         sensor.setUser(user);
         when(user.getFcmToken()).thenReturn("mockToken");
@@ -79,7 +79,7 @@ class AnomalyReportServiceTest {
         LocalDateTime anomalyTime = LocalDateTime.parse(dto.getAnomalyTimestamp(), formatter);
         LocalDate anomalyDate = anomalyTime.toLocalDate();
 
-        when(sensorRepository.findBySerialNumber(12345L)).thenReturn(Optional.of(sensor));
+        when(sensorRepository.findBySerialNumber("12345")).thenReturn(Optional.of(sensor));
         when(hourlyDeviceAirQualitySnapshotRepository.findBySensorAndSnapshotHour(sensor, anomalyTime))
                 .thenReturn(Optional.of(hourlySnapshot));
         when(dailySensorAirQualityReportRepository.findBySensorAndReportDate(sensor, anomalyDate))
@@ -102,12 +102,13 @@ class AnomalyReportServiceTest {
     @Test
     void testGetAnomalyReports_Success() {
         // given
-        Long sensorSerialNumber = 12345L;
+        Long sensorId = 12345L;
         LocalDate startDate = LocalDate.of(2023, 10, 1);
         LocalDate endDate = LocalDate.of(2023, 10, 31);
 
         Sensor sensor = new Sensor();
-        sensor.setSerialNumber(Long.valueOf("12345"));
+        sensor.setSerialNumber("12345");
+        String sensorSerialNumber = "12345";
 
         AnomalyReport report1 = new AnomalyReport();
         AnomalyReport report2 = new AnomalyReport();
@@ -116,11 +117,12 @@ class AnomalyReportServiceTest {
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX); // 23:59:59.999999999
 
         when(sensorRepository.findBySerialNumber(sensorSerialNumber)).thenReturn(Optional.of(sensor));
+        when(sensorRepository.findById(sensorId)).thenReturn(Optional.of(sensor));
         when(anomalyReportRepository.findAnomaliesBySensorAndDateRange(sensor, startDateTime, endDateTime))
                 .thenReturn(List.of(report1, report2));
 
         // when
-        List<AnomalyReport> result = anomalyReportService.getAnomalyReports(sensorSerialNumber, startDate, endDate);
+        List<AnomalyReport> result = anomalyReportService.getAnomalyReports("12345", startDate, endDate);
 
         // then
         assertNotNull(result);

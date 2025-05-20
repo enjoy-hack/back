@@ -23,7 +23,7 @@ public class PredictedAirQualityData extends BaseEntity {
     private LocalDateTime timestamp;
 
     @Column(name = "sensor_id")
-    private Long sensorSerialNumber;
+    private String sensorSerialNumber;
 
     @Column(name = "room_id")
     private Long roomId;

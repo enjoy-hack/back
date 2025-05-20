@@ -22,12 +22,8 @@ public interface MqttReceiveControllerDocs {
                     센서에서 전송된 MQTT 메시지를 처리
                     
                     **토픽 구조**
-                    - 형식: smartair/{deviceId}/airquality
-                    - deviceId: 센서의 고유 식별자
-
-                    **자동 센서 등록 프로세스**
-                    1. 토픽에서 userId와 deviceId 추출
-                    2. deviceId로 센서 정보 조회
+                    - 형식: smartair/{serialNumber}/airquality
+                    - serialNumber: 센서의 고유 일련번호
 
                     **메시지 처리 제한**
                     - 센서별 시간당 메시지 제한 적용
@@ -73,12 +69,13 @@ public interface MqttReceiveControllerDocs {
                     """
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "메시지 처리 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 형식"),
-            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-            @ApiResponse(responseCode = "429", description = "메시지 전송 제한 초과"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "580", description = "잘못된 토픽 형식"),
+            @ApiResponse(responseCode = "581", description = "센서를 찾을 수 없음"),
+            @ApiResponse(responseCode = "582", description = "센서 메시지 제한 초과"),
+            @ApiResponse(responseCode = "583", description = "MQTT 데이터 파싱 오류"),
+            @ApiResponse(responseCode = "584", description = "서비스 처리 오류")
     })
     @PostMapping
-    ResponseEntity<String> receiveMqttMessage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody MqttMessageRequestDto requestDto);
+    ResponseEntity<?> receiveMqttMessage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody MqttMessageRequestDto requestDto);
 }

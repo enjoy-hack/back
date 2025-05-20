@@ -128,29 +128,29 @@ public class WeeklyReportService {
      * 특정 장치의 특정 연도, 주차에 대한 주간 보고서를 조회합니다.
      */
     @Transactional(readOnly = true)
-    public WeeklySensorAirQualityReport getWeeklyReport(Long deviceId, int year, int weekOfYear) {
-        Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
+    public WeeklySensorAirQualityReport getWeeklyReport(String serialNumber, int year, int weekOfYear) {
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor serialNumber: " + serialNumber));
         return weeklyReportRepository.findBySensorAndYearOfWeekAndWeekOfYear(sensor, year, weekOfYear)
-                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND, "report not found with sensorId: " + deviceId + ", year: " + year + ", weekOfYear: " + weekOfYear));
+                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND, "report not found with sensor serialNumber: " + serialNumber + ", year: " + year + ", weekOfYear: " + weekOfYear));
     }
 
     /**
      * 특정 장치의 특정 기간(시작일, 종료일 기준) 동안 포함되는 모든 주간 보고서 목록을 조회합니다.
      */
     @Transactional(readOnly = true)
-    public List<WeeklySensorAirQualityReport> getWeeklyReportsForPeriod(Long deviceId, LocalDate startDate, LocalDate endDate) {
+    public List<WeeklySensorAirQualityReport> getWeeklyReportsForPeriod(String serialNumber, LocalDate startDate, LocalDate endDate) {
         if (startDate.isAfter(endDate)) {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE, "시작일이 종료일보다 늦을 수 없습니다.");
         }
-        Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor serialNumber: " + serialNumber));
 
         // 주간 보고서의 시작일이 주어진 기간 내에 있는 모든 주간 보고서 조회
         List<WeeklySensorAirQualityReport> reportsInPeriod =
                 weeklyReportRepository.findOverlappingWeeklyReports(sensor, startDate, endDate);
 
-        log.info("Device ID: {}의 {}부터 {}까지의 주간 보고서 {}건 조회 완료", deviceId, startDate, endDate, reportsInPeriod.size());
+        log.info("Sensor serialNumber: {}의 {}부터 {}까지의 주간 보고서 {}건 조회 완료", serialNumber, startDate, endDate, reportsInPeriod.size());
         return reportsInPeriod;
     }
 
@@ -193,18 +193,18 @@ public class WeeklyReportService {
      * 특정 장치와 관련된 모든 주간 보고서를 삭제합니다.
      */
     @Transactional
-    public int deleteWeeklyReportsByDeviceId(Long deviceId) {
-        if (!sensorRepository.existsById(deviceId)) {
-            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId);
+    public int deleteWeeklyReportsByDeviceId(String serialNumber) {
+        if (!sensorRepository.existsBySerialNumber(serialNumber)) {
+            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor serialNumber: " + serialNumber);
         }
-        log.info("Device ID: {} 관련 모든 주간 보고서 삭제 시작", deviceId);
-        List<WeeklySensorAirQualityReport> reportsToDelete = weeklyReportRepository.findAllBySensorId(deviceId);
+        log.info("sensor SerialNumber: {} 관련 모든 주간 보고서 삭제 시작", serialNumber);
+        List<WeeklySensorAirQualityReport> reportsToDelete = weeklyReportRepository.findAllBySensorSerialNumber(serialNumber);
         if (reportsToDelete.isEmpty()) {
-            log.info("Device ID: {} 관련 삭제할 주간 보고서가 없습니다.", deviceId);
+            log.info("sensor SerialNumber: {} 관련 삭제할 주간 보고서가 없습니다.", serialNumber);
             return 0;
         }
         weeklyReportRepository.deleteAllInBatch(reportsToDelete);
-        log.info("Device ID: {} 관련 주간 보고서 {}개 삭제 완료", deviceId, reportsToDelete.size());
+        log.info("sensor SerialNumber: {} 관련 주간 보고서 {}개 삭제 완료",serialNumber, reportsToDelete.size());
         return reportsToDelete.size();
     }
 

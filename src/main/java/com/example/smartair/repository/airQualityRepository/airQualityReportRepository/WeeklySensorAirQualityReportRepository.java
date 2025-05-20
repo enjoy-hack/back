@@ -16,6 +16,7 @@ public interface WeeklySensorAirQualityReportRepository extends JpaRepository<We
     Optional<WeeklySensorAirQualityReport> findBySensorAndYearOfWeekAndWeekOfYear(Sensor sensor, int year, int weekOfYear);
     List<WeeklySensorAirQualityReport> findAllBySensorId(Long sensorId);
     List<WeeklySensorAirQualityReport> findByStartDateOfWeekBefore(LocalDate date);
+    List<WeeklySensorAirQualityReport> findAllBySensorSerialNumber(String serialNumber);
 
     // 특정 장치에 대해 주어진 기간과 겹치는 모든 주간 보고서 조회
     // 조건: (리포트의 시작일 <= 기간의 종료일) AND (리포트의 종료일 >= 기간의 시작일)
