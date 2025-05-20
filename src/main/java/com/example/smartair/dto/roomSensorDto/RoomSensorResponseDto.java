@@ -15,11 +15,13 @@ import java.time.LocalDateTime;
 public class RoomSensorResponseDto {
     private Long roomId;
     private Long sensorId;
+    private String sensorSerialNumber;
 
     public static RoomSensorResponseDto from(RoomSensor roomSensor) {
         return RoomSensorResponseDto.builder()
                 .roomId(roomSensor.getRoom().getId())
                 .sensorId(roomSensor.getSensor().getId())
+                .sensorSerialNumber(roomSensor.getSensor().getSerialNumber())
                 .build();
     }
 }
