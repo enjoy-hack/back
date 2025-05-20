@@ -2,7 +2,6 @@ package com.example.smartair.controller.deviceController;
 
 import com.example.smartair.dto.deviceDto.PATRequestDto;
 import com.example.smartair.entity.login.CustomUserDetails;
-import com.example.smartair.entity.user.Role;
 import com.example.smartair.service.deviceService.PATService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,18 +19,16 @@ public class PATController implements PATControllerDocs{
 
     @PostMapping()
     public ResponseEntity<?> savePAT(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                     @RequestBody PATRequestDto request ) {
+                                     @RequestBody PATRequestDto request) {
         try {
             if (userDetails == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
             }
-
-            // PAT 토큰 유효성 검사c
-            if (request.getPatToken() == null || request.getPatToken().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("PAT 토큰이 유효하지 않습니다.");
+            if (request.getPat() == null || request.getPat().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Request");
             }
-
             return patService.savePAT(userDetails.getUser(), request);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("암호화 실패");
         }

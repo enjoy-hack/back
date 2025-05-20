@@ -35,12 +35,12 @@ public class AdminDeviceService {
 
         return devicePage.map(device -> {
             DeviceDetailDto dto = DeviceDetailDto.from(device);
-            if (device.getRoomId() != null && roomRepository != null) {
-                roomRepository.findById(device.getRoomId())
+            if (device.getRoom().getId() != null && roomRepository != null) {
+                roomRepository.findById(device.getRoom().getId())
                     .ifPresent(room -> dto.setRoomName(room.getName())); 
             }
-            if (device.getUserId() != null && userRepository != null) {
-                userRepository.findById(device.getUserId())
+            if (device.getRoom().getId() != null && userRepository != null) {
+                userRepository.findById(device.getRoom().getId())
                     .ifPresent(user -> dto.setRegisteredUsername(user.getUsername()));
             }
             return dto;

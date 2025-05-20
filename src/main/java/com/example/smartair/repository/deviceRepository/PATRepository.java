@@ -11,9 +11,6 @@ import java.util.Optional;
 public interface PATRepository extends JpaRepository<PATEntity, String> {
     Optional<PATEntity> findByUserId(Long userId);
 
-    Optional<PATEntity> findByRoomId(Long roomId);
-
     boolean existsByUserId(Long userId);
 
-    Optional<User> findUserIdByRoomId(Long roomId);
 }

@@ -37,7 +37,7 @@ class PATControllerTest {
         when(userDetails.getUser()).thenReturn(user);
 
         PATRequestDto request = new PATRequestDto();
-        request.setPatToken("validToken");
+        request.setPat("valid token");
 
         when(patService.savePAT(user, request))
                 .thenReturn(ResponseEntity.ok("PAT 토큰이 암호화되어 저장되었습니다."));
@@ -56,14 +56,14 @@ class PATControllerTest {
         // Given
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         PATRequestDto request = new PATRequestDto();
-        request.setPatToken(""); // 유효하지 않은 토큰
+        request.setPat(""); // 유효하지 않은 토큰
 
         // When
         ResponseEntity<?> response = patController.savePAT(userDetails, request);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("PAT 토큰이 유효하지 않습니다.", response.getBody());
+        assertEquals("Invalid Request", response.getBody());
         verify(patService, never()).savePAT(any(), any());
     }
 
@@ -71,7 +71,7 @@ class PATControllerTest {
     void savePAT_NullUserDetails_ShouldReturnUnauthorized() throws Exception {
         // Given
         PATRequestDto request = new PATRequestDto();
-        request.setPatToken("validToken");
+        request.setPat("validToken");
 
         // When
         ResponseEntity<?> response = patController.savePAT(null, request);

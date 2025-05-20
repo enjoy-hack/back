@@ -4,136 +4,175 @@ import com.example.smartair.dto.deviceDto.DeviceReqeustDto;
 import com.example.smartair.entity.login.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
-
-@Tag(name = "LG ThinQ 연동 API", description = "LG ThinQ 기반 공기청정기 및 IoT 디바이스 제어 기능 제공")
+@Tag(name = "LG ThinQ", description = "LG ThinQ 연동 디바이스 제어 및 조회 API")
 public interface ThinQControllerDocs {
 
     @Operation(
-            summary = "방 ID를 통해 디바이스 목록 조회",
-            description = """
-        ## 방 ID를 통해 디바이스 목록 조회
-
-        사용자가 특정 방(roomId)에 연결된 디바이스 목록을 조회합니다.
-
-        ---
-
-        **요청 정보**
-        - 인증 정보는 `@AuthenticationPrincipal`을 통해 자동 주입됩니다.
-        - 요청 본문에는 `roomId`가 포함되어야 합니다.
-
-        **요청 본문 (`RequestBody`)**
-        ```json
-        {
-            "roomId": 123
-        }
-        ```
-
-        ---
-
-        **응답**
-        - `200 OK`: 디바이스 목록 조회 성공
-        - `401 Unauthorized`: 인증 정보가 없거나 유효하지 않은 경우
-        - `500 Internal Server Error`: 서버 내부 오류 발생 시
-
-        **응답 예시**
-        ```json
-        [
-            {
-                "userId": 1,
-                "roomId": 123,
-                "deviceId": "device123",
-                "deviceType": "AirPurifier",
-                "modelName": "LG1234",
-                "alias": "거실 공기청정기"
+            summary = "디바이스 목록 조회",
+            description = "해당 방 ID에 등록된 LG ThinQ 연동 디바이스 목록을 조회합니다.",
+            parameters = {
+                    @Parameter(name = "deviceId", description = "방 ID", required = true, example = "1")
             },
-            {
-                "userId": 1,
-                "roomId": 123,
-                "deviceId": "device456",
-                "deviceType": "AirConditioner",
-                "modelName": "LG5678",
-                "alias": "침실 에어컨"
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "디바이스 목록 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(value = """
+                    [
+                        {
+                            "deviceId": 1,
+                            "alias": "에어로타워"
+                        },
+                        {
+                            "deviceId": 2,
+                            "alias": "스틱청소기"
+                        }
+                    ]
+                    """)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 없음 또는 유효하지 않음)"),
+                    @ApiResponse(responseCode = "403", description = "해당 방에 대한 접근 권한 없음"),
+                    @ApiResponse(responseCode = "404", description = "해당 방 또는 PAT 정보 없음")
             }
-        ]
-        ```
-        """
     )
-    ResponseEntity<String> getDevices(
+    ResponseEntity<?> getDevices(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "디바이스 목록 조회 요청 정보") @RequestBody DeviceReqeustDto.getDeviceListDto getDeviceListDto
     ) throws Exception;
 
     @Operation(
-            summary = "특정 디바이스의 상태 조회",
-            description = """
-        ## 특정 디바이스의 상태 조회
-
-        디바이스 ID를 통해 특정 디바이스의 상태를 조회합니다.
-
-        ---
-
-        **요청 정보**
-        - 인증 정보는 `@AuthenticationPrincipal`을 통해 자동 주입됩니다.
-        - 요청 본문에는 `deviceId`와 `roomId`가 포함되어야 합니다.
-
-        **요청 본문 (`RequestBody`)**
-        ```json
-        {
-            "deviceId": "device123",
-            "roomId": 123
-        }
-        ```
-
-        ---
-
-        **응답**
-        - `200 OK`: 디바이스 상태 조회 성공
-        - `401 Unauthorized`: 인증 정보가 없거나 유효하지 않은 경우
-        - `404 Not Found`: 디바이스를 찾을 수 없는 경우
-        - `500 Internal Server Error`: 서버 내부 오류 발생 시
-        """
+            summary = "디바이스 상태 조회",
+            description = "지정된 디바이스 ID의 상세 상태 정보를 반환합니다.",
+            parameters = {
+                    @Parameter(name = "deviceId", description = "디바이스 ID", required = true, example = "1")
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "디바이스 상태 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(value = """
+                    {
+                        "messageId": "NWIwYWY5MjQtYzc0MC00Zj",
+                        "timestamp": "2025-05-20T05:35:29.751005",
+                        "response": {
+                            "airFanJobMode": {
+                                "currentJobMode": "SPACE_CLEAN"
+                            },
+                            "operation": {
+                                "airFanOperationMode": "POWER_ON"
+                            },
+                            "timer": {
+                                "absoluteStartTimer": "UNSET",
+                                "absoluteStopTimer": "UNSET"
+                            },
+                            "sleepTimer": {
+                                "relativeStopTimer": "UNSET"
+                            },
+                            "airFlow": {
+                                "windStrength": "WIND_4",
+                                "windTemperature": 30,
+                                "windAngle": "OFF",
+                                "warmMode": "WARM_OFF"
+                            },
+                            "airQualitySensor": {
+                                "odor": 1,
+                                "odorLevel": "WEAK",
+                                "PM1": 10,
+                                "PM2": 14,
+                                "PM10": 19,
+                                "humidity": 76,
+                                "temperature": 25.5,
+                                "totalPollution": 1,
+                                "totalPollutionLevel": "GOOD",
+                                "monitoringEnabled": "ON_WORKING"
+                            },
+                            "display": {
+                                "light": "LEVEL_3"
+                            }
+                        }
+                    }
+                    """)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "디바이스 또는 상태 정보 없음"),
+                    @ApiResponse(responseCode = "403", description = "접근 권한 없음")
+            }
     )
-    ResponseEntity<String> getDeviceStatus(
+    ResponseEntity<?> getDeviceStatus(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "디바이스 상태 조회 요청 정보") @RequestBody DeviceReqeustDto.deviceRequestDto deviceRequestDto
     )throws Exception;
 
     @Operation(
             summary = "공기청정기 전원 제어",
-            description = """
-        ## 공기청정기 전원 제어
-
-        특정 디바이스의 전원을 켜거나 끕니다.
-
-        ---
-
-        **요청 정보**
-        - 인증 정보는 `@AuthenticationPrincipal`을 통해 자동 주입됩니다.
-        - 요청 본문에는 `deviceId`와 `roomId` 상태가 포함되어야 합니다.
-
-        **요청 본문 (`RequestBody`)**
-        ```json
-        {
-            "deviceId": "device123",
-            "roomId": 123
-        }
-        ```
-
-        ---
-
-        **응답**
-        - `200 OK`: 전원 제어 성공
-        - `401 Unauthorized`: 인증 정보가 없거나 유효하지 않은 경우
-        - `404 Not Found`: 디바이스를 찾을 수 없는 경우
-        - `500 Internal Server Error`: 서버 내부 오류 발생 시
-
-        """
+            description = "지정된 디바이스의 전원을 ON ↔ OFF로 전환합니다.",
+            parameters = {
+                    @Parameter(name = "deviceId", description = "디바이스 ID", required = true, example = "1")
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "제어 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(value = """
+                    {
+                        "headers": {
+                            "Date": [
+                                "Tue, 20 May 2025 05:35:57 GMT"
+                            ],
+                            "Content-Type": [
+                                "application/json"
+                            ],
+                            "Content-Length": [
+                                "93"
+                            ],
+                            "Connection": [
+                                "keep-alive"
+                            ],
+                            "server": [
+                                "istio-envoy"
+                            ],
+                            "vary": [
+                                "Origin"
+                            ],
+                            "x-envoy-upstream-service-time": [
+                                "606"
+                            ],
+                            "x-krakend": [
+                                "Version 2.7.5-ee"
+                            ],
+                            "x-krakend-completed": [
+                                "false"
+                            ],
+                            "x-envoy-decorator-operation": [
+                                "openapi-apigw.ns-connect.svc.cluster.local:8080/*"
+                            ]
+                        },
+                        "body": "{\\\"messageId\\\":\\\"YWI5YTcyMjktOWZhMi00ZW\\\",\\\"timestamp\\\":\\\"2025-05-20T05:35:57.172966\\\",\\\"response\\\":{}}",
+                        "statusCode": "OK",
+                        "statusCodeValue": 200
+                    }
+                    """)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "디바이스 정보 없음"),
+                    @ApiResponse(responseCode = "500", description = "제어 실패 또는 ThinQ API 오류")
+            }
     )
-    ResponseEntity<String> controlPower(
+    ResponseEntity<?> controlPower(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "디바이스 전원 제어 요청 정보") @RequestBody DeviceReqeustDto.deviceRequestDto deviceRequestDto
     ) throws Exception;

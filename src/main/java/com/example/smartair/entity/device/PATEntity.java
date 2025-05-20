@@ -17,8 +17,6 @@ public class PATEntity {
     @Id
     private Long userId;
 
-    private Long roomId;
-
     @Column(length = 1024)
     private String encryptedPat;
 }

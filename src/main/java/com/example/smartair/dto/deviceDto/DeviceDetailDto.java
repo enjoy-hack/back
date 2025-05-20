@@ -22,12 +22,12 @@ public class DeviceDetailDto {
     public static DeviceDetailDto from(Device device) {
         return DeviceDetailDto.builder()
                 .id(device.getId())
-                .deviceId(device.getDeviceId())
+                .deviceId(device.getDeviceSerialNumber())
                 .deviceType(device.getDeviceType())
                 .modelName(device.getModelName())
                 .alias(device.getAlias())
-                .roomId(device.getRoomId())
-                .registeredUserId(device.getUserId())
+                .roomId(device.getRoom().getId())
+                .registeredUserId(device.getUser().getId())
                 .build();
     }
 } 

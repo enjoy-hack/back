@@ -3,7 +3,6 @@ package com.example.smartair.service.deviceService;
 import com.example.smartair.dto.deviceDto.PATRequestDto;
 import com.example.smartair.entity.device.PATEntity;
 import com.example.smartair.entity.room.Room;
-import com.example.smartair.entity.roomParticipant.RoomParticipant;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
@@ -11,13 +10,10 @@ import com.example.smartair.repository.deviceRepository.PATRepository;
 import com.example.smartair.repository.roomParticipantRepository.RoomParticipantRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
 import com.example.smartair.util.EncryptionUtil;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,19 +26,12 @@ public class PATService {
 
     public ResponseEntity<String> savePAT(User user, PATRequestDto request) throws Exception {
 
-        Room room = roomRepository.findRoomById(request.getRoomId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "Room ID: " + request.getRoomId()));
-        if(!room.getOwner().equals(user)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("해당 방의 소유자가 아닙니다.");
-        }
-
         // PAT 토큰을 암호화하여 저장
-        String encryptedPatToken = encryptionUtil.encrypt(request.getPatToken());
+        String encryptedPatToken = encryptionUtil.encrypt(request.getPat());
 
         // PATEntity 생성 및 저장
         PATEntity patEntity = new PATEntity();
         patEntity.setUserId(user.getId());
-        patEntity.setRoomId(request.getRoomId());
         patEntity.setEncryptedPat(encryptedPatToken);
 
         patRepository.save(patEntity);
