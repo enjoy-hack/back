@@ -399,5 +399,18 @@ public class RoomService {
         }
     }
 
+    /**
+     * 유저가 자신이 속한 방 리스트를 조회합니다.
+     */
+    public List<RoomDetailResponseDto> getUserRooms(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<RoomParticipant> roomParticipants = roomParticipantRepository.findByUser(user);
+
+        return roomParticipants.stream()
+                .map(roomParticipant -> RoomDetailResponseDto.from(roomParticipant.getRoom()))
+                .collect(Collectors.toList());
+    }
 
 }
