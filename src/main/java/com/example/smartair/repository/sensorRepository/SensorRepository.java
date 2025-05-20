@@ -24,4 +24,6 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Sensor s WHERE s.serialNumber = :serialNumber")
     Optional<Sensor> findBySerialNumberWithLock(@Param("serialNumber") String serialNumber);
+
+    boolean existsBySerialNumber(String serialNumber);
 }
