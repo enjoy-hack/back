@@ -5,6 +5,7 @@ import com.example.smartair.dto.roomDto.JoinRoomRequestDto;
 import com.example.smartair.dto.roomDto.RoomDetailResponseDto;
 import com.example.smartair.dto.roomDto.ParticipantDetailDto;
 import com.example.smartair.entity.login.CustomUserDetails;
+import com.example.smartair.entity.user.User;
 import com.example.smartair.service.roomService.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -143,5 +144,18 @@ public class RoomController implements RoomControllerDocs {
         String message = roomService.rejectPatDeviceControlPermission(actingUserId, roomParticipantId);
         log.info("PAT 장치 제어 권한 거절: {}", message);
         return ResponseEntity.ok(message);
+    }
+
+    @Override
+    @GetMapping("/rooms")
+    public ResponseEntity<List<RoomDetailResponseDto>> getUserRooms(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userDetails.getUser();
+
+        List<RoomDetailResponseDto> rooms = roomService.getUserRooms(user.getId());
+        return ResponseEntity.ok(rooms);
     }
 } 

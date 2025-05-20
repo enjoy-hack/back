@@ -54,8 +54,8 @@ public class PredictedAirQualityService  {
             // 센서 시리얼 번호로 방 ID 조회
             Long roomId = roomSensorRepository.findBySensor_SerialNumber(sensorSerialNumber)
                     .orElseThrow(() -> new CustomException(
-                            ErrorCode.SENSOR_NOT_FOUND,
-                            String.format("해당 센서 일련번호 %s를 찾을 수 없습니다.", sensorSerialNumber)
+                            ErrorCode.ROOM_SENSOR_MAPPING_NOT_FOUND,
+                            String.format("센서 일련번호 %s와 매핑된 방 정보를 찾을 수 없습니다.", sensorSerialNumber)
                     ))
                     .getRoom()
                     .getId();

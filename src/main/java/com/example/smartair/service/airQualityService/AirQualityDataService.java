@@ -98,31 +98,31 @@ public class AirQualityDataService {
     }
 
     @Transactional(readOnly = true)
-    public SensorAirQualityData getSavedAirQualityData(Long deviceId) {
+    public SensorAirQualityData getSavedAirQualityData(Long sensorId) {
         try {
             // 1. 캐시에서 먼저 조회
-            Optional<SensorAirQualityData> cachedData = recentAirQualityDataCache.get(deviceId);
+            Optional<SensorAirQualityData> cachedData = recentAirQualityDataCache.get(sensorId);
             if (cachedData.isPresent()) {
-                log.debug("Cache hit for device ID: {}", deviceId);
+                log.debug("Cache hit for device ID: {}", sensorId);
                 return cachedData.get();
             }
 
             // 2. 캐시에 없는 경우 DB에서 최신 데이터 조회
-            SensorAirQualityData latestData = airQualityDataRepository.findTopBySensorIdOrderByCreatedAtDesc(deviceId)
+            SensorAirQualityData latestData = airQualityDataRepository.findTopBySensorIdOrderByCreatedAtDesc(sensorId)
                     .orElseThrow(() -> {
-                        log.warn("Device ID {}의 최근 데이터를 찾을 수 없습니다.", deviceId);
-                        return new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor ID {}" + deviceId);
+                        log.warn("Device ID {}의 최근 데이터를 찾을 수 없습니다.", sensorId);
+                        return new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor ID {}" + sensorId);
                     });
 
             // 3. 조회된 데이터를 캐시에 저장
-            updateCache(deviceId, latestData);
-            log.debug("Latest data cached for device ID: {}", deviceId);
+            updateCache(sensorId, latestData);
+            log.debug("Latest data cached for device ID: {}", sensorId);
 
             return latestData;
         } catch (CustomException ce) {
             throw ce;
         } catch (Exception e) {
-            log.error("Device ID {}의 데이터 조회 중 오류 발생", deviceId, e);
+            log.error("Device ID {}의 데이터 조회 중 오류 발생", sensorId, e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, String.format("내부 서버 오류: %s", e.getMessage()));
         }
     }

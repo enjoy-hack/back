@@ -137,4 +137,14 @@ public interface RoomControllerDocs {
             @Parameter(name = "roomParticipantId", description = "거절할 권한 요청에 해당하는 RoomParticipant의 ID", required = true, in = ParameterIn.PATH)
             @PathVariable Long roomParticipantId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
+
+    @Operation(summary = "사용자 방 목록 조회", description = "유저가 참여한 방 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "방 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = RoomDetailResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    ResponseEntity<List<RoomDetailResponseDto>> getUserRooms(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
 } 

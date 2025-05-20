@@ -37,7 +37,7 @@ public class AnomalyReportService {
 
     public String setAnomalyReport(AnomalyReportDto dto) {
         Sensor sensor = sensorRepository.findBySerialNumber(dto.getSensorSerialNumber())
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, String.format("시리얼 번호에 맞는 센서가 존재하지 않습니다.")));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, String.format("시리얼 번호 {}에 맞는 센서가 존재하지 않습니다." + dto.getSensorSerialNumber())));
 
         LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER);
 

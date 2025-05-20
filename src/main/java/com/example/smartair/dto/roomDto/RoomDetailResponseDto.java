@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 @Getter
 @Builder
 public class RoomDetailResponseDto {
-    private Long id;
     private String name;
     private String ownerUsername; // 방장 사용자명
     // private Long placeId;         // 장소 ID - 삭제
@@ -27,7 +26,6 @@ public class RoomDetailResponseDto {
 
     public static RoomDetailResponseDto from (Room room){
         return RoomDetailResponseDto.builder()
-                .id(room.getId())
                 .name(room.getName())
                 .ownerUsername(room.getOwner() != null ? room.getOwner().getUsername() : null) 
                 // .placeId(room.getPlace() != null ? room.getPlace().getId() : null) // Place 관련 로직 삭제

@@ -2,6 +2,7 @@ package com.example.smartair.entity.airData.snapshot;
 
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,6 +32,7 @@ public class HourlySensorAirQualitySnapshot extends BaseEntity {
     @JoinColumn(name = "sensor_id", nullable = false)
     private Sensor sensor;
 
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     @Column(name = "snapshot_hour", nullable = false) // 컬럼명을 명시적으로 지정
     private LocalDateTime snapshotHour; // 해당 시간대의 시작 시각 (예: 2023-10-27 13:00:00)
 
