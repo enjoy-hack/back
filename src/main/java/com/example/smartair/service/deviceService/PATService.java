@@ -32,7 +32,7 @@ public class PATService {
 
         Room room = roomRepository.findRoomById(request.getRoomId())
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "Room ID: " + request.getRoomId()));
-        if(!room.getOwner().equals(user)) {
+        if(!room.getOwner().getId().equals(user.getId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("해당 방의 소유자가 아닙니다.");
         }
 

@@ -1,21 +1,30 @@
 package com.example.smartair.entity.device;
 
+import com.example.smartair.entity.room.Room;
+import com.example.smartair.entity.user.User;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
-@Setter
-@Table(name = "device")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Device extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId;
-    private Long roomId;
-    private String deviceId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
+
+    private String deviceSerialNumber;
     private String deviceType;
     private String modelName;
     private String alias;

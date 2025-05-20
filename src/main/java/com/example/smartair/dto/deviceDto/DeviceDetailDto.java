@@ -22,7 +22,7 @@ public class DeviceDetailDto {
     public static DeviceDetailDto from(Device device) {
         return DeviceDetailDto.builder()
                 .id(device.getId())
-                .deviceId(device.getDeviceId())
+                .deviceId(device.getDeviceSerialNumber())
                 .deviceType(device.getDeviceType())
                 .modelName(device.getModelName())
                 .alias(device.getAlias())

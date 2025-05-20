@@ -18,44 +18,44 @@ public class ThinQController implements ThinQControllerDocs {
     private final ThinQService thinQService;
 
     // 방 ID를 통해 디바이스 목록 조회
-    @GetMapping("/devices")
-    public ResponseEntity<String> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                             @RequestBody DeviceReqeustDto.getDeviceListDto getDeviceListDto) throws Exception {
-        return handleRequestWithPat(userDetails, user -> thinQService.getDeviceList(user, getDeviceListDto.roomId()));
-    }
-
-    // 특정 디바이스의 상태 조회
-    @GetMapping("/{deviceId}/status")
-    public ResponseEntity<String> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                  @RequestBody DeviceReqeustDto.deviceRequestDto deviceRequestDto) throws Exception {
-        return handleRequestWithPat(userDetails, user -> thinQService.getDeviceState(user, deviceRequestDto));
-    }
-
-    /**
-     * 공기청정기 전원 제어
-     */
-    @PostMapping("/{deviceId}/power")
-    public ResponseEntity<String> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                               @RequestBody DeviceReqeustDto.deviceRequestDto deviceRequestDto) throws Exception {
-        return handleRequestWithPat(userDetails, user -> thinQService.controlAirPurifierPower(user, deviceRequestDto));
-    }
-
-    /**
-     * PAT 존재 여부 확인 및 공통 처리 핸들러
-     */
-    private ResponseEntity<String> handleRequestWithPat(CustomUserDetails userDetails,
-                                                        ThinQRequestHandler handler) throws Exception {
+    @GetMapping("/devices/{deviceId}")
+    public ResponseEntity<?> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                            @RequestParam("deviceId") Long deviceId) throws Exception {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
         }
 
         User user = userDetails.getUser();
 
-        return handler.handle(user);
+        return ResponseEntity.ok(thinQService.getDeviceList(user, deviceId));
     }
 
-    @FunctionalInterface
-    private interface ThinQRequestHandler {
-        ResponseEntity<String> handle(User user) throws Exception;
+    // 특정 디바이스의 상태 조회
+    @GetMapping("/status/{deviceId}")
+    public ResponseEntity<?> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @RequestParam("deviceId") Long deviceId) throws Exception {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
+
+        User user = userDetails.getUser();
+
+        return ResponseEntity.ok(thinQService.getDeviceState(user, deviceId));
     }
+
+    /**
+     * 공기청정기 전원 제어
+     */
+    @PostMapping("/power/{deviceId}")
+    public ResponseEntity<?> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                               @RequestParam("deviceId") Long deviceId) throws Exception {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
+
+        User user = userDetails.getUser();
+
+        return ResponseEntity.ok(thinQService.controlAirPurifierPower(user, deviceId));
+    }
+
 }

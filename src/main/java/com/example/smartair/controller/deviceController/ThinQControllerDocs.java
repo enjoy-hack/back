@@ -62,7 +62,7 @@ public interface ThinQControllerDocs {
         ```
         """
     )
-    ResponseEntity<String> getDevices(
+    ResponseEntity<?> getDevices(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "디바이스 목록 조회 요청 정보") @RequestBody DeviceReqeustDto.getDeviceListDto getDeviceListDto
     ) throws Exception;
@@ -92,12 +92,52 @@ public interface ThinQControllerDocs {
 
         **응답**
         - `200 OK`: 디바이스 상태 조회 성공
+        {
+            "messageId": "ZDNiYzZkZGEtZTA0ZS00Mz",
+            "timestamp": "2025-05-20T03:58:22.151911",
+            "response": {
+                "airFanJobMode": {
+                    "currentJobMode": "SPOT_CLEAN"
+                },
+                "operation": {
+                    "airFanOperationMode": "POWER_ON"
+                },
+                "timer": {
+                    "absoluteStartTimer": "UNSET",
+                    "absoluteStopTimer": "UNSET"
+                },
+                "sleepTimer": {
+                    "relativeStopTimer": "UNSET"
+                },
+                "airFlow": {
+                    "windStrength": "WIND_4",
+                    "windTemperature": 30,
+                    "windAngle": "OFF",
+                    "warmMode": "WARM_OFF"
+                },
+                "airQualitySensor": {
+                    "odor": 1,
+                    "odorLevel": "WEAK",
+                    "PM1": 7,
+                    "PM2": 9,
+                    "PM10": 13,
+                    "humidity": 65,
+                    "temperature": 25,
+                    "totalPollution": 1,
+                    "totalPollutionLevel": "GOOD",
+                    "monitoringEnabled": "ON_WORKING"
+                },
+                "display": {
+                    "light": "LEVEL_3"
+                }
+            }
+        }
         - `401 Unauthorized`: 인증 정보가 없거나 유효하지 않은 경우
         - `404 Not Found`: 디바이스를 찾을 수 없는 경우
         - `500 Internal Server Error`: 서버 내부 오류 발생 시
         """
     )
-    ResponseEntity<String> getDeviceStatus(
+    ResponseEntity<?> getDeviceStatus(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "디바이스 상태 조회 요청 정보") @RequestBody DeviceReqeustDto.deviceRequestDto deviceRequestDto
     )throws Exception;
@@ -133,7 +173,7 @@ public interface ThinQControllerDocs {
 
         """
     )
-    ResponseEntity<String> controlPower(
+    ResponseEntity<?> controlPower(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "디바이스 전원 제어 요청 정보") @RequestBody DeviceReqeustDto.deviceRequestDto deviceRequestDto
     ) throws Exception;
