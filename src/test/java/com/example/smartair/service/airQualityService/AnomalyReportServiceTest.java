@@ -102,12 +102,13 @@ class AnomalyReportServiceTest {
     @Test
     void testGetAnomalyReports_Success() {
         // given
-        String sensorSerialNumber = "12345";
+        Long sensorId = 12345L;
         LocalDate startDate = LocalDate.of(2023, 10, 1);
         LocalDate endDate = LocalDate.of(2023, 10, 31);
 
         Sensor sensor = new Sensor();
         sensor.setSerialNumber("12345");
+        String sensorSerialNumber = "12345";
 
         AnomalyReport report1 = new AnomalyReport();
         AnomalyReport report2 = new AnomalyReport();
@@ -116,11 +117,12 @@ class AnomalyReportServiceTest {
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX); // 23:59:59.999999999
 
         when(sensorRepository.findBySerialNumber(sensorSerialNumber)).thenReturn(Optional.of(sensor));
+        when(sensorRepository.findById(sensorId)).thenReturn(Optional.of(sensor));
         when(anomalyReportRepository.findAnomaliesBySensorAndDateRange(sensor, startDateTime, endDateTime))
                 .thenReturn(List.of(report1, report2));
 
         // when
-        List<AnomalyReport> result = anomalyReportService.getAnomalyReports(sensorSerialNumber, startDate, endDate);
+        List<AnomalyReport> result = anomalyReportService.getAnomalyReports("12345", startDate, endDate);
 
         // then
         assertNotNull(result);

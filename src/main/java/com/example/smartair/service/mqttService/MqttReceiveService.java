@@ -109,7 +109,7 @@ public class MqttReceiveService {
                     .orElse(null);
 
             if (isRateLimitExceeded(sensorId)) {
-                throw new IllegalArgumentException("Sensor ID: " + sensorId + " (제한: " + HOURLY_LIMIT_PER_SENSOR + "/hour)");
+                throw new IllegalStateException("Sensor serialNumber: " + serialNumber + " (제한: " + HOURLY_LIMIT_PER_SENSOR + "/hour)");
             }
 
             s3Service.uploadJson(serialNumber, payload);

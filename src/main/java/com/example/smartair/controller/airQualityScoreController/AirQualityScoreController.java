@@ -21,13 +21,13 @@ public class AirQualityScoreController implements AirQualityScoreControllerDocs{
 
     private final AirQualityQueryService airQualityQueryService; //공기질 점수 조회
 
-    @GetMapping("/sensor/{sensorId}/average")
+    @GetMapping("/sensor/{serialNumber}/average")
     public ResponseEntity<AverageScoreDto> getSensorAverageScore(
-            @PathVariable Long sensorId,
+            @PathVariable String serialNumber,
             @RequestParam(required = false) LocalDateTime startTime,
             @RequestParam(required = false) LocalDateTime endTime
     ) {
-        AverageScoreDto averageScore = airQualityQueryService.getSensorAverageScore(sensorId, startTime, endTime);
+        AverageScoreDto averageScore = airQualityQueryService.getSensorAverageScore(serialNumber, startTime, endTime);
         return ResponseEntity.ok(averageScore);
     }
 
@@ -42,27 +42,27 @@ public class AirQualityScoreController implements AirQualityScoreControllerDocs{
     }
 
 
-    @GetMapping("/sensor/{sensorId}")
+    @GetMapping("/sensor/{serialNumber}")
     public ResponseEntity<Page<SensorAirQualityScoreDto>> getSensorAirQualityScores(
-            @PathVariable Long sensorId,
+            @PathVariable String serialNumber,
             @RequestParam(required = false) LocalDateTime startTime,
             @RequestParam(required = false) LocalDateTime endTime,
             Pageable pageable
     ) {
         Page<SensorAirQualityScoreDto> scorePage = airQualityQueryService.getSensorAirQualityScores(
-                sensorId, startTime, endTime, pageable
+                serialNumber, startTime, endTime, pageable
         );
         return ResponseEntity.ok(scorePage);
     }
 
     @GetMapping("/room/{roomId}")
     public ResponseEntity<Page<RoomAirQualityScoreDto>> getRoomAirQualityScores(
-            @PathVariable Long sensorId,
+            @PathVariable Long roomId,
             @RequestParam(required = false) LocalDateTime startTime,
             @RequestParam(required = false) LocalDateTime endTime,
             Pageable pageable
     ) {
-        Page<RoomAirQualityScoreDto> scorePage = airQualityQueryService.getRoomAirQualityScores(sensorId, startTime, endTime, pageable);
+        Page<RoomAirQualityScoreDto> scorePage = airQualityQueryService.getRoomAirQualityScores(roomId, startTime, endTime, pageable);
         return ResponseEntity.ok(scorePage);
     }
 
@@ -77,19 +77,19 @@ public class AirQualityScoreController implements AirQualityScoreControllerDocs{
 //        return ResponseEntity.ok(scorePage);
 //    }
 
-    @GetMapping("/sensor/{sensorId}/latest")
+    @GetMapping("/sensor/{serialNumber}/latest")
     public ResponseEntity<SensorAirQualityScoreDto> getLatestSensorAirQualityScore(
-            @RequestParam Long sensorId
+            @RequestParam String serialNumber
     ) {
-        SensorAirQualityScoreDto score = airQualityQueryService.getLatestSensorAirQualityScore(sensorId);
+        SensorAirQualityScoreDto score = airQualityQueryService.getLatestSensorAirQualityScore(serialNumber);
         return ResponseEntity.ok(score);
     }
 
     @GetMapping("/room")
     public ResponseEntity<RoomAirQualityScoreDto> getLatestRoomAirQualityScore(
-            @PathVariable Long sensorId
+            @PathVariable Long roomId
     ){
-        RoomAirQualityScoreDto score = airQualityQueryService.getLatestRoomAirQualityScore(sensorId);
+        RoomAirQualityScoreDto score = airQualityQueryService.getLatestRoomAirQualityScore(roomId);
         return ResponseEntity.ok(score);
     }
 

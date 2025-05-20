@@ -45,20 +45,20 @@ public class AirQualityQueryService { //공기질 점수 조회
 
     /**
      * 특정 기간의 센서 평균 점수 조회
-     * @param sensorId
+     * @param serialNumber
      * @param startTime
      * @param endTime
      * @return 평균값 1개
      */
-    public AverageScoreDto getSensorAverageScore(Long sensorId,
+    public AverageScoreDto getSensorAverageScore(String serialNumber,
                                                  LocalDateTime startTime, LocalDateTime endTime) {
 
         LocalDateTime effectiveStartTime = getDefaultStartTime(startTime);
         LocalDateTime effectiveEndTime = getDefaultEndTime(endTime);
 
         List<SensorAirQualityScore> scores = sensorAirQualityScoreRepository
-                .findBySensorAirQualityData_SensorIdAndCreatedAtBetween(
-                        sensorId, effectiveStartTime, effectiveEndTime);
+                .findScoresBySensorSerialNumberAndTimeRange(
+                        serialNumber, effectiveStartTime, effectiveEndTime);
 
         return airQualityScoreService.calculateAverageDeviceScore(scores);
     }
@@ -86,26 +86,26 @@ public class AirQualityQueryService { //공기질 점수 조회
 
     /**
      * 특정 센서의 공기질 점수 기록을 시간 범위와 페이징 정보로 조회합니다.
-     * @param sensorId 센서 아이디
+     * @param serialNumber
      * @param startTime 조회 시작 시간
      * @param endTime 조회 종료 시간
      * @param pageable 페이징 및 정렬 정보
      * @return 페이징된 DeviceAirQualityScoreDto (시계열데이터)
      */
-    public Page<SensorAirQualityScoreDto> getSensorAirQualityScores(Long sensorId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable) {
+    public Page<SensorAirQualityScoreDto> getSensorAirQualityScores(String serialNumber, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable) {
 
         // 기본값: 최근 24시간
         LocalDateTime effectiveStartTime = getDefaultStartTime(startTime);
         LocalDateTime effectiveEndTime = getDefaultEndTime(endTime);
 
 
-        if (!sensorRepository.existsById(sensorId)) {
-            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + sensorId);
+        if (!sensorRepository.existsBySerialNumber(serialNumber)) {
+            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + serialNumber);
         }
 
         return sensorAirQualityScoreRepository
                 .findScoresBySensorAndTimeRange(
-                        sensorId,
+                        serialNumber,
                         effectiveStartTime,
                         effectiveEndTime,
                         pageable)
@@ -155,11 +155,11 @@ public class AirQualityQueryService { //공기질 점수 조회
 //        return scoreEntityPage.map(PlaceAirQualityScoreDto::fromEntity);
 //    }
 
-    public SensorAirQualityScoreDto getLatestSensorAirQualityScore(Long sensorId) {
-        Sensor sensor = sensorRepository.findById(sensorId).orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + sensorId));
+    public SensorAirQualityScoreDto getLatestSensorAirQualityScore(String serialNumber) {
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber).orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + serialNumber));
 
         SensorAirQualityScore latestSensorScore = sensorAirQualityScoreRepository.findFirstBySensorAirQualityData_SensorOrderByCreatedAtDesc(sensor).orElseThrow(
-                ()-> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor ID: " + sensorId)
+                ()-> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor ID: " + serialNumber)
         );
 
         return SensorAirQualityScoreDto.fromEntity(latestSensorScore);

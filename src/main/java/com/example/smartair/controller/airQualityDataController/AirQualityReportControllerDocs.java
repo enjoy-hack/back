@@ -31,7 +31,7 @@ public interface AirQualityReportControllerDocs {
                             content = @Content(schema = @Schema(hidden = true)))
             })
     ResponseEntity<DailySensorAirQualityReport> getDailyReport(
-            @Parameter(description = "센서 ID", required = true, example = "1") Long sensorId,
+            @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
             @Parameter(description = "조회할 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-28")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date);
 
@@ -46,7 +46,7 @@ public interface AirQualityReportControllerDocs {
                             content = @Content(schema = @Schema(hidden = true)))
             })
     ResponseEntity<List<DailySensorAirQualityReport>> getDailyReportsForPeriod(
-            @Parameter(description = "센서 ID", required = true, example = "1") Long sensorId,
+            @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
@@ -61,7 +61,7 @@ public interface AirQualityReportControllerDocs {
                             content = @Content(schema = @Schema(hidden = true)))
             })
     ResponseEntity<WeeklySensorAirQualityReport> getWeeklyReport(
-            @Parameter(description = "센서 ID", required = true, example = "1") Long sensorId,
+            @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
             @Parameter(description = "조회할 연도 (YYYY 형식)", required = true, example = "2023") Integer year,
             @Parameter(description = "조회할 주차 (1-53 사이의 숫자, ISO 8601 기준)", required = true, example = "43") Integer weekOfYear);
 
@@ -76,7 +76,7 @@ public interface AirQualityReportControllerDocs {
                             content = @Content(schema = @Schema(hidden = true)))
             })
     ResponseEntity<List<WeeklySensorAirQualityReport>> getWeeklyReportsForPeriod(
-            @Parameter(description = "센서 ID", required = true, example = "1") Long sensorId,
+            @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
@@ -93,7 +93,7 @@ public interface AirQualityReportControllerDocs {
             @Parameter(description = "삭제할 일별 리포트의 ID", required = true, example = "100") Long reportId);
 
     @Operation(summary = "특정 센서의 모든 일별 리포트 삭제",
-            description = "지정된 센서 ID와 관련된 모든 일별 공기질 리포트를 삭제하고, 삭제된 리포트의 수를 반환합니다. " ,
+            description = "지정된 센서 일련번호와 관련된 모든 일별 공기질 리포트를 삭제하고, 삭제된 리포트의 수를 반환합니다. " ,
             responses = {
                     @ApiResponse(responseCode = "200", description = "삭제 성공 및 삭제된 리포트 수 반환",
                             content = @Content(schema = @Schema(type = "integer", format = "int32", example = "5"))),
@@ -101,7 +101,7 @@ public interface AirQualityReportControllerDocs {
                             content = @Content(schema = @Schema(hidden = true)))
             })
     ResponseEntity<Integer> deleteDailyReportsByDeviceId(
-            @Parameter(description = "모든 일별 리포트를 삭제할 센서의 ID", required = true, example = "1") Long deviceId);
+            @Parameter(description = "모든 일별 리포트를 삭제할 센서의 일련번호", required = true, example = "1") String serialNumber);
 
     @Operation(summary = "생성된 지 N일이 지난 오래된 일별 보고서 삭제",
             description = "생성된 지 N일이 지난 오래된 일별 보고서를 삭제합니다.",
@@ -134,7 +134,7 @@ public interface AirQualityReportControllerDocs {
                             content = @Content(schema = @Schema(hidden = true)))
             })
     ResponseEntity<List<AnomalyReport>> getAnomalyReports(
-            @Parameter(description = "리포트를 조회할 센서의 ID", required = true, example = "1") @PathVariable String sensorSerialNumber,
+            @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String sensorSerialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")

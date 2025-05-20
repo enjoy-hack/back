@@ -15,4 +15,5 @@ public interface DailySensorAirQualityReportRepository extends JpaRepository<Dai
     List<DailySensorAirQualityReport> findBySensorAndReportDateBetweenOrderByReportDateAsc(Sensor sensor, LocalDate startDate, LocalDate endDate);
     List<DailySensorAirQualityReport> findByReportDateBefore(LocalDate date);
     List<DailySensorAirQualityReport> findAllBySensorId(Long sensorId);
+    List<DailySensorAirQualityReport> findAllBySensorSerialNumber(String serialNumber);
 }
