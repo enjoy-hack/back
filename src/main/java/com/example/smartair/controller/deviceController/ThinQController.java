@@ -30,6 +30,19 @@ public class ThinQController  {
         return ResponseEntity.ok(thinQService.getDeviceList(user, roomId));
     }
 
+    // 방 ID를 통해 디바이스 방 업데이트
+    @PutMapping("/{deviceId}/{roomId}")
+    public ResponseEntity<?> updateDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                            @PathVariable("roomId") Long roomId) throws Exception {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
+
+        User user = userDetails.getUser();
+
+        return ResponseEntity.ok(thinQService.updateDeviceList(user, roomId));
+    }
+
     // 특정 디바이스의 상태 조회
     @GetMapping("/status/{deviceId}")
     public ResponseEntity<?> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,

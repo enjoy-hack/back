@@ -69,6 +69,14 @@ public class ThinQService {
         this.clientId = clientIdPrefix + UUID.randomUUID();
     }
 
+    /*
+    필요한 기능 정리
+    * 1. ThinQ로 조회해서 디바이스 목록 불러와서 저장, 불러올 시에 기존에 없던 디바이스 존재 시 해당 roomId로 방에 추가
+    * 2. deviceId, roomId를 통해서 방 Device의 room 정보를 업데이트
+    * 3. 디바이스 목록 조회는 roomId를 통해서 조회
+    * */
+
+    // 방 ID 를 통해서 디바이스 조회 시, 기존의 device에 없는 디바이스는 새로 생성해서 해당 roomId로 저장, 기존에 있는 device는 roomId 확인해서 동일한것만 반환
     public List<DeviceDto> getDeviceList(User user, Long roomId) throws Exception {
         Room room = roomRepository.findRoomById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
@@ -86,22 +94,10 @@ public class ThinQService {
             Long deviceId;
             DeviceResponseWrapper.DeviceInfo info = deviceRes.getDeviceInfo();
 
-            Optional<Device> existingOpt = deviceRepository.findByDeviceSerialNumber(serialNumber);
+            Optional<Device> existingOpt = deviceRepository.findByDeviceSerialNumber(serialNumber); // 디바이스 시리얼 번호로 기존 디바이스 조회
 
-            if (existingOpt.isPresent()) {
-                // 기존 디바이스: 필드 전체 업데이트
-                Device existing = existingOpt.get();
-                existing.setUser(user);
-                existing.setRoom(room);
-                existing.setDeviceSerialNumber(serialNumber);
-                existing.setModelName(info.getModelName());
-                existing.setDeviceType(info.getDeviceType());
-                existing.setAlias(info.getAlias());
-                deviceRepository.save(existing);
-                deviceId = existing.getId();
-                log.info("기존 디바이스 업데이트됨: {}", serialNumber);
-            } else {
-                // 신규 디바이스 생성
+            if(existingOpt.isEmpty()){
+                //신규 디바이스 생성
                 Device newDevice = new Device();
                 newDevice.setUser(user);
                 newDevice.setRoom(room);
@@ -110,12 +106,14 @@ public class ThinQService {
                 newDevice.setDeviceType(info.getDeviceType());
                 newDevice.setAlias(info.getAlias());
                 deviceRepository.save(newDevice);
-                deviceId = newDevice.getId();
-                log.info("새 디바이스 저장됨: {}", serialNumber);
+                result.add(new DeviceDto(newDevice.getId(), info.getAlias()));
+                log.info("새 디바이스 저장됨: {}, {}", serialNumber, newDevice.getAlias());
+            }else {
+                if(Objects.equals(existingOpt.get().getRoom().getId(), roomId)){
+                  deviceId = existingOpt.get().getId();
+                  result.add(new DeviceDto(deviceId, info.getAlias()));
+                }
             }
-
-            // 반환용 DTO 구성
-            result.add(new DeviceDto(deviceId, info.getAlias()));
         }
 
         return result;
