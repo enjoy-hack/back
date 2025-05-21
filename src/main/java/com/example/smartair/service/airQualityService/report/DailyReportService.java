@@ -54,18 +54,16 @@ public class DailyReportService {
         if (hourlySnapshots.isEmpty()) {
             // 기존 보고서도 없고 스냅샷도 없으면 생성 불가
             if (!existingReportOpt.isPresent()) {
-                log.warn("Device ID: {}의 {} 날짜에 스냅샷이 없어 일별 보고서를 생성할 수 없습니다.", deviceId, date);
+                log.warn("Sensor SerialNumber: {}의 {} 날짜에 스냅샷이 없어 일별 보고서를 생성할 수 없습니다.", sensor.getSerialNumber(), date);
                 throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND, "Sensor ID: {}의 {} 날짜에 스냅샷이 없어 일별 보고서를 생성할 수 없습니다." + deviceId + date);
             }
             // 기존 보고서는 있는데 스냅샷이 없는 경우 (예: 스냅샷이 삭제된 경우)
-            // 이 경우 기존 보고서를 유지하거나, 비우거나, 삭제할 수 있음. 여기서는 일단 에러 처리.
-            log.warn("Device ID: {}의 {} 날짜에 대한 기존 보고서(ID:{})는 있으나, 업데이트할 스냅샷이 없습니다.",
-                    deviceId, date, existingReportOpt.get().getId());
-            throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND, "Sensor ID: {}의 {} 날짜에 대한 기존 보고서(ID:{})는 있으나, 업데이트할 스냅샷이 없습니다." + deviceId + date + existingReportOpt.get().getId());
+            // 이 경우 기존 보고서를 유지
+            return existingReportOpt.get();
         }
 
         DailySensorAirQualityReport report = existingReportOpt.orElseGet(() -> {
-            log.info("Device ID: {}의 {} 날짜에 대한 새 일별 보고서를 생성합니다.", deviceId, date);
+            log.info("Sensor SerialNumber: {}의 {} 날짜에 대한 새 일별 보고서를 생성합니다.", sensor.getSerialNumber(), date);
             return DailySensorAirQualityReport.builder()
                     .sensor(sensor)
                     .reportDate(date)
@@ -73,8 +71,8 @@ public class DailyReportService {
         });
 
         if(existingReportOpt.isPresent()){
-            log.info("Device ID: {}의 {} 날짜에 대한 기존 일별 보고서(ID:{})를 업데이트합니다.",
-                    deviceId, date, report.getId());
+            log.info("Sensor SerialNumber: {}의 {} 날짜에 대한 기존 일별 보고서(ID:{})를 업데이트합니다.",
+                    sensor.getSerialNumber(), date, report.getId());
         }
 
         report.setHourlySnapshots(hourlySnapshots); // 연관된 스냅샷 설정 (JPA가 FK 관리)
