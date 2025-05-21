@@ -33,6 +33,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     private final AnomalyReportService anomalyReportService;
 
     // === 일별 리포트 API ===
+    @Override
     @GetMapping("/daily/{serialNumber}/{date}")
     public ResponseEntity<DailySensorAirQualityReport> getDailyReport(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
@@ -42,6 +43,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
         return ResponseEntity.ok(report);
     }
 
+    @Override
     @GetMapping("/daily/{serialNumber}")
     public ResponseEntity<List<DailySensorAirQualityReport>> getDailyReportsForPeriod(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
@@ -53,6 +55,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
         return ResponseEntity.ok(reports);
     }
 
+    @Override
     @DeleteMapping("/daily/{reportId}/delete")
     public ResponseEntity<Void> deleteDailyReport(
             @Parameter(description = "삭제할 일별 리포트의 ID", required = true, example = "100") @PathVariable Long reportId) {
@@ -60,6 +63,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
         return ResponseEntity.noContent().build();
     }
 
+    @Override
     @DeleteMapping("/daily/{serialNumber}/deleteAll")
     public ResponseEntity<Integer> deleteDailyReportsByDeviceId(
             @Parameter(description = "모든 일별 리포트를 삭제할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber) {
@@ -67,6 +71,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
         return ResponseEntity.ok(deletedCount);
     }
 
+    @Override
     @DeleteMapping("/old/daily/{reportId}/delete")
     public ResponseEntity<Integer> deleteOldDailyReports(
             @Parameter(description = "삭제할 일별 리포트의 ID", required = true, example = "100") @RequestParam Integer days) {
@@ -75,6 +80,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     }
 
     // === 주간 리포트 API ===
+    @Override
     @GetMapping("/weekly/{serialNumber}/{year}/{weekOfYear}")
     public ResponseEntity<WeeklySensorAirQualityReport> getWeeklyReport(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
@@ -84,6 +90,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
         return ResponseEntity.ok(report);
     }
 
+    @Override
     @GetMapping("/weekly/{serialNumber}")
     public ResponseEntity<List<WeeklySensorAirQualityReport>> getWeeklyReportsForPeriod(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
@@ -94,11 +101,38 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
         List<WeeklySensorAirQualityReport> reports = weeklyReportService.getWeeklyReportsForPeriod(serialNumber, startDate, endDate);
         return ResponseEntity.ok(reports);
     }
+
+    @Override
+    @DeleteMapping("/weekly/{reportId}/delete")
+    public ResponseEntity<Void> deleteWeeklyReport(
+            @Parameter(description = "삭제할 주간 리포트의 ID", required = true, example = "100") @PathVariable Long reportId) {
+        weeklyReportService.deleteWeeklyReport(reportId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @DeleteMapping("/old/weekly/delete")
+    public ResponseEntity<Integer> deleteOldWeeklyReports(
+            @Parameter(description = "삭제할 주간 리포트의 ID", required = true, example = "100") @RequestParam Integer weeksOld) {
+        int deletedCount = weeklyReportService.deleteOldWeeklyReports(weeksOld);
+        return ResponseEntity.ok(deletedCount);
+    }
+
+    @Override
+    @DeleteMapping("/weekly/{serialNumber}/deleteAll")
+    public ResponseEntity<Integer> deleteWeeklyReportsByDeviceId(
+            @Parameter(description = "모든 주간 리포트를 삭제할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber) {
+        int deletedCount = weeklyReportService.deleteWeeklyReportsByDeviceId(serialNumber);
+        return ResponseEntity.ok(deletedCount);
+    }
+
+    @Override
     @PostMapping("/anomaly")
     public ResponseEntity<?> setAnomalyDailyReport(@RequestBody AnomalyReportDto anomalyReportDto) {
         return ResponseEntity.ok(anomalyReportService.setAnomalyReport(anomalyReportDto));
     }
 
+    @Override
     @GetMapping("/anomaly/{serialNumber}/{startDate}/{endDate}")
     public ResponseEntity<List<AnomalyReport>> getAnomalyReports(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
