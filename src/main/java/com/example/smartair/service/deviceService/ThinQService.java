@@ -120,6 +120,10 @@ public class ThinQService {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND, "디바이스를 찾을 수 없습니다."));
 
+        if(roomId == device.getRoom().getId()) {
+            log.info("디바이스 {}가 방 {}에 이미 속해 있습니다.", device.getAlias(), room.getId());
+            return new DeviceDto(device.getId(), device.getAlias(), room.getId());
+        }
 
         if(validateAccess(user, room) && validateAccess(user, device.getRoom())) {
             log.info("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
