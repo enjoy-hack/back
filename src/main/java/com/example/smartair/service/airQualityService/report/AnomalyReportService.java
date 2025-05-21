@@ -50,7 +50,12 @@ public class AnomalyReportService {
                 .findBySensorAndReportDate(sensor, LocalDate.from(anomalyDate))
                 .orElseThrow(() -> new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND, String.format("해당 센서의 일일 보고서를 찾을 수 없습니다. 시리얼 번호: %s, 날짜: %s", sensor.getSerialNumber(), LocalDate.from(anomalyDate))));
 
-        String description = generateDescription(dto.getPollutant(), dto.getPollutantValue(), dto.getPredictedValue()); // 예측값과 실제값 비교하여 설명 생성
+        String description = generateDescription(
+                dto.getPollutant(),
+                dto.getPollutantValue(),
+                dto.getPredictedValue(),
+                dto.getAnomalyTimestamp() // 추가된 인자
+        );
 
         AnomalyReport anomalyReport = AnomalyReport.builder()
                 .sensor(sensor)
@@ -89,22 +94,35 @@ public class AnomalyReportService {
 
     }
 
-    public String generateDescription(String pollutant, double actual, double predicted) {
-        double errorRate = Math.abs(actual - predicted) / (predicted == 0 ? 1 : predicted); // 0 나눔 방지
-        String level;
+    public String generateDescription(String pollutant, double actual, double predicted, String anomalyTimestamp) {
 
-        if (errorRate >= 0.3) {
+        double errorRate = Math.abs(actual - predicted) / (predicted == 0 ? 1 : predicted); // 오차율 계산, 예측값이 0일 경우 1로 나누기
+
+        // 시간대에 따른 임계값 설정
+        int hour = LocalDateTime.parse(anomalyTimestamp, ANOMALY_TIMESTAMP_FORMATTER).getHour();
+        double threshold;
+
+        if (hour < 6) { // 새벽
+            threshold = 0.2;
+        } else if (hour < 12) { // 오전
+            threshold = 0.3;
+        } else if (hour < 18) { // 오후
+            threshold = 0.35;
+        } else { // 저녁
+            threshold = 0.25;
+        }
+
+        String level;
+        if (errorRate >= threshold + 0.1) {
             level = "예측값보다 상당히 높은 수치입니다. 즉각적인 점검이 필요할 수 있습니다.";
-        } else if (errorRate >= 0.1) {
+        } else if (errorRate >= threshold) {
             level = "예측값과 다소 차이가 있는 수치입니다. 주의가 요구됩니다.";
         } else {
             level = "예측값과 유사하여 정상 범위로 판단됩니다.";
         }
 
-        return String.format(
-                "%s 농도가 %.2f로 예측치 %.2f와 비교했을 때 %s",
-                pollutant, actual, predicted, level
-        );
+        return String.format("%s 농도가 %.2f로 예측치 %.2f와 비교했을 때 %s",
+                pollutant, actual, predicted, level);
     }
 
     public List<AnomalyReport> getAnomalyReports(String serialNumber, LocalDate startDate, LocalDate endDate) {
