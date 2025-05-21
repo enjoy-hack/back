@@ -113,6 +113,37 @@ public interface AirQualityReportControllerDocs {
     ResponseEntity<Integer> deleteOldDailyReports(
             @Parameter(description = "삭제할 일별 리포트의 ID", required = true, example = "100") Integer days);
 
+    @Operation(summary = "특정 ID의 주간 리포트 삭제",
+            description = "지정된 리포트 ID에 해당하는 주간 공기질 리포트를 삭제합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "삭제 성공 (No Content)"),
+                    @ApiResponse(responseCode = "404", description = "삭제할 리포트를 찾을 수 없음",
+                            content = @Content(schema = @Schema(hidden = true)))
+            })
+    ResponseEntity<Void> deleteWeeklyReport(
+            @Parameter(description = "삭제할 주간 리포트의 ID", required = true, example = "100") Long reportId);
+
+    @Operation(summary = "생성된 지 N주가 지난 오래된 주간 보고서 삭제",
+            description = "생성된 지 N주가 지난 오래된 주간 보고서를 삭제합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "삭제 성공 (No Content)"),
+                    @ApiResponse(responseCode = "404", description = "리포트를 찾을 수 없음",
+                            content = @Content(schema = @Schema(hidden = true)))
+            })
+    ResponseEntity<Integer> deleteOldWeeklyReports(
+            @Parameter(description = "삭제할 주간 리포트의 ID", required = true, example = "100") Integer weeks);
+
+    @Operation(summary = "특정 센서의 모든 주간 리포트 삭제",
+            description = "지정된 센서 일련번호와 관련된 모든 주간 공기질 리포트를 삭제하고, 삭제된 리포트의 수를 반환합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "삭제 성공 및 삭제된 리포트 수 반환",
+                            content = @Content(schema = @Schema(type = "integer", format = "int32", example = "5"))),
+                    @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음 (삭제할 리포트가 없는 경우도 0을 반환)",
+                            content = @Content(schema = @Schema(hidden = true)))
+            })
+    ResponseEntity<Integer> deleteWeeklyReportsByDeviceId(
+            @Parameter(description = "모든 주간 리포트를 삭제할 센서의 일련번호", required = true, example = "1") String serialNumber);
+
     @Operation(
             summary = "이상치 리포트 생성",
             description = """
