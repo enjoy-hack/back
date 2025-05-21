@@ -54,8 +54,33 @@ public class MqttReceiveService {
 
     private static final int MAX_QUEUE_SIZE = 300;
     private static final int HOURLY_LIMIT_PER_SENSOR = 100;
+    private static final Duration INACTIVITY_THRESHOLD = Duration.ofHours(2); //2시간 이상 데이터 없으면 센서 작동 상태 비활성화 처리
     private final Map<Long, AtomicInteger> sensorMessageCounters = new ConcurrentHashMap<>();
     private final Map<Long, LocalDateTime> sensorLastResetTimes = new ConcurrentHashMap<>();
+
+    @Scheduled(fixedRate = 600000) // 10분마다 실행
+    @Transactional
+    public void checkSensorStatus(){
+        LocalDateTime threshold = LocalDateTime.now().minus(INACTIVITY_THRESHOLD);
+        List<Sensor> sensors = sensorRepository.findAll();
+
+        for (Sensor sensor : sensors) {
+            Optional<SensorAirQualityData> lastData = airQualityDataRepository.findTopBySensorIdOrderByCreatedAtDesc(sensor.getId());
+
+            boolean shouldBeActive = lastData
+                    .map(data -> data.getCreatedAt().isAfter(threshold))
+                    .orElse(false);
+
+            // 상태가 변경될 때만 업데이트하고 로그 출력
+            if (sensor.isRunningStatus() != shouldBeActive) {
+                sensor.setRunningStatus(shouldBeActive);
+                sensorRepository.save(sensor);
+                log.info("센서 일련번호{}의 작동 상태가 {}로 변경되었습니다. 마지막 데이터 수신: {}",
+                        sensor.getSerialNumber(), shouldBeActive ? "활성화" : "비활성화",
+                        lastData.map(data -> data.getCreatedAt().toString()).orElse("없음"));
+            }
+        }
+    }
 
 
     @Scheduled(cron = "0 0 3 * * *")
@@ -101,6 +126,13 @@ public class MqttReceiveService {
             synchronized (serialNumber.intern()){
             Sensor sensor = sensorRepository.findBySerialNumberWithLock(serialNumber)
                     .orElseThrow(() -> new EntityNotFoundException("Sensor serialNumber: " + serialNumber));
+
+            //센서가 비활성상태였다면 활성화
+            if (!sensor.isRunningStatus()) {
+                sensor.setRunningStatus(true);
+                sensorRepository.save(sensor);
+                log.info("센서 일련번호 {}가 데이터 수신을 시작하여 활성화되었습니다.", serialNumber);
+            }
 
             Long sensorId = sensor.getId();
 
