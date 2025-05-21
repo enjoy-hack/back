@@ -69,12 +69,6 @@ public class ThinQService {
         this.clientId = clientIdPrefix + UUID.randomUUID();
     }
 
-    /*
-    필요한 기능 정리
-    * 1. ThinQ로 조회해서 디바이스 목록 불러와서 저장, 불러올 시에 기존에 없던 디바이스 존재 시 해당 roomId로 방에 추가
-    * 2. deviceId, roomId를 통해서 방 Device의 room 정보를 업데이트
-    * 3. 디바이스 목록 조회는 roomId를 통해서 조회
-    * */
 
     // 방 ID 를 통해서 디바이스 조회 시, 기존의 device에 없는 디바이스는 새로 생성해서 해당 roomId로 저장, 기존에 있는 device는 roomId 확인해서 동일한것만 반환
     public List<DeviceDto> getDeviceList(User user, Long roomId) throws Exception {
@@ -109,14 +103,36 @@ public class ThinQService {
                 result.add(new DeviceDto(newDevice.getId(), info.getAlias()));
                 log.info("새 디바이스 저장됨: {}, {}", serialNumber, newDevice.getAlias());
             }else {
-                if(Objects.equals(existingOpt.get().getRoom().getId(), roomId)){
-                  deviceId = existingOpt.get().getId();
-                  result.add(new DeviceDto(deviceId, info.getAlias()));
+                if(Objects.equals(existingOpt.get().getRoom().getId(), roomId)){ // 기존 디바이스가 방에 속하는 경우
+                    deviceId = existingOpt.get().getId();
+                    result.add(new DeviceDto(deviceId, info.getAlias()));
                 }
             }
         }
 
         return result;
+    }
+
+    public Object updateDevice(User user, Long roomId, Long deviceId) {
+        Room room = roomRepository.findRoomById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
+
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND, "디바이스를 찾을 수 없습니다."));
+
+
+        if(validateAccess(user, room) && validateAccess(user, device.getRoom())) {
+            log.info("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
+        } else {
+            log.warn("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 없습니다.", user.getId(), roomId);
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 방에 대한 접근 권한이 없습니다.");
+        }
+
+        device.setRoom(room);
+        deviceRepository.save(device);
+        log.info("디바이스 {}가 방 {}에 업데이트되었습니다.", device.getAlias(), room.getId());
+
+        return new DeviceDto(device.getId(), device.getAlias(), device.getRoom().getId());
     }
 
     public String getDeviceState(User user, Long deviceId) throws Exception {
@@ -175,7 +191,6 @@ public class ThinQService {
         }
         return pat;
     }
-
     private Boolean validateAccess(User user, Room room) {
 
         boolean hasPermission = false;
@@ -204,6 +219,7 @@ public class ThinQService {
         return hasPermission;
 
     }
+
     private ResponseEntity<String> sendRequest(String endpoint, HttpMethod method, Object body, String patToken) { // API 요청 메서드
         HttpEntity<Object> request = new HttpEntity<>(body, buildHeaders(patToken));
         String url = baseUrl + endpoint;
