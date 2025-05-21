@@ -69,7 +69,7 @@ public class AnomalyReportService {
                 .build();
 
         anomalyReportRepository.save(anomalyReport);
-        log.info("Anomaly report saved: {}", anomalyReport);
+        log.info("Anomaly report saved: {}", anomalyReport.getId());
 
         String targetToken = sensor.getUser().getFcmToken(); // 알림 대상 FCM 토큰 가져오기
 
@@ -137,8 +137,8 @@ public class AnomalyReportService {
             level = "예측값과 유사하여 정상 범위로 판단됩니다.";
         }
 
-        return String.format("%s 농도가 %.2f로 예측치 %.2f와 비교했을 때 %s",
-                pollutant, actual, predicted, level);
+        return String.format("%s 농도가 %.2f로 예측치 %.2f와 비교했을 때, %.0f%% 정도로 %s",
+                pollutant, actual, predicted, errorRate*100,level);
     }
 
     public List<AnomalyReport> getAnomalyReports(String serialNumber, LocalDate startDate, LocalDate endDate) {
