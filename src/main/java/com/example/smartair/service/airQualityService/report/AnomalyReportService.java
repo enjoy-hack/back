@@ -56,6 +56,7 @@ public class AnomalyReportService {
                 dto.getPredictedValue(),
                 dto.getAnomalyTimestamp() // 추가된 인자
         );
+        log.info("Anomaly report description: {}", description);
 
         AnomalyReport anomalyReport = AnomalyReport.builder()
                 .sensor(sensor)
@@ -75,8 +76,7 @@ public class AnomalyReportService {
         Message message = Message.builder()
                 .setToken(targetToken)
                 .putData("title", "이상치 발생 알림")
-                .putData("body", String.format("%s 농도가 %.2f로 예측치 %.2f와 비교했을 때 %s",
-                        dto.getPollutant(), dto.getPollutantValue(), dto.getPredictedValue(), description))
+                .putData("body", description)
                 .build();
         try {
             return FirebaseMessaging.getInstance().send(message);
@@ -98,19 +98,35 @@ public class AnomalyReportService {
 
         double errorRate = Math.abs(actual - predicted) / (predicted == 0 ? 1 : predicted); // 오차율 계산, 예측값이 0일 경우 1로 나누기
 
-        // 시간대에 따른 임계값 설정
-        int hour = LocalDateTime.parse(anomalyTimestamp, ANOMALY_TIMESTAMP_FORMATTER).getHour();
-        double threshold;
-
-        if (hour < 6) { // 새벽
-            threshold = 0.2;
-        } else if (hour < 12) { // 오전
-            threshold = 0.3;
-        } else if (hour < 18) { // 오후
-            threshold = 0.35;
-        } else { // 저녁
-            threshold = 0.25;
+        // 오염물질별 기본 임계값
+        double baseThreshold;
+        switch (pollutant.toUpperCase()) {
+            case "CO2":
+                baseThreshold = 0.10;
+                break;
+            case "TVOC":
+            case "PM10":
+                baseThreshold = 0.20;
+                break;
+            default:
+                baseThreshold = 0.25; // 기타 오염물질
         }
+
+        // 시간대별 가중치 설정
+        int hour = LocalDateTime.parse(anomalyTimestamp, ANOMALY_TIMESTAMP_FORMATTER).getHour();
+        double timeFactor;
+        if (hour < 6) {
+            timeFactor = 0.8;  // 새벽
+        } else if (hour < 12) {
+            timeFactor = 1.0;  // 오전
+        } else if (hour < 18) {
+            timeFactor = 1.1;  // 오후
+        } else {
+            timeFactor = 0.9;  // 저녁
+        }
+
+        // 최종 임계값 계산
+        double threshold = baseThreshold * timeFactor;
 
         String level;
         if (errorRate >= threshold + 0.1) {
