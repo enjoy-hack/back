@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/thinq")
 @AllArgsConstructor
-public class ThinQController  {
+public class ThinQController  implements ThinQControllerDocs{
 
     private final ThinQService thinQService;
 
@@ -28,6 +28,20 @@ public class ThinQController  {
         User user = userDetails.getUser();
 
         return ResponseEntity.ok(thinQService.getDeviceList(user, roomId));
+    }
+
+    // 방 ID를 통해 디바이스 방 업데이트
+    @PutMapping("/{deviceId}/{roomId}")
+    public ResponseEntity<?> updateDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                            @PathVariable("roomId") Long roomId,
+                                            @PathVariable("deviceId") Long deviceId) throws Exception {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
+
+        User user = userDetails.getUser();
+
+        return ResponseEntity.ok(thinQService.updateDevice(user, roomId, deviceId));
     }
 
     // 특정 디바이스의 상태 조회

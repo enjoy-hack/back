@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 @Tag(name = "LG ThinQ", description = "LG ThinQ 연동 디바이스 제어 및 조회 API")
 public interface ThinQControllerDocs {
@@ -45,11 +46,40 @@ public interface ThinQControllerDocs {
                     @ApiResponse(responseCode = "404", description = "해당 방 또는 PAT 정보 없음")
             }
     )
-    ResponseEntity<?> getDevices(
-            @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "디바이스 목록 조회 요청 정보") @RequestBody DeviceReqeustDto.getDeviceListDto getDeviceListDto
-    ) throws Exception;
+    ResponseEntity<?> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                    @PathVariable("roomId") Long roomId) throws Exception;
 
+    @Operation(
+            summary = "디바이스 방 업데이트",
+            description = "지정된 디바이스를 새로운 방으로 이동시킵니다.\n" +
+                    "사용자는 디바이스의 현재 방과 이동할 방에 대해서 수정할 권한이 있어야 합니다.\n",
+            parameters = {
+                    @Parameter(name = "deviceId", description = "디바이스 ID", required = true, example = "1"),
+                    @Parameter(name = "roomId", description = "방 ID", required = true, example = "2")
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "디바이스 방 업데이트 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(value = """
+                {
+                    "id": 1,
+                    "alias": "에어컨",
+                    "roomId": 2
+                }
+                """)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
+                    @ApiResponse(responseCode = "403", description = "접근 권한 없음"),
+                    @ApiResponse(responseCode = "404", description = "방 또는 디바이스를 찾을 수 없음")
+            }
+    )
+    ResponseEntity<?> updateDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                           @PathVariable("roomId") Long roomId,
+                                           @PathVariable("deviceId") Long deviceId) throws Exception;
     @Operation(
             summary = "디바이스 상태 조회",
             description = "지정된 디바이스 ID의 상세 상태 정보를 반환합니다.",
@@ -110,10 +140,8 @@ public interface ThinQControllerDocs {
                     @ApiResponse(responseCode = "403", description = "접근 권한 없음")
             }
     )
-    ResponseEntity<?> getDeviceStatus(
-            @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "디바이스 상태 조회 요청 정보") @RequestBody DeviceReqeustDto.deviceRequestDto deviceRequestDto
-    )throws Exception;
+    ResponseEntity<?> getDeviceStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                      @PathVariable("deviceId") Long deviceId) throws Exception;
 
     @Operation(
             summary = "공기청정기 전원 제어",
@@ -172,8 +200,6 @@ public interface ThinQControllerDocs {
                     @ApiResponse(responseCode = "500", description = "제어 실패 또는 ThinQ API 오류")
             }
     )
-    ResponseEntity<?> controlPower(
-            @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "디바이스 전원 제어 요청 정보") @RequestBody DeviceReqeustDto.deviceRequestDto deviceRequestDto
-    ) throws Exception;
+    ResponseEntity<?> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                   @PathVariable("deviceId") Long deviceId) throws Exception;
 }
