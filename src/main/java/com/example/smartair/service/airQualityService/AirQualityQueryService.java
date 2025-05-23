@@ -100,7 +100,7 @@ public class AirQualityQueryService { //공기질 점수 조회
         LocalDateTime effectiveEndTime = getDefaultEndTime(endTime);
 
 
-        if (!sensorRepository.existsBySerialNumber(serialNumber)) {
+        if (sensorRepository.findBySerialNumber(serialNumber).isEmpty()) {
             throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + serialNumber);
         }
 

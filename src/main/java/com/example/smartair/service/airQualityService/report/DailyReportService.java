@@ -147,7 +147,7 @@ public class DailyReportService {
      */
     @Transactional
     public int deleteDailyReportsByDeviceId(String serialNumber) {
-        if (!sensorRepository.existsBySerialNumber(serialNumber)) {
+        if (sensorRepository.findBySerialNumber(serialNumber).isEmpty()) {
             throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor serialNumber: " + serialNumber);
         }
         log.info("Sensor serialNumber: {} 관련 모든 일별 보고서 삭제 시작", serialNumber);
