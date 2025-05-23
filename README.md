@@ -111,9 +111,6 @@ cd SmartAir
 ## 📚 API 문서
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 
-## 📄 라이선스
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
-
 <div align="center">
 
 ### 🌟 함께 만들어가는 건강한 실내 환경 🌟
