@@ -2,17 +2,32 @@
 
 <div align="center">
 
-![SmartAir Logo](https://img.shields.io/badge/SmartAir-00A8E8?style=for-the-badge&logo=air&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
-![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![MQTT](https://img.shields.io/badge/MQTT-660066?style=for-the-badge&logo=mqtt&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
+<!-- 💻 Backend -->
+<img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white"/>
+<img src="https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=spring-security&logoColor=white"/>
+<img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white"/>
+<img src="https://img.shields.io/badge/MQTT-660066?style=for-the-badge&logo=mqtt&logoColor=white"/>
+<img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white"/>
+
+<!-- ☁️ Infra / DevOps -->
+<img src="https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=amazon-ec2&logoColor=white"/>
+<img src="https://img.shields.io/badge/Amazon%20S3-569A31?style=for-the-badge&logo=amazon-s3&logoColor=white"/>
+<img src="https://img.shields.io/badge/Amazon%20AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white"/>
+<img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white"/>
+<img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
+
+<!-- 🛠 Tools -->
+<img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black"/>
+<img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"/>
+<img src="https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white"/>
 
 </div>
 
 ## 📝 프로젝트 소개
 
 SmartAir는 실시간 공기질 모니터링과 자동 제어를 통해 건강한 실내 환경을 제공하는 스마트 홈 솔루션입니다. IoT 센서와 MQTT 프로토콜을 활용하여 실시간으로 공기질 데이터를 수집하고, 사용자에게 직관적인 대시보드를 제공합니다.
+
+“건강한 실내 환경을 위한 스마트한 선택”
 
 ## ✨ 주요 기능
 
@@ -24,30 +39,35 @@ SmartAir는 실시간 공기질 모니터링과 자동 제어를 통해 건강�
 ### 📊 스마트 대시보드
 - 실시간 공기질 지수 시각화
 - 시간대별 공기질 추이 분석
-- 사용자 맞춤형 알림 설정
+- 예측 공기질 시각화
 
-### 🎯 자동 제어 시스템
-- 공기질 상태에 따른 자동 환기 제어
-- 스마트 기기 연동을 통한 실내 환경 최적화
-- 사용자 패턴 기반 맞춤형 제어
+### 📬 이상치 탐지 및 알림
+- 예측값과 실측값 비교와 시간대별 가중치를 통한 오차 감지
+- Firebase Cloud Messaging 기반 실시간 푸시 알림
+
+### ⚙️ 자동 제어 및 스마트홈 연동
+- LG ThinQ API 연동 (OAuth2 + PAT 기반 디바이스 제어)
+- 실내 공기 상태에 따라 공기청정기, 에어컨 제어
 
 ## 🛠 기술 스택
 
 ### Backend
 - **Framework**: Spring Boot 3.4.3
 - **Language**: Java 17
-- **Database**: MySQL
+- **Database**: MySQL (Amazon RDS)
 - **Message Broker**: MQTT (Mosquitto)
+- **Infra**: AWS EC2, S3, Route53, ALB, CodeDeploy
 - **Build Tool**: Gradle
 
 ### 주요 라이브러리
-- Spring Data JPA
-- Spring Security
+- Spring Data JPA, Security + JWT + OAuth2
+- Firebase Cloud Messaging (FCM)
+- LG ThinQ API (AES 암호화 기반 통신)
 - Lombok
-- JUnit 5
+- Swagger, Gradle, JUnit5
 
 ## 🔄 시스템 아키텍처
-
+![image](https://github.com/user-attachments/assets/f74d37b1-586f-4e4b-9e0f-3bd7c84de0ec)
 ### 아키텍처 구성 요소
 
 - **Developer & GitHub Actions**  
