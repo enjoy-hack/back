@@ -24,6 +24,7 @@ public class Sensor extends BaseEntity {
     private boolean runningStatus;
     private boolean isRegistered; //방 등록 여부
     private LocalDateTime roomRegisterDate; //센서 방 등록 날짜
+    private LocalDateTime lastDataTime; //센서 마지막 데이터 수신 시간
 
     @ManyToOne //기기와 유저 : 다대일 관계
     @JoinColumn(name = "user_id")
