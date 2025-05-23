@@ -50,7 +50,6 @@ public class MqttReceiveService {
     private final S3Service s3Service;
     private final SensorRepository sensorRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final UserRepository userRepository;
 
     private static final int MAX_QUEUE_SIZE = 300;
     private static final int HOURLY_LIMIT_PER_SENSOR = 100;
@@ -62,30 +61,47 @@ public class MqttReceiveService {
     @Transactional
     public void checkSensorStatus(){
         LocalDateTime threshold = LocalDateTime.now().minus(INACTIVITY_THRESHOLD);
-        List<Sensor> sensors = sensorRepository.findAll();
+        // 로깅을 위해 비활성화할 센서 목록 조회
+        List<Sensor> sensorsToDeactivate = sensorRepository.findByRunningStatusTrueAndLastDataTimeBefore(threshold);
 
-        for (Sensor sensor : sensors) {
-            Optional<SensorAirQualityData> lastData = airQualityDataRepository.findTopBySensorIdOrderByCreatedAtDesc(sensor.getId());
-
-            boolean shouldBeActive = lastData
-                    .map(data -> data.getCreatedAt().isAfter(threshold))
-                    .orElse(false);
-
-            // 상태가 변경될 때만 업데이트하고 로그 출력
-            if (sensor.isRunningStatus() != shouldBeActive) {
-                sensor.setRunningStatus(shouldBeActive);
-                sensorRepository.save(sensor);
-                log.info("센서 일련번호{}의 작동 상태가 {}로 변경되었습니다. 마지막 데이터 수신: {}",
-                        sensor.getSerialNumber(), shouldBeActive ? "활성화" : "비활성화",
-                        lastData.map(data -> data.getCreatedAt().toString()).orElse("없음"));
-            }
+        // 비활성화 대상 센서 로깅
+        for (Sensor sensor : sensorsToDeactivate) {
+            log.info("센서 일련번호 {}의 작동 상태가 비활성화로 변경됩니다. 마지막 데이터 수신: {}",
+                    sensor.getSerialNumber(),
+                    sensor.getLastDataTime() != null ? sensor.getLastDataTime().toString() : "없음");
         }
+
+        // 벌크 업데이트 실행 (lastDataTime이 threshold보다 이전인 센서 비활성화)
+        int updatedCount = sensorRepository.updateSensorStatusBasedOnLastActivity(threshold);
+
+        if (updatedCount > 0) {
+            log.info("센서 상태 업데이트: {} 개의 센서가 비활성화됨", updatedCount);
+        }
+    }
+
+    @Scheduled(fixedRate = 86400000) // 24시간마다 실행
+    @Transactional
+    public void cleanupInactiveSensorData(){ //비활성 센서 데이터 정리
+        LocalDateTime thresholdTime = LocalDateTime.now().minusDays(2);
+        List<Long> activeSensorIds = sensorRepository.findAllByRunningStatusIsTrue()
+                .stream().map(Sensor::getId).toList();
+
+        // 비활성 센서의 카운터 제거
+        sensorMessageCounters.keySet().removeIf(sensorId ->
+                !activeSensorIds.contains(sensorId) &&
+                        sensorLastResetTimes.getOrDefault(sensorId, LocalDateTime.now())
+                                .isBefore(thresholdTime));
+
+        sensorLastResetTimes.keySet().removeIf(sensorId ->
+                !activeSensorIds.contains(sensorId) &&
+                        sensorLastResetTimes.get(sensorId).isBefore(thresholdTime));
+        log.info("비활성 센서 데이터 정리 완료: {}개의 비활성 센서 데이터 삭제됨", activeSensorIds.size());
     }
 
 
     @Scheduled(cron = "0 0 3 * * *")
     @Transactional
-    public void cleanupOldData() {
+    public void cleanupOldData() { //데이터베이스에 저장된 8일 이전의 오래된 데이터 정리
         try {
             LocalDateTime eightDaysAgo = LocalDateTime.now().minusDays(8);
             int deletedCount = airQualityDataRepository.deleteByCreatedAtBefore(eightDaysAgo);
@@ -98,12 +114,16 @@ public class MqttReceiveService {
     }
 
     @Scheduled(fixedRate = 3600000)
-    public void collectHourlyData() {
+    public void cleanupOldMessagesInQueue() { // 1시간마다 메세지 큐에서 데이터 제거
         log.info("Starting hourly data collection...");
         try {
             synchronized (recentMessage) {
                 LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-                recentMessage.removeIf(data -> data.getCreatedAt().isAfter(oneHourAgo));
+                int beforeSize = recentMessage.size();
+                recentMessage.removeIf(data -> data.getCreatedAt().isBefore(oneHourAgo));
+                int removedCount = beforeSize - recentMessage.size();
+                log.info("데이터 정리 완료: {}개의 1시간 이전 데이터 삭제됨, 현재 큐 크기: {}",
+                        removedCount, recentMessage.size());
             }
         } catch (Exception e) {
             log.error("Error during hourly data collection", e);
@@ -130,9 +150,11 @@ public class MqttReceiveService {
             //센서가 비활성상태였다면 활성화
             if (!sensor.isRunningStatus()) {
                 sensor.setRunningStatus(true);
-                sensorRepository.save(sensor);
                 log.info("센서 일련번호 {}가 데이터 수신을 시작하여 활성화되었습니다.", serialNumber);
             }
+
+            sensor.setLastDataTime(LocalDateTime.now());
+            sensorRepository.save(sensor);
 
             Long sensorId = sensor.getId();
 
@@ -166,16 +188,16 @@ public class MqttReceiveService {
 
     private boolean isRateLimitExceeded(Long sensorId) {
         LocalDateTime now = LocalDateTime.now();
-        sensorLastResetTimes.computeIfAbsent(sensorId, k -> now);
-        sensorMessageCounters.computeIfAbsent(sensorId, k -> new AtomicInteger(0));
+        LocalDateTime lastReset = sensorLastResetTimes.computeIfAbsent(sensorId, k -> now);
+        AtomicInteger counter = sensorMessageCounters.computeIfAbsent(sensorId, k -> new AtomicInteger(0));
 
-        if (Duration.between(sensorLastResetTimes.get(sensorId), now).toHours() >= 1) {
-            sensorMessageCounters.get(sensorId).set(0);
+        if (lastReset.plusHours(1).isBefore(now)) {
+            counter.set(0);
             sensorLastResetTimes.put(sensorId, now);
-            log.debug("센서 ID: {} 의 메시지 카운터를 리셋했습니다.", sensorId);
+            log.debug("센서 ID {}의 카운터 초기화됨.", sensorId);
         }
 
-        int currentCount = sensorMessageCounters.get(sensorId).incrementAndGet();
+        int currentCount = counter.incrementAndGet();
         return currentCount > HOURLY_LIMIT_PER_SENSOR;
     }
 
