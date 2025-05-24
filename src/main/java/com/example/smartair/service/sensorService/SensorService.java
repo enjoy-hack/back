@@ -146,24 +146,26 @@ public class SensorService {
         roomSensorRepository.delete(roomSensor);
     }
 
-    public List<Sensor> getSensors(Long roomId, User user) {
-        // 해당 방에 등록된 센서 목록
-        List<Sensor> registeredSensors = roomSensorRepository.findByRoomId(roomId)
+    public List<SensorResponseDto> getSensors(Long roomId, User user) {
+        // 방이 존재하는지 확인
+        roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+
+       // 사용자가 방에 등록된 참여자인지 확인
+        if (!roomRepository.existsByIdAndParticipants_User(roomId, user)) {
+            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM, "해당 방에 등록된 사용자가 아닙니다.");
+        }
+
+        // 해당 방에 등록된 센서만 조회
+        List<Sensor> sensors = roomSensorRepository.findByRoomId(roomId)
                 .stream()
                 .map(RoomSensor::getSensor)
                 .toList();
 
-        // 사용자의 모든 센서 중 아직 방에 등록되지 않은 센서 목록
-        List<Sensor> unregisteredSensors = sensorRepository.findByUser(user)
-                .stream()
-                .filter(sensor -> !roomSensorRepository.existsBySensorId(sensor.getId()))
+        // 센서 정보를 DTO로 변환하여 반환
+        return sensors.stream()
+                .map(SensorResponseDto::from)
                 .toList();
-
-        // 두 리스트 합치기
-        List<Sensor> allSensors = new ArrayList<>(registeredSensors);
-        allSensors.addAll(unregisteredSensors);
-
-        return allSensors;
     }
 
     public boolean getSensorStatus(String serialNumber) throws Exception {
