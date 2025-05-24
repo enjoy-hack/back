@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
@@ -27,8 +28,10 @@ public interface AirQualityScoreControllerDocs {
     })
     ResponseEntity<AverageScoreDto> getSensorAverageScore(
             @Parameter(description = "센서 일련번호", required = true) String serialNumber,
-            @Parameter(description = "조회 시작 시간 (기본값: 24시간 전)") LocalDateTime startTime,
-            @Parameter(description = "조회 종료 시간 (기본값: 현재 시간)") LocalDateTime endTime
+            @Parameter(description = "조회 시작 시간 (기본값: 24시간 전)", example = "2025-05-08T15:45:00")
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startTime,
+            @Parameter(description = "조회 종료 시간 (기본값: 현재 시간)", example = "2025-05-08T15:45:00")
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endTime
     );
 
     @Operation(summary = "방 평균 점수 조회", description = "특정 기간 동안의 방 평균 공기질 점수를 조회합니다")
@@ -38,8 +41,10 @@ public interface AirQualityScoreControllerDocs {
     })
     ResponseEntity<AverageScoreDto> getRoomAverageScore(
             @Parameter(description = "방 ID", required = true) Long roomId,
-            @Parameter(description = "조회 시작 시간 (기본값: 24시간 전)") LocalDateTime startTime,
-            @Parameter(description = "조회 종료 시간 (기본값: 현재 시간)") LocalDateTime endTime
+            @Parameter(description = "조회 시작 시간 (기본값: 24시간 전)", example = "2025-05-08T15:45:00")
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startTime,
+            @Parameter(description = "조회 종료 시간 (기본값: 현재 시간)", example = "2025-05-08T15:45:00")
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endTime
     );
 
     @Operation(summary = "센서 공기질 점수 조회", description = "특정 센서의 시간대별 공기질 점수를 조회합니다.")
@@ -49,9 +54,11 @@ public interface AirQualityScoreControllerDocs {
     })
     ResponseEntity<Page<SensorAirQualityScoreDto>> getSensorAirQualityScores(
             @Parameter(description = "센서 일련번호", required = true) String serialNumber,
-            @Parameter(description = "조회 시작 시간") LocalDateTime startTime,
-            @Parameter(description = "조회 종료 시간") LocalDateTime endTime,
-            @Parameter(description = "페이징 정보") Pageable pageable
+            @Parameter(description = "조회 시작 시간 (기본값: 24시간 전)", example = "2025-05-08T15:45:00")
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startTime,
+            @Parameter(description = "조회 종료 시간 (기본값: 현재 시간)", example = "2025-05-08T15:45:00")
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endTime,
+            @Parameter(description = "페이지네이션 정보 (예 : \"page\": 0, \"size\": 10, \"sort\": \"id,desc\")") Pageable pageable
     );
 
     @Operation(summary = "방 공기질 점수 조회", description = "특정 방의 시간대별 공기질 점수를 조회합니다.")
@@ -61,9 +68,11 @@ public interface AirQualityScoreControllerDocs {
     })
     ResponseEntity<Page<RoomAirQualityScoreDto>> getRoomAirQualityScores(
             @Parameter(description = "방 ID", required = true) Long roomId,
-            @Parameter(description = "조회 시작 시간") LocalDateTime startTime,
-            @Parameter(description = "조회 종료 시간") LocalDateTime endTime,
-            @Parameter(description = "페이징 정보") Pageable pageable
+            @Parameter(description = "조회 시작 시간 (기본값: 24시간 전)", example = "2025-05-08T15:45:00")
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startTime,
+            @Parameter(description = "조회 종료 시간 (기본값: 현재 시간)", example = "2025-05-08T15:45:00")
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endTime,
+            @Parameter(description = "페이지네이션 정보 (예 : \"page\": 0, \"size\": 10, \"sort\": \"id,desc\")") Pageable pageable
     );
 
     @Operation(summary = "센서 최신 공기질 점수 조회", description = "특정 센서의 가장 최근 공기질 점수를 조회합니다.")
