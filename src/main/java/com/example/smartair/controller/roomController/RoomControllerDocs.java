@@ -5,6 +5,7 @@ import com.example.smartair.dto.roomDto.CreateRoomRequestDto;
 import com.example.smartair.dto.roomDto.JoinRoomRequestDto;
 import com.example.smartair.dto.roomDto.RoomDetailResponseDto;
 import com.example.smartair.dto.roomDto.ParticipantDetailDto;
+import com.example.smartair.dto.sensorDto.SensorResponseDto;
 import com.example.smartair.entity.login.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -157,6 +158,18 @@ public interface RoomControllerDocs {
             @ApiResponse(responseCode = "404", description = "방을 찾을 수 없음")
     })
     ResponseEntity<List<DeviceDto>> getRoomDevices(
+            @Parameter(name = "roomId", description = "조회할 방의 ID", required = true, in = ParameterIn.PATH)
+            @PathVariable Long roomId,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
+
+    @Operation(summary = "방에 속한 센서 목록 조회", description = "특정 방에 속한 센서 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "센서 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = SensorResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "404", description = "방을 찾을 수 없음")
+    })
+    ResponseEntity<List<SensorResponseDto>> getRoomSensors(
             @Parameter(name = "roomId", description = "조회할 방의 ID", required = true, in = ParameterIn.PATH)
             @PathVariable Long roomId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
