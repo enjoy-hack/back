@@ -29,7 +29,7 @@ public class AirQualityScoreCalculationScheduler {
 
     // 시간별 방의 평균 점수만 스케줄러로 계산
     // 배치 처리 : 시간차를 두고 순차적 실행
-    @Scheduled(cron = "0 0 * * * *") // 매시 정각
+//    @Scheduled(cron = "0 0 * * * *") // 매시 정각
     public void calculateHourlyRoomAverages() {
         List<Room> roomList = roomRepository.findAll();
 

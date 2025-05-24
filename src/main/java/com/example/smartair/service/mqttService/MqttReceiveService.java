@@ -57,7 +57,7 @@ public class MqttReceiveService {
     private final Map<Long, AtomicInteger> sensorMessageCounters = new ConcurrentHashMap<>();
     private final Map<Long, LocalDateTime> sensorLastResetTimes = new ConcurrentHashMap<>();
 
-    @Scheduled(fixedRate = 600000) // 10분마다 실행
+//    @Scheduled(fixedRate = 600000) // 10분마다 실행
     @Transactional
     public void checkSensorStatus(){
         LocalDateTime threshold = LocalDateTime.now().minus(INACTIVITY_THRESHOLD);
@@ -79,7 +79,7 @@ public class MqttReceiveService {
         }
     }
 
-    @Scheduled(fixedRate = 86400000) // 24시간마다 실행
+//    @Scheduled(fixedRate = 86400000) // 24시간마다 실행
     @Transactional
     public void cleanupInactiveSensorData(){ //비활성 센서 데이터 정리
         LocalDateTime thresholdTime = LocalDateTime.now().minusDays(2);
@@ -99,7 +99,7 @@ public class MqttReceiveService {
     }
 
 
-    @Scheduled(cron = "0 0 3 * * *")
+//    @Scheduled(cron = "0 0 3 * * *")
     @Transactional
     public void cleanupOldData() { //데이터베이스에 저장된 8일 이전의 오래된 데이터 정리
         try {
@@ -113,7 +113,7 @@ public class MqttReceiveService {
         }
     }
 
-    @Scheduled(fixedRate = 3600000)
+//    @Scheduled(fixedRate = 3600000)
     public void cleanupOldMessagesInQueue() { // 1시간마다 메세지 큐에서 데이터 제거
         log.info("Starting hourly data collection...");
         try {
