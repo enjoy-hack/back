@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 public class SensorAirQualityScoreDto {
+    private Long id;
     private LocalDateTime createdAt;
     private double overallScore;
     private double pm10Score;
@@ -27,6 +28,7 @@ public class SensorAirQualityScoreDto {
         Long dataId = (sensorAirQualityScore.getSensorAirQualityData()!= null) ? sensorAirQualityScore.getSensorAirQualityData().getId() : null;
 
         return SensorAirQualityScoreDto.builder()
+                .id(sensorAirQualityScore.getId())
                 .createdAt(sensorAirQualityScore.getCreatedAt())
                 .overallScore(sensorAirQualityScore.getOverallScore())
                 .pm10Score(sensorAirQualityScore.getPm10Score())

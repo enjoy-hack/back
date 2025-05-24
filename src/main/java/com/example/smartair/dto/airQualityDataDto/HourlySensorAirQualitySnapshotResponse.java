@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HourlySensorAirQualitySnapshotResponse {
+    private Long id;
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime snapshotHour;
 
@@ -37,6 +38,7 @@ public class HourlySensorAirQualitySnapshotResponse {
 
     public static HourlySensorAirQualitySnapshotResponse from(HourlySensorAirQualitySnapshot snapshot) {
         return HourlySensorAirQualitySnapshotResponse.builder()
+                .id(snapshot.getId())
                 .snapshotHour(snapshot.getSnapshotHour())
                 .hourlyAvgTemperature(snapshot.getHourlyAvgTemperature())
                 .hourlyAvgHumidity(snapshot.getHourlyAvgHumidity())

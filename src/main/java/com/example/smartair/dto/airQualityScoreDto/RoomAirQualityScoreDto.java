@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 public class RoomAirQualityScoreDto {
+    private Long id;
     private LocalDateTime createdAt;
     private double overallScore;
     private double pm10Score;
@@ -32,6 +33,7 @@ public class RoomAirQualityScoreDto {
         }
 
         return RoomAirQualityScoreDto.builder()
+                .id(roomAirQualityScore.getId())
                 .createdAt(roomAirQualityScore.getCreatedAt())
                 .overallScore(roomAirQualityScore.getOverallScore())
                 .pm10Score(roomAirQualityScore.getPm10Score())
