@@ -7,6 +7,8 @@ import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.service.sensorService.SensorService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,5 +110,24 @@ public class SensorController implements SensorControllerDocs {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/sensor/{sensorId}")
+    public ResponseEntity<SensorResponseDto> getSensorById(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long sensorId) {
+
+        if(userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userDetails.getUser();
+
+        SensorResponseDto sensorDto = sensorService.getSensorById(sensorId);
+
+        // 센서 소유자 검증 (필요한 경우)
+        if (!sensorDto.getOwnerUsername().equals(user.getUsername())) {
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR, "해당 센서에 대한 권한이 없습니다.");
+        }
+
+        return ResponseEntity.ok(sensorDto);
+    }
 }
 

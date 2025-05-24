@@ -223,4 +223,11 @@ public class SensorService {
         // RoomSensor 매핑 삭제
         roomSensorRepository.delete(roomSensor);
     }
+
+    public SensorResponseDto getSensorById(Long sensorId) {
+        Sensor sensor = sensorRepository.findById(sensorId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "해당 ID에 맞는 센서가 없습니다."));
+
+        return SensorResponseDto.from(sensor);
+    }
 }

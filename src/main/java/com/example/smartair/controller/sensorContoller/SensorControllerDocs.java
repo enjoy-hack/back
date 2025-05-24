@@ -173,4 +173,16 @@ public interface SensorControllerDocs {
     ResponseEntity<?> unregisterSensorFromRoom(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody SensorRequestDto.unregisterSensorFromRoomDto request) throws Exception;
+
+    @GetMapping("/sensor/{sensorId}")
+    @Operation(summary = "센서 ID로 센서 정보 조회", description = "센서 ID를 기반으로 센서 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "센서 정보 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description=  "해당 센서에 대한 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "해당 ID의 센서를 찾을 수 없음")
+    })
+    ResponseEntity<SensorResponseDto> getSensorById(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "센서 ID", required = true) Long sensorId);
 }
