@@ -1,6 +1,7 @@
 package com.example.smartair.service.airQualityService;
 import com.example.smartair.domain.enums.Pollutant;
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportDto;
+import com.example.smartair.dto.airQualityDataDto.AnomalyReportResponseDto;
 import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
@@ -130,21 +131,73 @@ class AnomalyReportServiceTest {
     }
 
     @Test
-    void getAnomalyReports_validDatesAndSensor_returnsList() {
+    void testGetAnomalyReports_Success() {
         // Given
         String serialNumber = "ABC123";
-        Sensor sensor = Sensor.builder().serialNumber(serialNumber).build();
-        LocalDate startDate = LocalDate.of(2025, 5, 20);
-        LocalDate endDate = LocalDate.of(2025, 5, 21);
+        LocalDate startDate = LocalDate.of(2023, 10, 1);
+        LocalDate endDate = LocalDate.of(2023, 10, 31);
 
-        when(sensorRepository.findBySerialNumber(serialNumber)).thenReturn(Optional.of(sensor));
-        when(anomalyReportRepository.findAnomaliesBySensorAndDateRange(any(), any(), any()))
-                .thenReturn(List.of(mock(AnomalyReport.class)));
+        Sensor mockSensor = Sensor.builder().serialNumber(serialNumber).build();
+        HourlySensorAirQualitySnapshot mockSnapshot = HourlySensorAirQualitySnapshot.builder()
+                .snapshotHour(LocalDateTime.of(2023, 10, 15, 10, 0))
+                .hourlyAvgTemperature(25.0)
+                .hourlyAvgHumidity(60.0)
+                .hourlyAvgPressure(1013)
+                .hourlyAvgTvoc(200)
+                .hourlyAvgEco2(400)
+                .hourlyAvgPm10(150.0)
+                .hourlyAvgPm25(80.0)
+                .overallScore(85.0)
+                .pm10Score(70.0)
+                .pm25Score(90.0)
+                .eco2Score(95.0)
+                .tvocScore(80.0)
+                .build();
+
+        AnomalyReport mockReport = AnomalyReport.builder()
+                .sensor(mockSensor)
+                .anomalyTimestamp(LocalDateTime.of(2023, 10, 15, 10, 0))
+                .pollutant(com.example.smartair.domain.enums.Pollutant.PM10)
+                .pollutantValue(150.0)
+                .description("PM10 농도가 예측치를 초과했습니다.")
+                .relatedHourlySnapshot(mockSnapshot)
+                .build();
+
+        when(sensorRepository.findBySerialNumber(serialNumber)).thenReturn(Optional.of(mockSensor));
+        when(anomalyReportRepository.findAnomaliesBySensorAndDateRange(
+                eq(mockSensor),
+                eq(startDate.atStartOfDay()),
+                eq(endDate.atTime(LocalDateTime.MAX.toLocalTime()))
+        )).thenReturn(List.of(mockReport));
 
         // When
-        var results = anomalyReportService.getAnomalyReports(serialNumber, startDate, endDate);
+        List<AnomalyReportResponseDto> result = anomalyReportService.getAnomalyReports(serialNumber, startDate, endDate);
+
+        for(AnomalyReportResponseDto report : result) {
+            System.out.println(report.toString());
+        }
+
 
         // Then
-        assertEquals(1, results.size());
+        assertEquals(1, result.size());
+        assertEquals("ABC123", result.get(0).getSensorSerialNumber());
+        assertEquals(150.0, result.get(0).getPollutantValue());
+        verify(sensorRepository, times(1)).findBySerialNumber(serialNumber);
+        verify(anomalyReportRepository, times(1)).findAnomaliesBySensorAndDateRange(any(), any(), any());
+    }
+
+    @Test
+    void testGetAnomalyReports_SensorNotFound() {
+        // Given
+        String serialNumber = "NOT_EXIST";
+        LocalDate startDate = LocalDate.of(2023, 10, 1);
+        LocalDate endDate = LocalDate.of(2023, 10, 31);
+
+        when(sensorRepository.findBySerialNumber(serialNumber)).thenReturn(Optional.empty());
+
+        // Then
+        CustomException exception = assertThrows(CustomException.class, () ->
+                anomalyReportService.getAnomalyReports(serialNumber, startDate, endDate));
+        assertEquals("Sensor not found", exception.getMessage());
     }
 }

@@ -1,6 +1,7 @@
 package com.example.smartair.controller.airQualityDataController;
 
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportDto;
+import com.example.smartair.dto.airQualityDataDto.AnomalyReportResponseDto;
 import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
@@ -189,7 +190,7 @@ public interface AirQualityReportControllerDocs {
     ResponseEntity<?> setAnomalyDailyReport(@RequestBody AnomalyReportDto anomalyReportDto);
 
 
-    @Operation(summary = "이상치 리포트 조회",
+    @Operation(summary = "특정 기간의 이상치 리포트 조회",
             description = "특정 센서의 지정된 기간 동안의 모든 이상치 리포트를 조회합니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "이상치 리포트 조회 성공",
@@ -197,7 +198,7 @@ public interface AirQualityReportControllerDocs {
                     @ApiResponse(responseCode = "404", description = "센서 또는 해당 기간의 리포트를 찾을 수 없음",
                             content = @Content(schema = @Schema(hidden = true)))
             })
-    ResponseEntity<List<AnomalyReport>> getAnomalyReports(
+    ResponseEntity<List<AnomalyReportResponseDto>> getAnomalyReports(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String sensorSerialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,

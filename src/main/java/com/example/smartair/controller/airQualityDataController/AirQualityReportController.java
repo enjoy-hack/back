@@ -1,6 +1,7 @@
 package com.example.smartair.controller.airQualityDataController;
 
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportDto;
+import com.example.smartair.dto.airQualityDataDto.AnomalyReportResponseDto;
 import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
@@ -134,13 +135,13 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
 
     @Override
     @GetMapping("/anomaly/{serialNumber}/{startDate}/{endDate}")
-    public ResponseEntity<List<AnomalyReport>> getAnomalyReports(
+    public ResponseEntity<List<AnomalyReportResponseDto>> getAnomalyReports(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        List<AnomalyReport> anomalyReports = anomalyReportService.getAnomalyReports(serialNumber, startDate, endDate);
+        List<AnomalyReportResponseDto> anomalyReports = anomalyReportService.getAnomalyReports(serialNumber, startDate, endDate);
         return ResponseEntity.ok(anomalyReports);
     }
 
