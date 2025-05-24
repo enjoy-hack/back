@@ -5,9 +5,11 @@ import com.example.smartair.dto.roomDto.CreateRoomRequestDto;
 import com.example.smartair.dto.roomDto.JoinRoomRequestDto;
 import com.example.smartair.dto.roomDto.RoomDetailResponseDto;
 import com.example.smartair.dto.roomDto.ParticipantDetailDto;
+import com.example.smartair.dto.sensorDto.SensorResponseDto;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.service.roomService.RoomService;
+import com.example.smartair.service.sensorService.SensorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -171,5 +173,19 @@ public class RoomController implements RoomControllerDocs {
         Long userId = userDetails.getUser().getId();
         List<DeviceDto> devices = roomService.getRoomDevices(userId, roomId);
         return ResponseEntity.ok(devices);
+    }
+
+    @Override
+    @GetMapping("/{roomId}/sensors")
+    public ResponseEntity<List<SensorResponseDto>> getRoomSensors(@PathVariable Long roomId,
+                                                                  @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if(userDetails == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userDetails.getUser();
+
+        List<SensorResponseDto> dtos = roomService.getRoomSensors(roomId, user);
+
+        return ResponseEntity.ok(dtos);
     }
 } 

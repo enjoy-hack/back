@@ -69,20 +69,6 @@ public class SensorController implements SensorControllerDocs {
     }
 
     @Override
-    @GetMapping("/sensors")
-    public ResponseEntity<List<SensorResponseDto>> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                             @RequestParam Long roomId){
-        if(userDetails == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        User user = userDetails.getUser();
-
-        List<SensorResponseDto> dtos = sensorService.getSensors(roomId, user);
-
-        return ResponseEntity.ok(dtos);
-    }
-
-    @Override
     @GetMapping("/sensor/status")
     public ResponseEntity<?> getSensorStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                              @RequestParam String deviceSerialNumber) throws Exception {

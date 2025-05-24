@@ -106,38 +106,6 @@ public interface SensorControllerDocs {
                                    @RequestBody SensorRequestDto.deleteSensorDto deviceDto) throws Exception;
 
     @Operation(
-            summary = "방에 등록된 센서 목록 조회",
-            description = """
-        ## 사용자의 센서 목록 조회
-
-        특정 방에 등록된 센서 목록을 모두 조회합니다.
-
-        ---
-
-        **요청 정보**
-        - 인증 정보는 `@AuthenticationPrincipal` 을 통해 자동 주입됩니다.
-        - `roomId` (Long): 조회할 방의 ID
-
-        **응답 정보**
-        - 각 센서는 다음 정보를 포함:
-        - `id` (Long): 센서 ID
-        - `serialNumber` (Long): 센서 시리얼 번호
-        - `name` (String): 센서 이름
-        - `registered` (boolean): 방 등록 여부
-        - `runningStatus` (boolean): 센서 동작 상태
-
-        ---
-
-        **응답 코드**
-        - `200 OK`: 센서 목록 조회 성공
-        - `401 Unauthorized`: 인증 정보가 없을 경우
-        """
-    )
-    @GetMapping("/sensors")
-    ResponseEntity<List<SensorResponseDto>> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                       @RequestParam Long roomId);
-
-    @Operation(
             summary = "센서 상태 조회",
             description = """
         ## 센서 상태 조회
