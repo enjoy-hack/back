@@ -2,6 +2,7 @@ package com.example.smartair.service.airQualityService.report;
 
 import com.example.smartair.domain.enums.Pollutant;
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportDto;
+import com.example.smartair.dto.airQualityDataDto.AnomalyReportResponseDto;
 import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
@@ -141,14 +142,41 @@ public class AnomalyReportService {
                 pollutant, actual, predicted, errorRate*100,level);
     }
 
-    public List<AnomalyReport> getAnomalyReports(String serialNumber, LocalDate startDate, LocalDate endDate) {
+    public List<AnomalyReportResponseDto> getAnomalyReports(String serialNumber, LocalDate startDate, LocalDate endDate) {
         Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND,String.format("해당 센서를 찾을 수 없습니다. serialNumber: %d", serialNumber)));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, String.format("해당 센서를 찾을 수 없습니다. serialNumber: %s", serialNumber)));
 
         LocalDateTime startDateTime = startDate.atStartOfDay(); // 00:00:00
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX); // 23:59:59.999999999
 
-        return anomalyReportRepository.findAnomaliesBySensorAndDateRange(sensor,startDateTime, endDateTime);
+        List<AnomalyReport> anomalyReports = anomalyReportRepository.findAnomaliesBySensorAndDateRange(sensor, startDateTime, endDateTime);
+
+        return anomalyReports.stream()
+                .map(report -> AnomalyReportResponseDto.builder()
+                        .sensorSerialNumber(report.getSensor().getSerialNumber())
+                        .anomalyTimestamp(report.getAnomalyTimestamp())
+                        .pollutant(report.getPollutant().name())
+                        .pollutantValue(report.getPollutantValue())
+                        .description(report.getDescription())
+                        .snapshotData(AnomalyReportResponseDto.SnapshotData.builder()
+                                .snapshotTimestamp(report.getRelatedHourlySnapshot().getSnapshotHour())
+                                .hourlyAvgTemperature(report.getRelatedHourlySnapshot().getHourlyAvgTemperature())
+                                .hourlyAvgHumidity(report.getRelatedHourlySnapshot().getHourlyAvgHumidity())
+                                .hourlyAvgPressure(report.getRelatedHourlySnapshot().getHourlyAvgPressure())
+                                .hourlyAvgTvoc(report.getRelatedHourlySnapshot().getHourlyAvgTvoc())
+                                .hourlyAvgEco2(report.getRelatedHourlySnapshot().getHourlyAvgEco2())
+                                .hourlyAvgPm10(report.getRelatedHourlySnapshot().getHourlyAvgPm10())
+                                .hourlyAvgPm25(report.getRelatedHourlySnapshot().getHourlyAvgPm25())
+                                .scoreData(AnomalyReportResponseDto.ScoreData.builder()
+                                        .overallScore(report.getRelatedHourlySnapshot().getOverallScore())
+                                        .pm10Score(report.getRelatedHourlySnapshot().getPm10Score())
+                                        .pm25Score(report.getRelatedHourlySnapshot().getPm25Score())
+                                        .eco2Score(report.getRelatedHourlySnapshot().getEco2Score())
+                                        .tvocScore(report.getRelatedHourlySnapshot().getTvocScore())
+                                        .build())
+                                .build())
+                        .build())
+                .toList();
     }
 
 
