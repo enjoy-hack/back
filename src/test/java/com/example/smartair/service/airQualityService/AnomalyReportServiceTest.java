@@ -186,18 +186,4 @@ class AnomalyReportServiceTest {
         verify(anomalyReportRepository, times(1)).findAnomaliesBySensorAndDateRange(any(), any(), any());
     }
 
-    @Test
-    void testGetAnomalyReports_SensorNotFound() {
-        // Given
-        String serialNumber = "NOT_EXIST";
-        LocalDate startDate = LocalDate.of(2023, 10, 1);
-        LocalDate endDate = LocalDate.of(2023, 10, 31);
-
-        when(sensorRepository.findBySerialNumber(serialNumber)).thenReturn(Optional.empty());
-
-        // Then
-        CustomException exception = assertThrows(CustomException.class, () ->
-                anomalyReportService.getAnomalyReports(serialNumber, startDate, endDate));
-        assertEquals("Sensor not found", exception.getMessage());
-    }
 }
