@@ -103,7 +103,7 @@ public interface RoomControllerDocs {
             @PathVariable Long roomId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @Operation(summary = "LG ThinQ 장치 제어 권한 요청", description = "참여자가 특정 방의 PAT 장치에 대한 제어 권한을 방장에게 요청합니다.")
+    @Operation(summary = "LG ThinQ 장치 제어 권한 요청", description = "참여자가 특정 방의 LG ThinQ 장치에 대한 제어 권한을 방장에게 요청합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "권한 요청 성공", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
@@ -115,7 +115,7 @@ public interface RoomControllerDocs {
             @PathVariable Long roomId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @Operation(summary = "LG ThinQ 장치 제어 권한 승인", description = "방장이 특정 참여자의 PAT 장치 제어 권한 요청을 승인합니다.")
+    @Operation(summary = "LG ThinQ 장치 제어 권한 승인", description = "방장이 특정 참여자의 LG ThinQ 장치 제어 권한 요청을 승인합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "권한 승인 성공", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
@@ -127,7 +127,7 @@ public interface RoomControllerDocs {
             @PathVariable Long roomParticipantId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @Operation(summary = "LG ThinQ 장치 제어 권한 거절", description = "방장이 특정 참여자의 PAT 장치 제어 권한 요청을 거절합니다.")
+    @Operation(summary = "LG ThinQ 장치 제어 권한 거절", description = "방장이 특정 참여자의 LG ThinQ 장치 제어 권한 요청을 거절합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "권한 거절 성공", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
