@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class SensorResponseDto {
+    private Long id;
     private String serialNumber;
     private String name;
     private String sensorType;
@@ -22,6 +23,7 @@ public class SensorResponseDto {
         User owner = sensor.getUser();
 
         return SensorResponseDto.builder()
+                .id(sensor.getId())
                 .serialNumber(sensor.getSerialNumber())
                 .name(sensor.getName())
                 .sensorType(sensor.getName())

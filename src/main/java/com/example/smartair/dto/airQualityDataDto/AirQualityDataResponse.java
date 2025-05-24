@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AirQualityDataResponse {
+    private Long id;
     private double temperature;
     private double humidity;
     private int pressure;
@@ -47,7 +48,8 @@ public class AirQualityDataResponse {
 
         // SensorAirQualityData가 null이 아닌 경우
         if (data != null) {
-            builder.temperature(data.getTemperature())
+            builder.id(data.getId())
+                    .temperature(data.getTemperature())
                     .humidity(data.getHumidity())
                     .pressure(data.getPressure())
                     .tvoc(data.getTvoc())

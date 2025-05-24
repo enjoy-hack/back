@@ -106,11 +106,11 @@ public interface SensorControllerDocs {
                                    @RequestBody SensorRequestDto.deleteSensorDto deviceDto) throws Exception;
 
     @Operation(
-            summary = "방에 등록된/미등록된 센서 목록 조회",
+            summary = "방에 등록된 센서 목록 조회",
             description = """
         ## 사용자의 센서 목록 조회
 
-        특정 방에 등록된 센서와 미등록된 센서 목록을 모두 조회합니다.
+        특정 방에 등록된 센서 목록을 모두 조회합니다.
 
         ---
 
@@ -119,7 +119,6 @@ public interface SensorControllerDocs {
         - `roomId` (Long): 조회할 방의 ID
 
         **응답 정보**
-        - 응답은 등록된 센서와 미등록된 센서를 모두 포함합니다.
         - 각 센서는 다음 정보를 포함:
         - `id` (Long): 센서 ID
         - `serialNumber` (Long): 센서 시리얼 번호

@@ -75,11 +75,9 @@ public class SensorController implements SensorControllerDocs {
         }
         User user = userDetails.getUser();
 
-        List<Sensor> sensorList = sensorService.getSensors(roomId, user);
+        List<SensorResponseDto> dtos = sensorService.getSensors(roomId, user);
 
-        return ResponseEntity.ok(sensorList.stream()
-                .map(SensorResponseDto::from)
-                .toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @Override
