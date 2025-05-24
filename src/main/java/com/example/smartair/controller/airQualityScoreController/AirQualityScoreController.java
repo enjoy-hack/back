@@ -27,6 +27,10 @@ public class AirQualityScoreController implements AirQualityScoreControllerDocs{
             @RequestParam(required = false) LocalDateTime startTime,
             @RequestParam(required = false) LocalDateTime endTime
     ) {
+        // 기본값 설정: 서비스의 메서드 활용 (24시간 전, 현재 시간)
+        startTime = airQualityQueryService.getDefaultStartTime(startTime);
+        endTime = airQualityQueryService.getDefaultEndTime(endTime);
+
         AverageScoreDto averageScore = airQualityQueryService.getSensorAverageScore(serialNumber, startTime, endTime);
         return ResponseEntity.ok(averageScore);
     }
@@ -37,6 +41,10 @@ public class AirQualityScoreController implements AirQualityScoreControllerDocs{
             @RequestParam(required = false) LocalDateTime startTime,
             @RequestParam(required = false) LocalDateTime endTime
     ) {
+        // 기본값 설정: 서비스의 메서드 활용 (24시간 전, 현재 시간)
+        startTime = airQualityQueryService.getDefaultStartTime(startTime);
+        endTime = airQualityQueryService.getDefaultEndTime(endTime);
+
         AverageScoreDto averageScore = airQualityQueryService.getRoomAverageScore(roomId, startTime, endTime);
         return ResponseEntity.ok(averageScore);
     }
@@ -49,6 +57,10 @@ public class AirQualityScoreController implements AirQualityScoreControllerDocs{
             @RequestParam(required = false) LocalDateTime endTime,
             Pageable pageable
     ) {
+        // 기본값 설정: 서비스의 메서드 활용 (24시간 전, 현재 시간)
+        startTime = airQualityQueryService.getDefaultStartTime(startTime);
+        endTime = airQualityQueryService.getDefaultEndTime(endTime);
+
         Page<SensorAirQualityScoreDto> scorePage = airQualityQueryService.getSensorAirQualityScores(
                 serialNumber, startTime, endTime, pageable
         );
@@ -62,6 +74,10 @@ public class AirQualityScoreController implements AirQualityScoreControllerDocs{
             @RequestParam(required = false) LocalDateTime endTime,
             Pageable pageable
     ) {
+        // 기본값 설정: 서비스의 메서드 활용 (24시간 전, 현재 시간)
+        startTime = airQualityQueryService.getDefaultStartTime(startTime);
+        endTime = airQualityQueryService.getDefaultEndTime(endTime);
+
         Page<RoomAirQualityScoreDto> scorePage = airQualityQueryService.getRoomAirQualityScores(roomId, startTime, endTime, pageable);
         return ResponseEntity.ok(scorePage);
     }
@@ -85,7 +101,7 @@ public class AirQualityScoreController implements AirQualityScoreControllerDocs{
         return ResponseEntity.ok(score);
     }
 
-    @GetMapping("/room")
+    @GetMapping("/room/{roomId}/latest")
     public ResponseEntity<RoomAirQualityScoreDto> getLatestRoomAirQualityScore(
             @PathVariable Long roomId
     ){
