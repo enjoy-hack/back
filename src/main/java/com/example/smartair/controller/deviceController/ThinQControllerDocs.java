@@ -19,7 +19,7 @@ public interface ThinQControllerDocs {
             summary = "디바이스 목록 조회",
             description = "해당 방 ID에 등록된 LG ThinQ 연동 디바이스 목록을 조회합니다.",
             parameters = {
-                    @Parameter(name = "deviceId", description = "방 ID", required = true, example = "1")
+                    @Parameter(name = "roomId", description = "방 ID", required = true, example = "1")
             },
             responses = {
                     @ApiResponse(
@@ -54,8 +54,8 @@ public interface ThinQControllerDocs {
             description = "지정된 디바이스를 새로운 방으로 이동시킵니다.\n" +
                     "사용자는 디바이스의 현재 방과 이동할 방에 대해서 수정할 권한이 있어야 합니다.\n",
             parameters = {
-                    @Parameter(name = "deviceId", description = "디바이스 ID", required = true, example = "1"),
-                    @Parameter(name = "roomId", description = "방 ID", required = true, example = "2")
+                    @Parameter(name = "roomId", description = "방 ID", required = true, example = "1"),
+                    @Parameter(name = "deviceId", description = "디바이스 ID", required = true, example = "1")
             },
             responses = {
                     @ApiResponse(
@@ -79,7 +79,7 @@ public interface ThinQControllerDocs {
     )
     ResponseEntity<?> updateDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
                                            @PathVariable("roomId") Long roomId,
-                                           @PathVariable("deviceId") Long deviceId) throws Exception;
+                                    @PathVariable("deviceId") Long deviceId) throws Exception;
     @Operation(
             summary = "디바이스 상태 조회",
             description = "지정된 디바이스 ID의 상세 상태 정보를 반환합니다.",
@@ -199,7 +199,6 @@ public interface ThinQControllerDocs {
                     @ApiResponse(responseCode = "404", description = "디바이스 정보 없음"),
                     @ApiResponse(responseCode = "500", description = "제어 실패 또는 ThinQ API 오류")
             }
-    )
-    ResponseEntity<?> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
+    ) ResponseEntity<?> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
                                    @PathVariable("deviceId") Long deviceId) throws Exception;
 }
