@@ -2,6 +2,8 @@ package com.example.smartair.controller.airQualityDataController;
 
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportDto;
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportResponseDto;
+import com.example.smartair.dto.airQualityDataDto.dailyReportDto.DailyReportResponseDto;
+import com.example.smartair.dto.airQualityDataDto.weeklyReportDto.WeeklyReportResponseDto;
 import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
@@ -27,11 +29,11 @@ public interface AirQualityReportControllerDocs {
             description = "특정 센서의 지정된 날짜에 대한 일별 공기질 리포트를 조회합니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "일별 리포트 조회 성공",
-                            content = @Content(schema = @Schema(implementation = DailySensorAirQualityReport.class))),
+                            content = @Content(schema = @Schema(implementation = DailyReportResponseDto.class))),
                     @ApiResponse(responseCode = "404", description = "센서 또는 해당 날짜의 리포트를 찾을 수 없음",
                             content = @Content(schema = @Schema(hidden = true)))
             })
-    ResponseEntity<DailySensorAirQualityReport> getDailyReport(
+    ResponseEntity<DailyReportResponseDto> getDailyReport(
             @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
             @Parameter(description = "조회할 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-28")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date);
@@ -40,13 +42,13 @@ public interface AirQualityReportControllerDocs {
             description = "특정 센서의 지정된 시작일과 종료일 사이의 모든 일별 공기질 리포트 목록을 조회합니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "일별 리포트 목록 조회 성공",
-                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = DailySensorAirQualityReport.class)))),
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = DailyReportResponseDto.class)))),
                     @ApiResponse(responseCode = "400", description = "잘못된 날짜 범위 (시작일이 종료일보다 늦음)",
                             content = @Content(schema = @Schema(hidden = true))),
                     @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음",
                             content = @Content(schema = @Schema(hidden = true)))
             })
-    ResponseEntity<List<DailySensorAirQualityReport>> getDailyReportsForPeriod(
+    ResponseEntity<List<DailyReportResponseDto>> getDailyReportsForPeriod(
             @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -57,11 +59,11 @@ public interface AirQualityReportControllerDocs {
             description = "특정 센서의 지정된 연도와 주차(ISO 8601 기준)에 대한 주간 공기질 리포트를 조회합니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "주간 리포트 조회 성공",
-                            content = @Content(schema = @Schema(implementation = WeeklySensorAirQualityReport.class))),
+                            content = @Content(schema = @Schema(implementation = WeeklyReportResponseDto.class))),
                     @ApiResponse(responseCode = "404", description = "센서 또는 해당 연도/주차의 리포트를 찾을 수 없음",
                             content = @Content(schema = @Schema(hidden = true)))
             })
-    ResponseEntity<WeeklySensorAirQualityReport> getWeeklyReport(
+    ResponseEntity<WeeklyReportResponseDto> getWeeklyReport(
             @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
             @Parameter(description = "조회할 연도 (YYYY 형식)", required = true, example = "2023") Integer year,
             @Parameter(description = "조회할 주차 (1-53 사이의 숫자, ISO 8601 기준)", required = true, example = "43") Integer weekOfYear);
@@ -70,13 +72,13 @@ public interface AirQualityReportControllerDocs {
             description = "특정 센서의 지정된 시작일과 종료일 사이에 시작하는 모든 주간 공기질 리포트 목록을 조회합니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "주간 리포트 목록 조회 성공",
-                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = WeeklySensorAirQualityReport.class)))),
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = WeeklyReportResponseDto.class)))),
                     @ApiResponse(responseCode = "400", description = "잘못된 날짜 범위 (시작일이 종료일보다 늦음)",
                             content = @Content(schema = @Schema(hidden = true))),
                     @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음",
                             content = @Content(schema = @Schema(hidden = true)))
             })
-    ResponseEntity<List<WeeklySensorAirQualityReport>> getWeeklyReportsForPeriod(
+    ResponseEntity<List<WeeklyReportResponseDto>> getWeeklyReportsForPeriod(
             @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,

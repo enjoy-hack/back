@@ -2,6 +2,8 @@ package com.example.smartair.controller.airQualityDataController;
 
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportDto;
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportResponseDto;
+import com.example.smartair.dto.airQualityDataDto.dailyReportDto.DailyReportResponseDto;
+import com.example.smartair.dto.airQualityDataDto.weeklyReportDto.WeeklyReportResponseDto;
 import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
@@ -36,24 +38,28 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     // === 일별 리포트 API ===
     @Override
     @GetMapping("/daily/{serialNumber}/{date}")
-    public ResponseEntity<DailySensorAirQualityReport> getDailyReport(
+    public ResponseEntity<DailyReportResponseDto> getDailyReport(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
             @Parameter(description = "조회할 날짜", required = true, example = "2023-10-28")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         DailySensorAirQualityReport report = dailyReportService.getDailyReport(serialNumber, date);
-        return ResponseEntity.ok(report);
+        return ResponseEntity.ok(DailyReportResponseDto.from(report));
     }
 
     @Override
     @GetMapping("/daily/{serialNumber}")
-    public ResponseEntity<List<DailySensorAirQualityReport>> getDailyReportsForPeriod(
+    public ResponseEntity<List<DailyReportResponseDto>> getDailyReportsForPeriod(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         List<DailySensorAirQualityReport> reports = dailyReportService.getDailyReportsForPeriod(serialNumber, startDate, endDate);
-        return ResponseEntity.ok(reports);
+        return ResponseEntity.ok(
+                reports.stream()
+                        .map(DailyReportResponseDto::from)
+                        .toList()
+        );
     }
 
     @Override
@@ -83,24 +89,28 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     // === 주간 리포트 API ===
     @Override
     @GetMapping("/weekly/{serialNumber}/{year}/{weekOfYear}")
-    public ResponseEntity<WeeklySensorAirQualityReport> getWeeklyReport(
+    public ResponseEntity<WeeklyReportResponseDto> getWeeklyReport(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
             @Parameter(description = "조회할 연도 (YYYY 형식)", required = true, example = "2023") @PathVariable Integer year,
             @Parameter(description = "조회할 주차 (1-53 사이의 숫자, ISO 8601 기준)", required = true, example = "43") @PathVariable Integer weekOfYear) {
         WeeklySensorAirQualityReport report = weeklyReportService.getWeeklyReport(serialNumber, year, weekOfYear);
-        return ResponseEntity.ok(report);
+        return ResponseEntity.ok(WeeklyReportResponseDto.from(report));
     }
 
     @Override
     @GetMapping("/weekly/{serialNumber}")
-    public ResponseEntity<List<WeeklySensorAirQualityReport>> getWeeklyReportsForPeriod(
+    public ResponseEntity<List<WeeklyReportResponseDto>> getWeeklyReportsForPeriod(
             @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
             @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         List<WeeklySensorAirQualityReport> reports = weeklyReportService.getWeeklyReportsForPeriod(serialNumber, startDate, endDate);
-        return ResponseEntity.ok(reports);
+        return ResponseEntity.ok(
+                reports.stream()
+                        .map(WeeklyReportResponseDto::from)
+                        .toList()
+        );
     }
 
     @Override
