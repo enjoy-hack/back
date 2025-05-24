@@ -230,4 +230,12 @@ public class SensorService {
 
         return SensorResponseDto.from(sensor);
     }
+
+    public List<SensorResponseDto> getUserSensors(User user) {
+        List<Sensor> sensors = sensorRepository.findByUser(user);
+
+        return sensors.stream()
+                .map(SensorResponseDto::from)
+                .toList();
+    }
 }

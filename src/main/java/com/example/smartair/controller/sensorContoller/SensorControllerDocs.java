@@ -185,4 +185,12 @@ public interface SensorControllerDocs {
     ResponseEntity<SensorResponseDto> getSensorById(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(value = "센서 ID", required = true) Long sensorId);
+
+    @GetMapping("/user/sensors")
+    @Operation(summary = "사용자 센서 목록 조회", description = "사용자가 등록한 모든 센서의 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "센서 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패")
+    })
+    ResponseEntity<List<SensorResponseDto>> getUserSensors(@AuthenticationPrincipal CustomUserDetails userDetails);
 }

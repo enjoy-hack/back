@@ -110,6 +110,7 @@ public class SensorController implements SensorControllerDocs {
         return ResponseEntity.noContent().build();
     }
 
+    @Override
     @GetMapping("/sensor/{sensorId}")
     public ResponseEntity<SensorResponseDto> getSensorById(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -129,5 +130,20 @@ public class SensorController implements SensorControllerDocs {
 
         return ResponseEntity.ok(sensorDto);
     }
+
+    @Override
+    @GetMapping("/user/sensors")
+    public ResponseEntity<List<SensorResponseDto>> getUserSensors(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userDetails.getUser();
+
+        List<SensorResponseDto> sensors = sensorService.getUserSensors(user);
+
+        return ResponseEntity.ok(sensors);
+    }
+
 }
 
