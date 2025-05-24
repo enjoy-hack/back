@@ -101,7 +101,7 @@ public class AirQualityQueryService { //공기질 점수 조회
 
 
         if (sensorRepository.findBySerialNumber(serialNumber).isEmpty()) {
-            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + serialNumber);
+            throw new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor serialNumber: " + serialNumber);
         }
 
         return sensorAirQualityScoreRepository
@@ -160,7 +160,7 @@ public class AirQualityQueryService { //공기질 점수 조회
         Sensor sensor = sensorRepository.findBySerialNumber(serialNumber).orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + serialNumber));
 
         SensorAirQualityScore latestSensorScore = sensorAirQualityScoreRepository.findFirstBySensorAirQualityData_SensorOrderByCreatedAtDesc(sensor).orElseThrow(
-                ()-> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor ID: " + serialNumber)
+                ()-> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor serialNumber: " + serialNumber)
         );
 
         return SensorAirQualityScoreDto.fromEntity(latestSensorScore);
@@ -196,11 +196,11 @@ public class AirQualityQueryService { //공기질 점수 조회
 //        return PlaceAirQualityScoreDto.fromEntity(latestPlaceScore);
 //    }
 
-    private LocalDateTime getDefaultStartTime(LocalDateTime startTime) {
+    public LocalDateTime getDefaultStartTime(LocalDateTime startTime) {
         return startTime != null ? startTime : LocalDateTime.now().minusHours(24);
     }
 
-    private LocalDateTime getDefaultEndTime(LocalDateTime endTime) {
+    public LocalDateTime getDefaultEndTime(LocalDateTime endTime) {
         return endTime != null ? endTime : LocalDateTime.now();
     }
 
