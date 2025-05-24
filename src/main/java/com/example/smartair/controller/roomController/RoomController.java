@@ -1,5 +1,6 @@
 package com.example.smartair.controller.roomController;
 
+import com.example.smartair.dto.deviceDto.DeviceDto;
 import com.example.smartair.dto.roomDto.CreateRoomRequestDto;
 import com.example.smartair.dto.roomDto.JoinRoomRequestDto;
 import com.example.smartair.dto.roomDto.RoomDetailResponseDto;
@@ -157,5 +158,18 @@ public class RoomController implements RoomControllerDocs {
 
         List<RoomDetailResponseDto> rooms = roomService.getUserRooms(user.getId());
         return ResponseEntity.ok(rooms);
+    }
+
+    @Override
+    @GetMapping("/{roomId}/devices")
+    public ResponseEntity<List<DeviceDto>> getRoomDevices(
+            @PathVariable Long roomId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Long userId = userDetails.getUser().getId();
+        List<DeviceDto> devices = roomService.getRoomDevices(userId, roomId);
+        return ResponseEntity.ok(devices);
     }
 } 

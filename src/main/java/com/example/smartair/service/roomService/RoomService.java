@@ -1,12 +1,15 @@
 package com.example.smartair.service.roomService;
 
+import com.example.smartair.dto.deviceDto.DeviceDto;
 import com.example.smartair.dto.roomDto.*;
+import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.user.Role;
 import com.example.smartair.entity.user.User;
 import com.example.smartair.entity.roomParticipant.RoomParticipant;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
+import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.repository.roomParticipantRepository.RoomParticipantRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
 import com.example.smartair.repository.userRepository.UserRepository;
@@ -26,11 +29,13 @@ public class RoomService {
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
     private final RoomParticipantRepository roomParticipantRepository;
+    private final DeviceRepository deviceRepository;
 
-    public RoomService(UserRepository userRepository, RoomRepository roomRepository, RoomParticipantRepository roomParticipantRepository) {
+    public RoomService(UserRepository userRepository, RoomRepository roomRepository, RoomParticipantRepository roomParticipantRepository, DeviceRepository deviceRepository) {
         this.userRepository = userRepository;
         this.roomRepository = roomRepository;
         this.roomParticipantRepository = roomParticipantRepository;
+        this.deviceRepository = deviceRepository;
     }
 
     /**
@@ -410,6 +415,31 @@ public class RoomService {
 
         return roomParticipants.stream()
                 .map(roomParticipant -> RoomDetailResponseDto.from(roomParticipant.getRoom()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 방에 속한 디바이스 리스트를 조회합니다.
+     */
+    public List<DeviceDto> getRoomDevices(Long userId, Long roomId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+
+//        // 해당 방에 속한 사용자인지 확인
+//        RoomParticipant participant = roomParticipantRepository.findByRoomAndUser(room, user)
+//                .orElseThrow(() -> new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM));
+
+        List<Device> devices = deviceRepository.findByRoomId(room.getId());
+
+        return devices.stream()
+                .map(device -> new DeviceDto(
+                        device.getId(),
+                        device.getAlias(),
+                        roomId
+                ))
                 .collect(Collectors.toList());
     }
 
