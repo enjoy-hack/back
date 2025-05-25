@@ -46,7 +46,7 @@ public class PredictedAirQualityService  {
 
         for (PredictedAirQualityDto dto : predictedAirQualityDtoList) {
             String sensorSerialNumber = dto.getSensorSerialNumber();
-            LocalDateTime timestamp = dto.getTimestamp();
+            LocalDateTime timestamp = dto.getTimestamp().minusHours(9);
             float pm10 = dto.getPm10();
             float co2 = dto.getCo2();
             float tvoc = dto.getTvoc();
