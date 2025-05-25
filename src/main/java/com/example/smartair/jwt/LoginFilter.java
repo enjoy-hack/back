@@ -84,26 +84,25 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         
         addRefreshEntity(username, refresh, 86400000L);
 
-        // TokenDto 생성 및 JSON 응답
-        TokenDto tokenDto = TokenDto.builder()
-                .grantType("Bearer")
-                .accessToken(access)
-                .refreshToken(refresh)
-                .build();
-
-        // JSON 응답 설정
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        // TokenDto를 JSON으로 변환하여 응답 본문에 작성
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(response.getWriter(), tokenDto);
-        
+//        // TokenDto 생성 및 JSON 응답
+//        TokenDto tokenDto = TokenDto.builder()
+//                .grantType("Bearer")
+//                .accessToken(access)
+//                .refreshToken(refresh)
+//                .build();
+//
+//        // JSON 응답 설정
+//        response.setContentType("application/json");
+//        response.setCharacterEncoding("UTF-8");
+//
+//        // TokenDto를 JSON으로 변환하여 응답 본문에 작성
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        objectMapper.writeValue(response.getWriter(), tokenDto);
+//
         //응답 설정
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));
         response.setStatus(HttpStatus.OK.value());
-
 
         System.out.println("첫 토큰 나옴");
     }
