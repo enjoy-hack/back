@@ -61,10 +61,10 @@ class ThinQServiceTest {
         when(roomRepository.findRoomById(2L)).thenReturn(Optional.of(mockRoom2));
         when(deviceRepository.findById(1L)).thenReturn(Optional.of(mockDevice));
 
-        DeviceDto result = (DeviceDto) thinQService.updateDevice(mockUser, 2L, 1L);
+        DeviceDto.DeviceUpdateResponseDto result = (DeviceDto.DeviceUpdateResponseDto) thinQService.updateDevice(mockUser, 2L, 1L);
 
         assertNotNull(result);
-        assertEquals(2L, result.getRoomId());
+        assertEquals(2L, result.roomId());
         verify(deviceRepository, times(1)).save(mockDevice);
     }
 }
