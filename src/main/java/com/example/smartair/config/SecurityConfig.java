@@ -77,7 +77,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/sensorMappingWithRoom").permitAll()
                         .requestMatchers(HttpMethod.POST, "/anomaly").permitAll()
                         .requestMatchers(HttpMethod.POST, "/predictedAirQuality").permitAll()
-                        .anyRequest().permitAll() //개발 중
+                        .anyRequest().authenticated() //개발 중
                 );
 
         // JWT 필터 & 커스텀 필터 설정

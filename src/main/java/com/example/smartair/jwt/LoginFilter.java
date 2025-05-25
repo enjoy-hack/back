@@ -123,8 +123,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24*60*60);
-        //cookie.setSecure(true); 쿠키 암호화 전송 https://howisitgo1ng.tistory.com/entry/HTTP-Only%EC%99%80-Secure-Cookie
-        //cookie.setPath("/");
+        cookie.setSecure(true); //쿠키 암호화 전송 https://howisitgo1ng.tistory.com/entry/HTTP-Only%EC%99%80-Secure-Cookie
+        cookie.setPath("/");
         cookie.setHttpOnly(true);
 
         return cookie;
