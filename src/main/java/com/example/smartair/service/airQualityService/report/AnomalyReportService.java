@@ -6,23 +6,35 @@ import com.example.smartair.dto.airQualityDataDto.AnomalyReportResponseDto;
 import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
+import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.room.Room;
+import com.example.smartair.entity.roomParticipant.RoomParticipant;
+import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
+import com.example.smartair.entity.user.User;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.AnomalyReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
+import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.roomRepository.RoomRepository;
+import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
+import com.example.smartair.service.deviceService.ThinQService;
 import com.google.firebase.messaging.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -32,16 +44,19 @@ public class AnomalyReportService {
     private final SensorRepository sensorRepository;
     private final HourlyDeviceAirQualitySnapshotRepository hourlyDeviceAirQualitySnapshotRepository;
     private final DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
+    private final ThinQService thinQService;
+    private final RoomSensorRepository roomSensorRepository;
+    private final DeviceRepository deviceRepository;
+
 
     private static final DateTimeFormatter ANOMALY_TIMESTAMP_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public String setAnomalyReport(AnomalyReportDto dto) {
+    public String setAnomalyReport(AnomalyReportDto dto) throws Exception {
         Sensor sensor = sensorRepository.findBySerialNumber(dto.getSensorSerialNumber())
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, String.format("시리얼 번호 {}에 맞는 센서가 존재하지 않습니다." + dto.getSensorSerialNumber())));
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, String.format("시리얼 번호 %s에 맞는 센서가 존재하지 않습니다.", dto.getSensorSerialNumber())));
 
         LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER);
-
 
         HourlySensorAirQualitySnapshot hourlySnapshot = hourlyDeviceAirQualitySnapshotRepository
                 .findBySensorAndSnapshotHour(sensor, anomalyDate)
@@ -55,10 +70,11 @@ public class AnomalyReportService {
                 dto.getPollutant(),
                 dto.getPollutantValue(),
                 dto.getPredictedValue(),
-                dto.getAnomalyTimestamp() // 추가된 인자
+                dto.getAnomalyTimestamp()
         );
         log.info("Anomaly report description: {}", description);
 
+        // 이상치 보고서 생성
         AnomalyReport anomalyReport = AnomalyReport.builder()
                 .sensor(sensor)
                 .anomalyTimestamp(LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER))
@@ -68,12 +84,30 @@ public class AnomalyReportService {
                 .relatedHourlySnapshot(hourlySnapshot)
                 .relatedDailyReport(dailyReport)
                 .build();
-
         anomalyReportRepository.save(anomalyReport);
         log.info("Anomaly report saved: {}", anomalyReport.getId());
 
-        String targetToken = sensor.getUser().getFcmToken(); // 알림 대상 FCM 토큰 가져오기
+        Optional<RoomSensor> roomSensor = roomSensorRepository.findBySensor(sensor);
+        if(roomSensor.isEmpty()){ // 방에 등록되지 않은 센서인 경우, 센서 주인에게만 알림만
+            return firebaseAlarm(sensor.getUser().getFcmToken(), description);
+        }else{
+            Room room = roomSensor.get().getRoom();
+            List<String> targetTokens = new ArrayList<>();
+            targetTokens.add(room.getOwner().getFcmToken()); // 방 주인에게 알림
+            for (RoomParticipant participant: room.getParticipants()) { // 방 참여자들에게 알림
+                targetTokens.add(participant.getUser().getFcmToken());
+            }
+            // 알림 전송
+            for (String token : targetTokens) {
+                firebaseAlarm(token, description);
+            }
+            Optional<Device> device = deviceRepository.findDeviceByRoomIdAndAlias(room.getId(), "에어로타워");
+            if(device.isPresent()) thinQService.controlAirPurifierPower(room.getOwner(), device.get().getId(), true); // 공기청정기 켜기
 
+            return "알림이 성공적으로 전송되었습니다.";
+        }
+    }
+    public String firebaseAlarm(String targetToken, String description) {
         Message message = Message.builder()
                 .setToken(targetToken)
                 .putData("title", "이상치 발생 알림")
@@ -82,17 +116,9 @@ public class AnomalyReportService {
         try {
             return FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
-            if (e.getMessagingErrorCode().equals(MessagingErrorCode.INVALID_ARGUMENT)) {
-                // 토큰이 유효하지 않은 경우, 오류 코드를 반환
-                return e.getMessagingErrorCode().toString();
-            } else if (e.getMessagingErrorCode().equals(MessagingErrorCode.UNREGISTERED)) {
-                // 재발급된 이전 토큰인 경우, 오류 코드를 반환
-                return e.getMessagingErrorCode().toString();
-            } else { // 그 외, 오류는 런타임 예외로 처리
-                throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "Error sending FCM message: " + e.getMessage());
-            }
+            log.warn("FCM 전송 실패. 토큰: {}, 사유: {}", targetToken, e.getMessage());
+            return e.getMessagingErrorCode().toString();
         }
-
     }
 
     public String generateDescription(String pollutant, double actual, double predicted, String anomalyTimestamp) {
@@ -131,17 +157,26 @@ public class AnomalyReportService {
 
         String level;
         if (errorRate >= threshold + 0.1) {
-            level = "예측값보다 상당히 높은 수치입니다. 즉각적인 점검이 필요할 수 있습니다.";
+            level = "예측값보다 상당히 높은 수치입니다. 즉각적인 점검이 필요할 수 있습니다.\n" + descriptionDetail(pollutant);
         } else if (errorRate >= threshold) {
-            level = "예측값과 다소 차이가 있는 수치입니다. 주의가 요구됩니다.";
+            level = "예측값과 다소 차이가 있는 수치입니다. 주의가 요구됩니다.\n" + descriptionDetail(pollutant);
         } else {
             level = "예측값과 유사하여 정상 범위로 판단됩니다.";
         }
 
+
         return String.format("%s 농도가 %.2f로 예측치 %.2f와 비교했을 때, %.0f%% 정도로 %s",
                 pollutant, actual, predicted, errorRate*100,level);
     }
-
+    public String descriptionDetail(String pollutant){
+        return switch (pollutant.toUpperCase()) {
+            case "CO2" -> "CO2 농도가 높아지면 호흡기 건강에 영향을 줄 수 있습니다.\n" +
+                    "실내 공기질을 개선하기 위해 환기를 고려하세요.";
+            case "TVOC" -> "TVOC 농도가 높아지면 실내 공기질이 저하될 수 있습니다.";
+            case "PM10" -> "PM10 농도가 높아지면 호흡기 질환의 위험이 증가할 수 있습니다.";
+            default -> "";
+        };
+    }
     public List<AnomalyReportResponseDto> getAnomalyReports(String serialNumber, LocalDate startDate, LocalDate endDate) {
         Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, String.format("해당 센서를 찾을 수 없습니다. serialNumber: %s", serialNumber)));

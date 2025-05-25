@@ -207,7 +207,7 @@ public class ThinQService {
         return sendRequest(endpoint, HttpMethod.GET, null, patToken).getBody();
     }
 
-    public ResponseEntity<String> controlAirPurifierPower(User user, Long deviceId) throws Exception {
+    public ResponseEntity<String> controlAirPurifierPower(User user, Long deviceId, Boolean enforeON) throws Exception {
         Device device = deviceRepository.findById(deviceId).orElseThrow(
                 () -> new CustomException(ErrorCode.DEVICE_NOT_FOUND, "디바이스를 찾을 수 없습니다.")
         );
@@ -223,7 +223,9 @@ public class ThinQService {
         DeviceStateResponseDto state = objectMapper.readValue(statusResponse, DeviceStateResponseDto.class); // 디바이스 상태 DTO로 변환
         String currentMode = state.getResponse().getOperation().getAirFanOperationMode(); // 현재 모드 가져오기
         String newMode = currentMode.equals("POWER_ON") ? "POWER_OFF" : "POWER_ON"; // 전원 상태 반전
-
+        if( enforeON ) {
+            newMode = "POWER_ON"; // 강제 켜기
+        }
         Map<String, Object> requestBody = Map.of(
                 "operation", Map.of("airFanOperationMode", newMode)
         );
