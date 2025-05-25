@@ -6,6 +6,7 @@ import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapsh
 import com.example.smartair.entity.login.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,25 +17,31 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Tag(name = "AirQuality Snapshot API", description = "시간별 공기질 스냅샷 조회 API")
 public interface AirQualitySnapshotControllerDocs {
 
-    @Operation(summary = "특정 시간의 공기질 스냅샷 조회",
-            description = "특정 센서의 지정된 시간(YYYY-MM-DDTHH:00:00 형식)에 해당하는 시간별 공기질 스냅샷 정보를 조회합니다. " +
-                          "조회된 스냅샷에는 각종 공기질 데이터의 시간별 평균값과 계산된 점수들이 포함됩니다.",
+    @Operation(summary = "특정 기간의 공기질 스냅샷 목록 조회",
+            description = "특정 센서의 지정된 시간 범위(startTime부터 endTime까지)에 해당하는 시간별 공기질 스냅샷 리스트를 조회합니다. " +
+                    "조회된 스냅샷에는 각종 공기질 데이터의 시간별 평균값과 계산된 점수들이 포함됩니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "스냅샷 조회 성공",
-                            content = @Content(schema = @Schema(implementation = HourlySensorAirQualitySnapshot.class))),
-                    @ApiResponse(responseCode = "404", description = "센서 또는 해당 시간의 스냅샷을 찾을 수 없음",
+                    @ApiResponse(responseCode = "200", description = "스냅샷 목록 조회 성공",
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = HourlySensorAirQualitySnapshotResponse.class)))),
+                    @ApiResponse(responseCode = "404", description = "센서 또는 해당 시간 범위의 스냅샷을 찾을 수 없음",
+                            content = @Content(schema = @Schema(hidden = true))),
+                    @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자",
                             content = @Content(schema = @Schema(hidden = true)))
             })
-    ResponseEntity<HourlySensorAirQualitySnapshotResponse> getHourlySnapshot(
+    ResponseEntity<List<HourlySensorAirQualitySnapshotResponse>> getHourlySnapshots(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "센서 일련번호", required = true, example = "1") @PathVariable String serialNumber,
-            @Parameter(description = "조회할 스냅샷 시간 (YYYY-MM-DDTHH:00:00 형식). 분, 초, 나노초는 무시되고 정시로 처리됩니다.",
-                       required = true, example = "2023-10-28T14:00:00")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime snapshotHour);
+            @Parameter(description = "조회 시작 시간 (YYYY-MM-DDTHH:MM:SS 형식)",
+                    required = true, example = "2023-10-28T14:00:00")
+            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startTime,
+            @Parameter(description = "조회 종료 시간 (YYYY-MM-DDTHH:MM:SS 형식)",
+                    required = true, example = "2023-10-28T18:00:00")
+            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endTime);
 
 
 
@@ -44,6 +51,8 @@ public interface AirQualitySnapshotControllerDocs {
                     @ApiResponse(responseCode = "200", description = "대기질 데이터 조회 성공",
                             content = @Content(schema = @Schema(implementation = AirQualityDataResponse.class))),
                     @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음",
+                            content = @Content(schema = @Schema(hidden = true))),
+                    @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자",
                             content = @Content(schema = @Schema(hidden = true)))
             })
     ResponseEntity<AirQualityDataResponse> getLatestSensorAirQualityData(
