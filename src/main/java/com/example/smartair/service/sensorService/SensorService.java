@@ -146,28 +146,6 @@ public class SensorService {
         roomSensorRepository.delete(roomSensor);
     }
 
-    public List<SensorResponseDto> getSensors(Long roomId, User user) {
-        // 방이 존재하는지 확인
-        roomRepository.findById(roomId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
-
-       // 사용자가 방에 등록된 참여자인지 확인
-        if (!roomRepository.existsByIdAndParticipants_User(roomId, user)) {
-            throw new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM, "해당 방에 등록된 사용자가 아닙니다.");
-        }
-
-        // 해당 방에 등록된 센서만 조회
-        List<Sensor> sensors = roomSensorRepository.findByRoomId(roomId)
-                .stream()
-                .map(RoomSensor::getSensor)
-                .toList();
-
-        // 센서 정보를 DTO로 변환하여 반환
-        return sensors.stream()
-                .map(SensorResponseDto::from)
-                .toList();
-    }
-
     public boolean getSensorStatus(String serialNumber) throws Exception {
         Optional<Sensor> optionalSensor = sensorRepository.findBySerialNumber(serialNumber);
 
@@ -222,5 +200,21 @@ public class SensorService {
 
         // RoomSensor 매핑 삭제
         roomSensorRepository.delete(roomSensor);
+    }
+
+    public SensorResponseDto getSensorById(Long sensorId) {
+        Sensor sensor = sensorRepository.findById(sensorId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "해당 ID에 맞는 센서가 없습니다."));
+
+        return SensorResponseDto.from(sensor);
+    }
+
+    public List<SensorResponseDto> getUserSensors(User user) {
+        List<Sensor> sensors = sensorRepository.findByUser(user);
+
+        return sensors.stream()
+                .map(SensorResponseDto::from)
+                .toList();
+
     }
 }

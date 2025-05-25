@@ -106,38 +106,6 @@ public interface SensorControllerDocs {
                                    @RequestBody SensorRequestDto.deleteSensorDto deviceDto) throws Exception;
 
     @Operation(
-            summary = "방에 등록된 센서 목록 조회",
-            description = """
-        ## 사용자의 센서 목록 조회
-
-        특정 방에 등록된 센서 목록을 모두 조회합니다.
-
-        ---
-
-        **요청 정보**
-        - 인증 정보는 `@AuthenticationPrincipal` 을 통해 자동 주입됩니다.
-        - `roomId` (Long): 조회할 방의 ID
-
-        **응답 정보**
-        - 각 센서는 다음 정보를 포함:
-        - `id` (Long): 센서 ID
-        - `serialNumber` (Long): 센서 시리얼 번호
-        - `name` (String): 센서 이름
-        - `registered` (boolean): 방 등록 여부
-        - `runningStatus` (boolean): 센서 동작 상태
-
-        ---
-
-        **응답 코드**
-        - `200 OK`: 센서 목록 조회 성공
-        - `401 Unauthorized`: 인증 정보가 없을 경우
-        """
-    )
-    @GetMapping("/sensors")
-    ResponseEntity<List<SensorResponseDto>> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                       @RequestParam Long roomId);
-
-    @Operation(
             summary = "센서 상태 조회",
             description = """
         ## 센서 상태 조회
@@ -173,4 +141,24 @@ public interface SensorControllerDocs {
     ResponseEntity<?> unregisterSensorFromRoom(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody SensorRequestDto.unregisterSensorFromRoomDto request) throws Exception;
+
+    @GetMapping("/sensor/{sensorId}")
+    @Operation(summary = "센서 ID로 센서 정보 조회", description = "센서 ID를 기반으로 센서 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "센서 정보 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description=  "해당 센서에 대한 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "해당 ID의 센서를 찾을 수 없음")
+    })
+    ResponseEntity<SensorResponseDto> getSensorById(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "센서 ID", required = true) Long sensorId);
+
+    @GetMapping("/user/sensors")
+    @Operation(summary = "사용자 센서 목록 조회", description = "사용자가 등록한 모든 센서의 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "센서 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패")
+    })
+    ResponseEntity<List<SensorResponseDto>> getUserSensors(@AuthenticationPrincipal CustomUserDetails userDetails);
 }

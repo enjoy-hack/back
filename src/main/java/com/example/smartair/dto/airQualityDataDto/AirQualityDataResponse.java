@@ -6,12 +6,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class AirQualityDataResponse {
     private Long id;
+    private LocalDateTime timestamp;
     private double temperature;
     private double humidity;
     private int pressure;
@@ -49,6 +52,7 @@ public class AirQualityDataResponse {
         // SensorAirQualityData가 null이 아닌 경우
         if (data != null) {
             builder.id(data.getId())
+                    .timestamp(data.getSensor().getLastDataTime())
                     .temperature(data.getTemperature())
                     .humidity(data.getHumidity())
                     .pressure(data.getPressure())

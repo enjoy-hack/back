@@ -7,6 +7,8 @@ import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.login.CustomUserDetails;
 import com.example.smartair.entity.user.User;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.service.sensorService.SensorService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,20 +69,6 @@ public class SensorController implements SensorControllerDocs {
     }
 
     @Override
-    @GetMapping("/sensors")
-    public ResponseEntity<List<SensorResponseDto>> getSensors(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                             @RequestParam Long roomId){
-        if(userDetails == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        User user = userDetails.getUser();
-
-        List<SensorResponseDto> dtos = sensorService.getSensors(roomId, user);
-
-        return ResponseEntity.ok(dtos);
-    }
-
-    @Override
     @GetMapping("/sensor/status")
     public ResponseEntity<?> getSensorStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                              @RequestParam String deviceSerialNumber) throws Exception {
@@ -106,6 +94,41 @@ public class SensorController implements SensorControllerDocs {
 
         sensorService.unregisterSensorFromRoom(user, request);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @GetMapping("/sensor/{sensorId}")
+    public ResponseEntity<SensorResponseDto> getSensorById(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long sensorId) {
+
+        if(userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userDetails.getUser();
+
+        SensorResponseDto sensorDto = sensorService.getSensorById(sensorId);
+
+        // 센서 소유자 검증 (필요한 경우)
+        if (!sensorDto.getOwnerUsername().equals(user.getUsername())) {
+            throw new CustomException(ErrorCode.NO_AUTHORITY_TO_ACCESS_SENSOR, "해당 센서에 대한 권한이 없습니다.");
+        }
+
+        return ResponseEntity.ok(sensorDto);
+    }
+
+    @Override
+    @GetMapping("/user/sensors")
+    public ResponseEntity<List<SensorResponseDto>> getUserSensors(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userDetails.getUser();
+
+        List<SensorResponseDto> sensors = sensorService.getUserSensors(user);
+
+        return ResponseEntity.ok(sensors);
     }
 
 }

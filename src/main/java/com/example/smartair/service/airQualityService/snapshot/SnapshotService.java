@@ -114,14 +114,25 @@ public class SnapshotService {
      * 특정 장치의 특정 시간에 대한 시간별 스냅샷을 조회합니다.
      */
     @Transactional(readOnly = true)
-    public HourlySensorAirQualitySnapshot getHourlySnapshot(String serialNumber, LocalDateTime snapshotHour) {
+    public List<HourlySensorAirQualitySnapshot> getHourlySnapshots(String serialNumber, LocalDateTime startTime, LocalDateTime endTime) {
         Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND));
 
-        snapshotHour = snapshotHour.truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime startHour = startTime.truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime endHour = endTime.truncatedTo(ChronoUnit.HOURS).plusHours(1);
 
-        return snapshotRepository.findBySensorAndSnapshotHour(sensor, snapshotHour)
-                .orElseThrow(() -> new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND));
+        List<HourlySensorAirQualitySnapshot> snapshots = snapshotRepository.findBySensorAndSnapshotHourBetweenOrderBySnapshotHourAsc(
+                sensor,
+                startHour,
+                endHour
+        );
+
+        if (snapshots.isEmpty()) {
+            log.warn("Sensor serialNumber: {} 의 {} ~ {} 시간 스냅샷이 존재하지 않습니다.", sensor.getSerialNumber(), startHour, endHour);
+            throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND);
+        }
+
+        return snapshots;
     }
 
     /**
