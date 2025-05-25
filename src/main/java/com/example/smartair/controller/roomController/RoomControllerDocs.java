@@ -150,17 +150,17 @@ public interface RoomControllerDocs {
     ResponseEntity<List<RoomDetailResponseDto>> getUserRooms(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @Operation(summary = "방에 속한 디바이스 목록 조회", description = "특정 방에 속한 디바이스 목록을 조회합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "디바이스 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = RoomDetailResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-            @ApiResponse(responseCode = "404", description = "방을 찾을 수 없음")
-    })
-    ResponseEntity<List<DeviceDto>> getRoomDevices(
-            @Parameter(name = "roomId", description = "조회할 방의 ID", required = true, in = ParameterIn.PATH)
-            @PathVariable Long roomId,
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
+//    @Operation(summary = "방에 속한 디바이스 목록 조회", description = "특정 방에 속한 디바이스 목록을 조회합니다.")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "디바이스 목록 조회 성공",
+//                    content = @Content(schema = @Schema(implementation = RoomDetailResponseDto.class))),
+//            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+//            @ApiResponse(responseCode = "404", description = "방을 찾을 수 없음")
+//    })
+//    ResponseEntity<List<DeviceDto>> getRoomDevices(
+//            @Parameter(name = "roomId", description = "조회할 방의 ID", required = true, in = ParameterIn.PATH)
+//            @PathVariable Long roomId,
+//            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
 
     @Operation(summary = "방에 속한 센서 목록 조회", description = "특정 방에 속한 센서 목록을 조회합니다.")
     @ApiResponses(value = {

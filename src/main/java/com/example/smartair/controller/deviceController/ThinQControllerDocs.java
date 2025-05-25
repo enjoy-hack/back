@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface ThinQControllerDocs {
 
     @Operation(
-            summary = "디바이스 목록 조회",
+            summary = "디바이스 전체 목록 조회",
             description = "해당 방 ID에 등록된 LG ThinQ 연동 디바이스 목록을 조회합니다.",
             parameters = {
                     @Parameter(name = "roomId", description = "방 ID", required = true, example = "1")
@@ -29,15 +30,19 @@ public interface ThinQControllerDocs {
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
                     [
-                        {
-                            "deviceId": 1,
-                            "alias": "에어로타워"
-                        },
-                        {
-                            "deviceId": 2,
-                            "alias": "스틱청소기"
-                        }
-                    ]
+                          {
+                              "deviceId": 1,
+                              "alias": "에어로타워",
+                              "roomId": 1,
+                              "isRegistered": true
+                          },
+                          {
+                              "deviceId": 2,
+                              "alias": "스틱청소기",
+                              "roomId": 1,
+                              "isRegistered": true
+                          }
+                      ]
                     """)
                             )
                     ),
@@ -49,6 +54,39 @@ public interface ThinQControllerDocs {
     ResponseEntity<?> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                     @PathVariable("roomId") Long roomId) throws Exception;
 
+    @Operation(
+            summary = "방번호를 통한 디바이스 등록 목록 조회",
+            description = "해당 방 ID에 등록된 LG ThinQ 연동 디바이스 목록을 조회합니다.\n" +
+                    "사용자는 해당 방에 대한 접근 권한이 있어야 합니다.",
+            parameters = {
+                    @Parameter(name = "roomId", description = "방 ID", required = true, example = "1")
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "디바이스 목록 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(value = """
+                    [
+                            {
+                                "deviceId": 1,
+                                "alias": "에어로타워"
+                            },
+                            {
+                                "deviceId": 2,
+                                "alias": "스틱청소기"
+                            }
+                        ]
+                    """)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 없음 또는 유효하지 않음)"),
+                    @ApiResponse(responseCode = "403", description = "해당 방에 대한 접근 권한 없음"),
+                    @ApiResponse(responseCode = "404", description = "해당 방 또는 PAT 정보 없음")
+            }
+    )ResponseEntity<?> getDevicesByRoomId(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                    @PathVariable("roomId") Long roomId) throws Exception;
     @Operation(
             summary = "디바이스 방 업데이트",
             description = "지정된 디바이스를 새로운 방으로 이동시킵니다.\n" +
@@ -201,4 +239,29 @@ public interface ThinQControllerDocs {
             }
     ) ResponseEntity<?> controlPower(@AuthenticationPrincipal CustomUserDetails userDetails,
                                    @PathVariable("deviceId") Long deviceId) throws Exception;
+    @Operation(
+            summary = "PAT 토큰 권한 확인",
+            description = "해당 방 ID에 대한 LG ThinQ PAT 토큰 인증 권한을 확인합니다.",
+            parameters = {
+                    @Parameter(name = "roomId", description = "방 ID", required = true, example = "1")
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "인증 성공 여부 반환",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(type = "boolean"),
+                                    examples = @ExampleObject(value = "true")
+                            )
+                    ),
+                    @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 없음 또는 유효하지 않음)"),
+                    @ApiResponse(responseCode = "403", description = "해당 방에 대한 접근 권한 없음"),
+                    @ApiResponse(responseCode = "404", description = "해당 방 또는 PAT 정보 없음")
+            }
+    )
+    ResponseEntity<?> authenticateThinQ(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                    @PathVariable("roomId") Long roomId) throws Exception;
+
+
 }

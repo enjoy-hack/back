@@ -427,27 +427,27 @@ public class RoomService {
     /**
      * 방에 속한 디바이스 리스트를 조회합니다.
      */
-    public List<DeviceDto> getRoomDevices(Long userId, Long roomId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
-
-//        // 해당 방에 속한 사용자인지 확인
-//        RoomParticipant participant = roomParticipantRepository.findByRoomAndUser(room, user)
-//                .orElseThrow(() -> new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM));
-
-        List<Device> devices = deviceRepository.findByRoomId(room.getId());
-
-        return devices.stream()
-                .map(device -> new DeviceDto(
-                        device.getId(),
-                        device.getAlias(),
-                        roomId
-                ))
-                .collect(Collectors.toList());
-    }
+//    public List<DeviceDto> getRoomDevices(Long userId, Long roomId) {
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+//
+//        Room room = roomRepository.findById(roomId)
+//                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+//
+////        // 해당 방에 속한 사용자인지 확인
+////        RoomParticipant participant = roomParticipantRepository.findByRoomAndUser(room, user)
+////                .orElseThrow(() -> new CustomException(ErrorCode.PARTICIPANT_NOT_FOUND_IN_ROOM));
+//
+//        List<Device> devices = deviceRepository.findByRoomId(room.getId());
+//
+//        return devices.stream()
+//                .map(device -> new DeviceDto.DeviceByRoomResponseDto(
+//                        device.getId(),
+//                        device.getAlias(),
+//                        roomId,
+//                ))
+//                .collect(Collectors.toList());
+//    }
 
     /**
      * 방에 속한 센서 리스트를 조회합니다.

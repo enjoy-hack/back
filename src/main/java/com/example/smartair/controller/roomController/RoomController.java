@@ -162,18 +162,18 @@ public class RoomController implements RoomControllerDocs {
         return ResponseEntity.ok(rooms);
     }
 
-    @Override
-    @GetMapping("/{roomId}/devices")
-    public ResponseEntity<List<DeviceDto>> getRoomDevices(
-            @PathVariable Long roomId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Long userId = userDetails.getUser().getId();
-        List<DeviceDto> devices = roomService.getRoomDevices(userId, roomId);
-        return ResponseEntity.ok(devices);
-    }
+//    @Override
+//    @GetMapping("/{roomId}/devices")
+//    public ResponseEntity<List<DeviceDto>> getRoomDevices(
+//            @PathVariable Long roomId,
+//            @AuthenticationPrincipal CustomUserDetails userDetails) {
+//        if (userDetails == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//        }
+//        Long userId = userDetails.getUser().getId();
+//        List<DeviceDto> devices = roomService.getRoomDevices(userId, roomId);
+//        return ResponseEntity.ok(devices);
+//    }
 
     @Override
     @GetMapping("/{roomId}/sensors")

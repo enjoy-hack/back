@@ -1,7 +1,6 @@
 package com.example.smartair.service.deviceService;
 
 import com.example.smartair.dto.deviceDto.DeviceDto;
-import com.example.smartair.dto.deviceDto.DeviceReqeustDto;
 import com.example.smartair.dto.deviceDto.DeviceResponseWrapper;
 import com.example.smartair.dto.deviceDto.DeviceStateResponseDto;
 import com.example.smartair.entity.device.Device;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -70,8 +68,35 @@ public class ThinQService {
     }
 
 
+    public List<DeviceDto.DeviceByRoomResponseDto> getDeviceListByRoomId(User user, Long roomId) throws Exception {
+        Room room = roomRepository.findRoomById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
+
+        PATEntity patEntity = getPatEntityOrThrow(user, roomId); // PATEntity 가져오기
+
+        List<DeviceDto.DeviceByRoomResponseDto> result = new ArrayList<>(); // 반환할 디바이스 DTO 리스트
+
+        List<Device> devices = deviceRepository.findByRoomId(roomId); // 방 ID로 디바이스 조회
+
+        for( Device device : devices) {
+            String serialNumber = device.getDeviceSerialNumber();
+            String modelName = device.getModelName();
+            String deviceType = device.getDeviceType();
+            String alias = device.getAlias();
+
+            // 디바이스 정보로 DeviceDto 생성
+            DeviceDto.DeviceByRoomResponseDto deviceDto = new DeviceDto.DeviceByRoomResponseDto(
+                    device.getId(),
+                    alias
+            );
+            result.add(deviceDto);
+        }
+
+        return result;
+    }
     // 방 ID 를 통해서 디바이스 조회 시, 기존의 device에 없는 디바이스는 새로 생성해서 해당 roomId로 저장, 기존에 있는 device는 roomId 확인해서 동일한것만 반환
-    public List<DeviceDto> getDeviceList(User user, Long roomId) throws Exception {
+    public List<DeviceDto.DeviceAllResponseDto> getDeviceList(User user, Long roomId) throws Exception {
+
         Room room = roomRepository.findRoomById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
 
@@ -81,33 +106,23 @@ public class ThinQService {
         String responseJson = sendRequest("/devices", HttpMethod.GET, null, patToken).getBody();
         DeviceResponseWrapper wrapper = objectMapper.readValue(responseJson, DeviceResponseWrapper.class);
 
-        List<DeviceDto> result = new ArrayList<>(); // 반환할 디바이스 DTO 리스트
+        List<DeviceDto.DeviceAllResponseDto> result = new ArrayList<>(); // 반환할 디바이스 DTO 리스트
 
         for (DeviceResponseWrapper.DeviceResponse deviceRes : wrapper.getResponse()) {
             String serialNumber = deviceRes.getDeviceId();
-            Long deviceId;
             DeviceResponseWrapper.DeviceInfo info = deviceRes.getDeviceInfo();
 
             Optional<Device> existingOpt = deviceRepository.findByDeviceSerialNumber(serialNumber); // 디바이스 시리얼 번호로 기존 디바이스 조회
+            Boolean isRegistered = existingOpt.isPresent(); // 기존 디바이스가 있는지 여부
 
-            if(existingOpt.isEmpty()){
-                //신규 디바이스 생성
-                Device newDevice = new Device();
-                newDevice.setUser(user);
-                newDevice.setRoom(room);
-                newDevice.setDeviceSerialNumber(serialNumber);
-                newDevice.setModelName(info.getModelName());
-                newDevice.setDeviceType(info.getDeviceType());
-                newDevice.setAlias(info.getAlias());
-                deviceRepository.save(newDevice);
-                result.add(new DeviceDto(newDevice.getId(), info.getAlias()));
-                log.info("새 디바이스 저장됨: {}, {}", serialNumber, newDevice.getAlias());
-            }else {
-                if(Objects.equals(existingOpt.get().getRoom().getId(), roomId)){ // 기존 디바이스가 방에 속하는 경우
-                    deviceId = existingOpt.get().getId();
-                    result.add(new DeviceDto(deviceId, info.getAlias()));
-                }
-            }
+            result.add(
+                    new DeviceDto.DeviceAllResponseDto(
+                            existingOpt.map(Device::getId).orElse(null), // 기존 디바이스 ID, 없으면 null
+                            info.getAlias(), // 디바이스 별칭
+                            roomId, // 방 ID
+                            isRegistered // 디바이스 등록 여부
+                    )
+            );
         }
 
         return result;
@@ -120,11 +135,6 @@ public class ThinQService {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND, "디바이스를 찾을 수 없습니다."));
 
-        if(roomId == device.getRoom().getId()) {
-            log.info("디바이스 {}가 방 {}에 이미 속해 있습니다.", device.getAlias(), room.getId());
-            return new DeviceDto(device.getId(), device.getAlias(), room.getId());
-        }
-
         if(validateAccess(user, room) && validateAccess(user, device.getRoom())) {
             log.info("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
         } else {
@@ -136,7 +146,7 @@ public class ThinQService {
         deviceRepository.save(device);
         log.info("디바이스 {}가 방 {}에 업데이트되었습니다.", device.getAlias(), room.getId());
 
-        return new DeviceDto(device.getId(), device.getAlias(), device.getRoom().getId());
+        return new DeviceDto.DeviceUpdateResponseDto(device.getId(), device.getAlias(), roomId); // 디바이스 ID, 이름, 등록 여부, 방 ID 반환
     }
 
     public String getDeviceState(User user, Long deviceId) throws Exception {
@@ -175,6 +185,15 @@ public class ThinQService {
 
         String endpoint = "/devices/" + device.getDeviceSerialNumber() + "/control";
         return sendRequest(endpoint, HttpMethod.POST, requestBody, patToken);
+    }
+
+    public Boolean getAuthentication(User user, Long roomId) {
+        try {
+            getPatEntityOrThrow(user, roomId);
+            return true; // 권한이 있는 경우
+        } catch (CustomException e) {
+            return false; // 권한이 없는 경우
+        }
     }
 
     private PATEntity getPatEntityOrThrow(User user, Long roomId) {
