@@ -46,7 +46,7 @@ public class PredictedAirQualityService  {
 
         for (PredictedAirQualityDto dto : predictedAirQualityDtoList) {
             String sensorSerialNumber = dto.getSensorSerialNumber();
-            LocalDateTime timestamp = LocalDateTime.parse(dto.getTimestamp(), PREDICTED_TIMESTAMP_FORMATTER);
+            LocalDateTime timestamp = dto.getTimestamp();
             float pm10 = dto.getPm10();
             float co2 = dto.getCo2();
             float tvoc = dto.getTvoc();
@@ -80,7 +80,9 @@ public class PredictedAirQualityService  {
                         .tvoc(tvoc)
                         .build();
             }
-
+            log.info("예측된 공기질 데이터 저장: Sensor={}, Timestamp={}, PM10={}, CO2={}, TVOC={}",
+                    sensorSerialNumber, timestamp, pm10, co2, tvoc);
+            // 예측된 공기질 데이터 저장
             predictedAirQualityRepository.save(predictedAirQualityData);
         }
     }
