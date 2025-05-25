@@ -46,7 +46,7 @@ public class PredictedAirQualityService  {
 
         for (PredictedAirQualityDto dto : predictedAirQualityDtoList) {
             String sensorSerialNumber = dto.getSensorSerialNumber();
-            LocalDateTime timestamp = dto.getTimestamp();
+            LocalDateTime timestamp = dto.getTimestamp().minusHours(9);
             float pm10 = dto.getPm10();
             float co2 = dto.getCo2();
             float tvoc = dto.getTvoc();
@@ -66,7 +66,6 @@ public class PredictedAirQualityService  {
             // 예측된 공기질 데이터가 이미 존재하는 경우 업데이트
             if(existingData.isPresent()) {
                 predictedAirQualityData = existingData.get();
-
                 predictedAirQualityData.setPm10(pm10);
                 predictedAirQualityData.setCo2(co2);
                 predictedAirQualityData.setTvoc(tvoc);

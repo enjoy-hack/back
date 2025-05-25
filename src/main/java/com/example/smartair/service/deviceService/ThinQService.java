@@ -1,6 +1,7 @@
 package com.example.smartair.service.deviceService;
 
 import com.example.smartair.dto.deviceDto.DeviceDto;
+import com.example.smartair.dto.deviceDto.DeviceReqeustDto;
 import com.example.smartair.dto.deviceDto.DeviceResponseWrapper;
 import com.example.smartair.dto.deviceDto.DeviceStateResponseDto;
 import com.example.smartair.entity.device.Device;
@@ -128,6 +129,27 @@ public class ThinQService {
         return result;
     }
 
+    public Object registerDevice(User user,Long deviceId, Long roomId) {
+        Room room = roomRepository.findRoomById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
+
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND, "디바이스를 찾을 수 없습니다."));
+
+       if(validateAccess(user, room)) {
+            log.info("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
+        } else {
+            log.warn("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 없습니다.", user.getId(), roomId);
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 방에 대한 접근 권한이 없습니다.");
+        }
+
+        device.setRoom(room);
+        deviceRepository.save(device);
+        log.info("디바이스 {}가 방 {}에 등록되었습니다.", device.getAlias(), room.getId());
+
+        return new DeviceDto.DeviceUpdateResponseDto(device.getId(), device.getAlias(), roomId); // 디바이스 ID, 이름, 등록 여부, 방 ID 반환
+    }
+
     public Object updateDevice(User user, Long roomId, Long deviceId) {
         Room room = roomRepository.findRoomById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
@@ -136,9 +158,9 @@ public class ThinQService {
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND, "디바이스를 찾을 수 없습니다."));
 
         if(validateAccess(user, room) && validateAccess(user, device.getRoom())) {
-            log.info("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
+            log.info("사용자 ID {}가 방에 대한 디바이스에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
         } else {
-            log.warn("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 없습니다.", user.getId(), roomId);
+            log.warn("사용자 ID {}가 방 ID {} 또는 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 없습니다.", user.getId(), roomId,device.getRoom().getId());
             throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 방에 대한 접근 권한이 없습니다.");
         }
 
@@ -195,7 +217,6 @@ public class ThinQService {
             return false; // 권한이 없는 경우
         }
     }
-
     private PATEntity getPatEntityOrThrow(User user, Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
@@ -214,6 +235,7 @@ public class ThinQService {
         }
         return pat;
     }
+
     private Boolean validateAccess(User user, Room room) {
 
         boolean hasPermission = false;

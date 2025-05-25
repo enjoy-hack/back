@@ -31,7 +31,7 @@ public class ThinQController implements ThinQControllerDocs {
     }
 
     // 방번호를 통해 디바이스 등록 목록 조회
-    @GetMapping("/devices/registed/{roomId}")
+    @GetMapping("/devices/registered/{roomId}")
     public ResponseEntity<?> getDevicesByRoomId(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                 @PathVariable("roomId") Long roomId) throws Exception {
         if (userDetails == null) {
@@ -41,6 +41,20 @@ public class ThinQController implements ThinQControllerDocs {
         User user = userDetails.getUser();
 
         return ResponseEntity.ok(thinQService.getDeviceListByRoomId(user, roomId));
+    }
+
+    //방 ID를 통해 디바이스 등록
+    @PostMapping("/{deviceId}/{roomId}")
+    public ResponseEntity<?> registerDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                            @PathVariable("roomId") Long roomId,
+                                            @PathVariable("deviceId") Long deviceId) throws Exception {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
+
+        User user = userDetails.getUser();
+
+        return ResponseEntity.ok(thinQService.registerDevice(user, deviceId,roomId));
     }
 
     // 방 ID를 통해 디바이스 방 업데이트
