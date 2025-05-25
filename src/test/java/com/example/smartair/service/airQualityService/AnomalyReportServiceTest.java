@@ -10,8 +10,11 @@ import com.example.smartair.exception.CustomException;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.AnomalyReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
+import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.service.airQualityService.report.AnomalyReportService;
+import com.example.smartair.service.deviceService.ThinQService;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.MessagingErrorCode;
@@ -46,6 +49,12 @@ class AnomalyReportServiceTest {
     private DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
 
     @Mock
+    private ThinQService thinQService;
+    @Mock
+    private RoomSensorRepository roomSensorRepository;
+    @Mock
+    private DeviceRepository deviceRepository;
+    @Mock
     private FirebaseMessaging firebaseMessaging;
 
     @BeforeEach
@@ -55,12 +64,16 @@ class AnomalyReportServiceTest {
                 anomalyReportRepository,
                 sensorRepository,
                 hourlyDeviceAirQualitySnapshotRepository,
-                dailySensorAirQualityReportRepository
+                dailySensorAirQualityReportRepository,
+                thinQService,
+                roomSensorRepository,
+                deviceRepository
+
         );
     }
 
     @Test
-    void setAnomalyReport_success() throws FirebaseMessagingException {
+    void setAnomalyReport_success() throws Exception {
         // Given
         String timestamp = "2025-05-21 15:00:00";
         AnomalyReportDto dto = AnomalyReportDto.builder()

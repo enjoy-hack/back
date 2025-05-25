@@ -189,7 +189,7 @@ public interface AirQualityReportControllerDocs {
                     )
             }
     )
-    ResponseEntity<?> setAnomalyDailyReport(@RequestBody AnomalyReportDto anomalyReportDto);
+    ResponseEntity<?> setAnomalyDailyReport(@RequestBody AnomalyReportDto anomalyReportDto) throws Exception;
 
 
     @Operation(summary = "특정 기간의 이상치 리포트 조회",

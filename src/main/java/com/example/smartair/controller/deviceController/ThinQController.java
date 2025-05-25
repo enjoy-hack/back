@@ -96,7 +96,7 @@ public class ThinQController implements ThinQControllerDocs {
 
         User user = userDetails.getUser();
 
-        return ResponseEntity.ok(thinQService.controlAirPurifierPower(user, deviceId));
+        return ResponseEntity.ok(thinQService.controlAirPurifierPower(user, deviceId, false));
     }
 
     @GetMapping("/authentication/{roomId}")

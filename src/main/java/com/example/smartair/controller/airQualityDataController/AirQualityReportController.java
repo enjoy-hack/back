@@ -139,7 +139,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
 
     @Override
     @PostMapping("/anomaly")
-    public ResponseEntity<?> setAnomalyDailyReport(@RequestBody AnomalyReportDto anomalyReportDto) {
+    public ResponseEntity<?> setAnomalyDailyReport(@RequestBody AnomalyReportDto anomalyReportDto) throws Exception {
         return ResponseEntity.ok(anomalyReportService.setAnomalyReport(anomalyReportDto));
     }
 
