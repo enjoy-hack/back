@@ -95,7 +95,7 @@ public class ThinQService {
 
         return result;
     }
-    // 방 ID 를 통해서 디바이스 조회 시, 기존의 device에 없는 디바이스는 새로 생성해서 해당 roomId로 저장, 기존에 있는 device는 roomId 확인해서 동일한것만 반환
+
     public List<DeviceDto.DeviceAllResponseDto> getDeviceList(User user, Long roomId) throws Exception {
 
         Room room = roomRepository.findRoomById(roomId)
@@ -114,11 +114,34 @@ public class ThinQService {
             DeviceResponseWrapper.DeviceInfo info = deviceRes.getDeviceInfo();
 
             Optional<Device> existingOpt = deviceRepository.findByDeviceSerialNumber(serialNumber); // 디바이스 시리얼 번호로 기존 디바이스 조회
-            Boolean isRegistered = existingOpt.isPresent(); // 기존 디바이스가 있는지 여부
+            Boolean isRegistered;
+            Device device;
+
+            if(existingOpt.isPresent()) {
+                device = existingOpt.get();
+                isRegistered = device.getRoom() != null; // 디바이스가 방에 등록되어 있는지 여부
+
+                //정보 업데이트
+                device.setAlias(info.getAlias() != null ? info.getAlias() : "디바이스 " + serialNumber); // 별칭이 없으면 기본값 설정
+                device.setDeviceType(info.getDeviceType());
+                device.setModelName(info.getModelName());
+                deviceRepository.save(device);
+            }else{
+                isRegistered = false; // 기존 디바이스가 없으면 등록되지 않은 것으로 간주
+                // 기존 디바이스가 없으면 새로 생성
+                device = new Device();
+                device.setDeviceSerialNumber(serialNumber);
+                device.setAlias(info.getAlias() != null ? info.getAlias() : "디바이스 " + serialNumber); // 별칭이 없으면 기본값 설정
+                device.setRoom(null);
+                device.setUser(null);
+                device.setDeviceType(info.getDeviceType());
+                device.setModelName(info.getModelName());
+                deviceRepository.save(device);
+            }
 
             result.add(
                     new DeviceDto.DeviceAllResponseDto(
-                            existingOpt.map(Device::getId).orElse(null), // 기존 디바이스 ID, 없으면 null
+                            device.getId(), // 기존 디바이스 ID, 없으면 null
                             info.getAlias(), // 디바이스 별칭
                             roomId, // 방 ID
                             isRegistered // 디바이스 등록 여부
@@ -132,18 +155,17 @@ public class ThinQService {
     public Object registerDevice(User user,Long deviceId, Long roomId) {
         Room room = roomRepository.findRoomById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));
-
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND, "디바이스를 찾을 수 없습니다."));
 
-       if(validateAccess(user, room)) {
+        if(validateAccess(user, room)) {
             log.info("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 있습니다.", user.getId(), roomId);
         } else {
             log.warn("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 없습니다.", user.getId(), roomId);
             throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 방에 대한 접근 권한이 없습니다.");
         }
-
         device.setRoom(room);
+        device.setUser(user);
         deviceRepository.save(device);
         log.info("디바이스 {}가 방 {}에 등록되었습니다.", device.getAlias(), room.getId());
 
@@ -165,6 +187,7 @@ public class ThinQService {
         }
 
         device.setRoom(room);
+        device.setUser(user);
         deviceRepository.save(device);
         log.info("디바이스 {}가 방 {}에 업데이트되었습니다.", device.getAlias(), room.getId());
 
