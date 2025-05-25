@@ -18,36 +18,31 @@ public class AirQualityScoreCalculator implements AirQualityCalculator {
     // 구간별 기준 및 지수 정의 (농도 단위: PM=㎍/㎥, eCO2=ppm, TVOC=㎍/㎥)
     private static final double[][] PM10_BREAKPOINTS = {{0, 30}, {31, 80}, {81, 150}, {151, Double.MAX_VALUE}};
     private static final double[][] PM25_BREAKPOINTS = {{0, 15}, {16, 35}, {36, 75}, {76, Double.MAX_VALUE}};
-    private static final double[][] ECO2_BREAKPOINTS = {{0, 500}, {501, 700}, {701, 1000}, {1001, Double.MAX_VALUE}}; 
-    private static final double[][] TVOC_BREAKPOINTS = {{0, 400}, {401, 600}, {601, 1000}, {1001, Double.MAX_VALUE}}; 
-    private static final double[][] AQI_BREAKPOINTS = {{0, 50}, {51, 100}, {101, 250}, {251, 500}}; // 지수 구간
+    private static final double[][] ECO2_BREAKPOINTS = {{0, 500}, {501, 700}, {701, 1000}, {1001, Double.MAX_VALUE}};
+    private static final double[][] TVOC_BREAKPOINTS = {{0, 400}, {401, 600}, {601, 1000}, {1001, Double.MAX_VALUE}};
+    // 100점 체계로 변경된 지수 구간
+    private static final double[][] AQI_BREAKPOINTS = {{0, 10}, {11, 20}, {21, 50}, {51, 100}};
 
-    // AQI 500에 해당하는 실질적 최대 농도 정의 (마지막 구간 보간용)
-    private static final double PM10_MAX_CONC_FOR_AQI_500 = 300.0; // 예시 값
-    private static final double PM25_MAX_CONC_FOR_AQI_500 = 150.0; // 예시 값
-    private static final double ECO2_MAX_CONC_FOR_AQI_500 = 2000.0; // 예시 값
-    private static final double TVOC_MAX_CONC_FOR_AQI_500 = 2000.0; // 예시 값
+    // AQI 100에 해당하는 실질적 최대 농도 정의 (마지막 구간 보간용)
+    private static final double PM10_MAX_CONC_FOR_AQI_500 = 300.0;
+    private static final double PM25_MAX_CONC_FOR_AQI_500 = 150.0;
+    private static final double ECO2_MAX_CONC_FOR_AQI_500 = 2000.0;
+    private static final double TVOC_MAX_CONC_FOR_AQI_500 = 2000.0;
 
-    /**
-     * AirQualityData를 기반으로 DeviceAirQualityScore를 계산합니다.
-     *
-     * @param airQualityData 측정된 공기질 데이터
-     * @return 계산된 공기질 점수 객체 (DeviceAirQualityScore 타입)
-     */
     @Override
     public SensorAirQualityScore calculateScore(SensorAirQualityData airQualityData) {
         if (airQualityData == null) {
-           throw new CustomException(ErrorCode.INVALID_INPUT_DATA, "공기질 데이터가 null입니다.");
+            throw new CustomException(ErrorCode.INVALID_INPUT_DATA, "공기질 데이터가 null입니다.");
         }
 
         FineParticlesData fineParticlesData = airQualityData.getFineParticlesData();
 
         double pm10Value = Optional.ofNullable(fineParticlesData)
-                                   .map(FineParticlesData::getPm10_standard) 
-                                   .orElse(0.0);
+                .map(FineParticlesData::getPm10_standard)
+                .orElse(0.0);
         double pm25Value = Optional.ofNullable(fineParticlesData)
-                                   .map(FineParticlesData::getPm25_standard) 
-                                   .orElse(0.0);
+                .map(FineParticlesData::getPm25_standard)
+                .orElse(0.0);
 
         // 개별 오염물질 점수 계산
         double pm10Score = calculatePollutantScore(Pollutant.PM10, pm10Value);
@@ -55,32 +50,31 @@ public class AirQualityScoreCalculator implements AirQualityCalculator {
         double eco2Score = calculatePollutantScore(Pollutant.ECO2, airQualityData.getEco2());
         double tvocScore = calculatePollutantScore(Pollutant.TVOC, airQualityData.getTvoc());
 
-        // 통합 점수 계산 (개별 점수 중 최대값)
-        double overallScore = Collections.max(Arrays.asList(pm10Score, pm25Score, eco2Score, tvocScore));
+        // 점수 반전 (0-100 → 100-0)으로 변경
+        pm10Score = 100 - pm10Score;
+        pm25Score = 100 - pm25Score;
+        eco2Score = 100 - eco2Score;
+        tvocScore = 100 - tvocScore;
+
+        // 통합 점수 계산 (개별 점수 중 최소값 - 이제 낮은 점수가 더 나쁜 것을 의미)
+        double overallScore = Collections.min(Arrays.asList(pm10Score, pm25Score, eco2Score, tvocScore));
 
         // DeviceAirQualityScore 객체 생성 및 값 설정
         SensorAirQualityScore score = new SensorAirQualityScore();
         score.setSensorAirQualityData(airQualityData);
         score.setPm10Score(pm10Score);
         score.setPm25Score(pm25Score);
-        score.setEco2Score(eco2Score); 
+        score.setEco2Score(eco2Score);
         score.setTvocScore(tvocScore);
         score.setOverallScore(overallScore);
 
         return score;
     }
 
-    /**
-     * 특정 오염물질의 농도에 대한 개별 지수를 계산합니다 (선형 보간법 적용)
-     *
-     * @param pollutant 오염물질 종류
-     * @param concentration 측정된 농도
-     * @return 계산된 지수 (0-500+)
-     */
     @Override
     public double calculatePollutantScore(Pollutant pollutant, double concentration) {
         double[][] concentrationBreakpoints;
-        double practicalMaxConc; // AQI 500에 대한 실질적 최대 농도
+        double practicalMaxConc;
 
         switch (pollutant) {
             case PM10:
@@ -121,17 +115,15 @@ public class AirQualityScoreCalculator implements AirQualityCalculator {
             }
 
             // 농도가 현재 구간에 속하는지 확인
-            // 마지막 구간은 cLow 이상이면 해당 구간으로 처리
             if ((concentration >= cLow && concentration <= cHigh) || (isLastRange && concentration >= cLow)) {
-
-                // 농도가 실질적 최대 농도를 초과하면 최고 점수(500) 반환
+                // 농도가 실질적 최대 농도를 초과하면 최고 점수(100) 반환
                 if (isLastRange && concentration > practicalMaxConc) {
-                    return AQI_BREAKPOINTS[AQI_BREAKPOINTS.length - 1][1]; // 최고 점수 500
+                    return 100.0; // 최고 점수 100 (나쁨)
                 }
 
                 // 선형 보간법 적용 (0으로 나누는 경우 방지)
                 if (cHigh - cLow == 0) {
-                    return iLow; // 해당 구간의 시작 지수 반환
+                    return iLow;
                 }
 
                 double score = ((iHigh - iLow) / (cHigh - cLow)) * (concentration - cLow) + iLow;
@@ -139,14 +131,11 @@ public class AirQualityScoreCalculator implements AirQualityCalculator {
             }
         }
 
-        // 이 부분은 이론적으로 도달하지 않아야 함 (음수, 모든 구간 처리됨)
-        // 혹시 모를 오류 상황 대비
-        // 만약 농도가 모든 정의된 구간보다 높고 마지막 구간 로직에서 처리되지 않은 경우(버그 상황), 최고 점수 반환
+        // 이 부분은 이론적으로 도달하지 않아야 함
         if (concentration >= concentrationBreakpoints[concentrationBreakpoints.length - 1][0]) {
-             return AQI_BREAKPOINTS[AQI_BREAKPOINTS.length - 1][1];
+            return 100.0; // 최고 점수 100으로 변경
         }
 
-        // 모든 구간에 해당하지 않는 예외적인 경우 (예: 0보다 작지만 예외 처리 안된 경우 등)
         throw new CustomException(ErrorCode.CALCULATION_LOGIC_ERROR);
     }
 }
