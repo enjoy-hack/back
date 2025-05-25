@@ -159,7 +159,7 @@ public class AirQualityQueryService { //공기질 점수 조회
     public SensorAirQualityScoreDto getLatestSensorAirQualityScore(String serialNumber) {
         Sensor sensor = sensorRepository.findBySerialNumber(serialNumber).orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + serialNumber));
 
-        SensorAirQualityScore latestSensorScore = sensorAirQualityScoreRepository.findFirstBySensorAirQualityData_SensorOrderByCreatedAtDesc(sensor).orElseThrow(
+        SensorAirQualityScore latestSensorScore = sensorAirQualityScoreRepository.findLatestScoreBySerialNumber(serialNumber).orElseThrow(
                 ()-> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor serialNumber: " + serialNumber)
         );
 
