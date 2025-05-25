@@ -72,7 +72,7 @@ public enum ErrorCode {
     ROOM_SENSOR_MAPPING_ALREADY_EXISTS(HttpStatus.CONFLICT, "방과 센서의 매핑 정보가 이미 존재합니다."),
 
     // === PAT 관련 오류 코드 ===
-    PAT_NOT_FOUND(HttpStatus.NOT_FOUND, "PAT 정보를 찾을 수 없습니다."),
+    PAT_NOT_FOUND(403, "PAT 정보를 찾을 수 없습니다."),
     FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "FCM 토큰을 찾을 수 없습니다."),
     FCM_MESSAGE_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FCM 메시지 전송 중 오류가 발생했습니다."),
 

@@ -48,7 +48,7 @@ public interface ThinQControllerDocs {
                     ),
                     @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 없음 또는 유효하지 않음)"),
                     @ApiResponse(responseCode = "403", description = "해당 방에 대한 접근 권한 없음"),
-                    @ApiResponse(responseCode = "404", description = "해당 방 또는 PAT 정보 없음")
+                    @ApiResponse(responseCode = "403", description = "해당 방 또는 PAT 정보 없음")
             }
     )
     ResponseEntity<?> getDevices(@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -83,10 +83,41 @@ public interface ThinQControllerDocs {
                     ),
                     @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 없음 또는 유효하지 않음)"),
                     @ApiResponse(responseCode = "403", description = "해당 방에 대한 접근 권한 없음"),
-                    @ApiResponse(responseCode = "404", description = "해당 방 또는 PAT 정보 없음")
+                    @ApiResponse(responseCode = "403", description = "해당 방 또는 PAT 정보 없음")
             }
     )ResponseEntity<?> getDevicesByRoomId(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                     @PathVariable("roomId") Long roomId) throws Exception;
+    @Operation(
+            summary = "디바이스 등록",
+            description = "지정된 디바이스를 해당 방에 등록합니다.\n" +
+                    "사용자는 디바이스와 방에 대한 수정 권한이 있어야 합니다.\n",
+            parameters = {
+                    @Parameter(name = "roomId", description = "방 ID", required = true, example = "1"),
+                    @Parameter(name = "deviceId", description = "디바이스 ID", required = true, example = "1")
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "디바이스 등록 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(value = """
+                {
+                    "id": 1,
+                    "alias": "에어컨",
+                    "roomId": 1
+                }
+                """)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
+                    @ApiResponse(responseCode = "403", description = "PAT 정보 없음"),
+                    @ApiResponse(responseCode = "403", description = "해당 방에 대한 접근 권한 없음")
+            }
+    )
+    ResponseEntity<?> registerDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                     @PathVariable("roomId") Long roomId,
+                                     @PathVariable("deviceId") Long deviceId) throws Exception;
     @Operation(
             summary = "디바이스 방 업데이트",
             description = "지정된 디바이스를 새로운 방으로 이동시킵니다.\n" +
@@ -257,7 +288,7 @@ public interface ThinQControllerDocs {
                     ),
                     @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 없음 또는 유효하지 않음)"),
                     @ApiResponse(responseCode = "403", description = "해당 방에 대한 접근 권한 없음"),
-                    @ApiResponse(responseCode = "404", description = "해당 방 또는 PAT 정보 없음")
+                    @ApiResponse(responseCode = "403", description = "해당 방 또는 PAT 정보 없음")
             }
     )
     ResponseEntity<?> authenticateThinQ(@AuthenticationPrincipal CustomUserDetails userDetails,
