@@ -15,7 +15,6 @@ import java.util.Optional;
 
 @Repository
 public interface SensorAirQualityScoreRepository extends JpaRepository<SensorAirQualityScore, Long> {
-    Optional<SensorAirQualityScore> findFirstBySensorAirQualityData_SensorOrderByCreatedAtDesc(Sensor sensor);
 
     @Query("SELECT das FROM SensorAirQualityScore das JOIN das.sensorAirQualityData aqd " +
            "WHERE aqd.sensor.serialNumber = :serialNumber " +
@@ -38,4 +37,9 @@ public interface SensorAirQualityScoreRepository extends JpaRepository<SensorAir
             @Param("serialNumber") String serialNumber,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
+
+    @Query("SELECT s FROM SensorAirQualityScore s " +
+            "WHERE s.sensorAirQualityData.sensor.serialNumber = :serialNumber " +
+            "ORDER BY s.createdAt DESC")
+    Optional<SensorAirQualityScore> findLatestScoreBySerialNumber(@Param("serialNumber") String serialNumber);
 } 
