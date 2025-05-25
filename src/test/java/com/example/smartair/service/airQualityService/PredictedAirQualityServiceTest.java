@@ -90,7 +90,7 @@ class PredictedAirQualityServiceTest {
         // given
         PredictedAirQualityDto dto = new PredictedAirQualityDto();
         dto.setSensorSerialNumber("1");
-        dto.setTimestamp("2023-10-01T12:00:00");
+        dto.setTimestamp(LocalDateTime.parse("2023-10-01T12:00:00"));
         dto.setPm10(10.5f);
         dto.setCo2(400.0f);
         dto.setTvoc(0.5f);
