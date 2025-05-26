@@ -51,10 +51,10 @@ public class RoomService {
     public RoomDetailResponseDto createRoom(Long userId, CreateRoomRequestDto createRoomRequestDto) {
         User requestingUser = userRepository.findById(userId).orElseThrow(()->new CustomException(ErrorCode.USER_NOT_FOUND));
         
-        // 권한 검증: ADMIN 또는 MANAGER만 방 생성 가능
-        if (!(requestingUser.getRole() == Role.ADMIN || requestingUser.getRole() == Role.MANAGER)) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY, "User does not have authority to create room");
-        }
+//        // 권한 검증: ADMIN 또는 MANAGER만 방 생성 가능
+//        if (!(requestingUser.getRole() == Role.ADMIN || requestingUser.getRole() == Role.MANAGER)) {
+//            throw new CustomException(ErrorCode.NO_AUTHORITY, "User does not have authority to create room");
+//        }
 
         Room room = Room.builder()
                 .name(createRoomRequestDto.getName())
