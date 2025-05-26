@@ -33,9 +33,9 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
 
         User user = userDetails.getUser();
 
-        if(user.getRole() == Role.USER){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
-        }
+//        if(user.getRole() == Role.USER){
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
+//        }
         userSatisfactionService.setUserSatisfaction(user, satisfaction, roomId);
         return ResponseEntity.ok("sucess");
     }
@@ -49,9 +49,9 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
 
         User user = userDetails.getUser();
 
-        if(user.getRole() == Role.USER){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
-        }
+//        if(user.getRole() == Role.USER){
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
+//        }
         List<UserSatisfactionResponseDto> list = userSatisfactionService.getUserSatisfaction(user, roomId);
         return ResponseEntity.ok(list);
     }
@@ -67,9 +67,9 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
 
         User user = userDetails.getUser();
 
-        if (user.getRole() == Role.USER) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
-        }
+//        if (user.getRole() == Role.USER) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
+//        }
 
         try {
             userSatisfactionService.updateUserSatisfaction(user, satisfactionId, newSatisfaction);
@@ -89,9 +89,9 @@ public class UserSatisfactionController implements UserSatisfactionControllerDoc
 
         User user = userDetails.getUser();
 
-        if (user.getRole() == Role.USER) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
-        }
+//        if (user.getRole() == Role.USER) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("접근 권한이 없습니다");
+//        }
 
         try {
             userSatisfactionService.deleteUserSatisfaction(user, satisfactionId);
