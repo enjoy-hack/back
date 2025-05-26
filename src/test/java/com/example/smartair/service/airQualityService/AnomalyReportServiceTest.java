@@ -78,26 +78,24 @@ class AnomalyReportServiceTest {
 
     @Test
     void setAnomalyReport_success() throws Exception {
+        LocalDateTime time = LocalDateTime.parse("2025-05-21T15:00:00");
         // Given
-        String timestamp = "2025-05-21 15:00:00";
         AnomalyReportDto dto = AnomalyReportDto.builder()
                 .sensorSerialNumber("ABC123")
                 .pollutant("CO2")
                 .pollutantValue(800.0)
                 .predictedValue(600.0)
-                .anomalyTimestamp(timestamp)
+                .anomalyTimestamp(time) // 포맷 지정
                 .build();
 
         Sensor sensor = Sensor.builder().serialNumber("ABC123").build();
         sensor.setUser(new com.example.smartair.entity.user.User()); // 유저 객체가 있어야 FCM 토큰 존재
         sensor.getUser().setFcmToken("fake_fcm_token");
 
-        LocalDateTime anomalyDateTime = LocalDateTime.parse(timestamp, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
         when(sensorRepository.findBySerialNumber("ABC123")).thenReturn(Optional.of(sensor));
-        when(hourlyDeviceAirQualitySnapshotRepository.findBySensorAndSnapshotHour(sensor, anomalyDateTime))
+        when(hourlyDeviceAirQualitySnapshotRepository.findBySensorAndSnapshotHour(sensor, time))
                 .thenReturn(Optional.of(mock(HourlySensorAirQualitySnapshot.class)));
-        when(dailySensorAirQualityReportRepository.findBySensorAndReportDate(sensor, anomalyDateTime.toLocalDate()))
+        when(dailySensorAirQualityReportRepository.findBySensorAndReportDate(sensor, LocalDate.parse("2025-05-21")))
                 .thenReturn(Optional.of(mock(DailySensorAirQualityReport.class)));
         when(anomalyReportRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -118,12 +116,13 @@ class AnomalyReportServiceTest {
     @Test
     void setAnomalyReport_sensorNotFound() {
         // Given
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         AnomalyReportDto dto = AnomalyReportDto.builder()
                 .sensorSerialNumber("NOT_EXIST")
                 .pollutant("CO2")
                 .pollutantValue(800.0)
                 .predictedValue(600.0)
-                .anomalyTimestamp("2025-05-21 15:00:00")
+                .anomalyTimestamp(LocalDateTime.parse("2025-05-21 15:00:00", formatter)) // 포맷 지정
                 .build();
 
         when(sensorRepository.findBySerialNumber("NOT_EXIST")).thenReturn(Optional.empty());
@@ -138,7 +137,7 @@ class AnomalyReportServiceTest {
         String pollutant = "CO2";
         double actual = 1000;
         double predicted = 500;
-        String timestamp = "2025-05-21 15:00:00";
+        LocalDateTime timestamp = LocalDateTime.parse("2025-05-21T15:00:00");
 
         // When
         String description = anomalyReportService.generateDescription(pollutant, actual, predicted, timestamp);
