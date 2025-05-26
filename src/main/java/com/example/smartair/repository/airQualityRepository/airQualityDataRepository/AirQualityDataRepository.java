@@ -26,4 +26,6 @@ public interface AirQualityDataRepository extends JpaRepository<SensorAirQuality
 
     Optional<SensorAirQualityData> findTopBySensorIdOrderByCreatedAtDesc(Long sensorId);
 
+
+
 }

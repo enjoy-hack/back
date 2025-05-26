@@ -58,4 +58,6 @@ public interface AirQualitySnapshotControllerDocs {
     ResponseEntity<AirQualityDataResponse> getLatestSensorAirQualityData(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "센서 일련번호", required = true, example = "1") @PathVariable String serialNumber);
+
+
 } 

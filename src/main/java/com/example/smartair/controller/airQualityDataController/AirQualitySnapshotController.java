@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/snapshots")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "AirQuality Snapshot API", description = "시간별 대기질 스냅샷 조회 API")
 public class AirQualitySnapshotController implements AirQualitySnapshotControllerDocs {
 
@@ -68,4 +70,37 @@ public class AirQualitySnapshotController implements AirQualitySnapshotControlle
         SensorAirQualityData sensorAirQualityData = snapshotService.getLatestAirQualityData(serialNumber);
         return ResponseEntity.ok(AirQualityDataResponse.from(sensorAirQualityData));
     }
+
+    @PostMapping("/hourly/create/{serialNumber}")
+    @Operation(summary = "특정 센서의 시간별 스냅샷 생성", description = "특정 센서의 특정 시간대(1시간 단위)에 해당하는 시간별 대기질 스냅샷을 생성합니다")
+    public ResponseEntity<String> createHourlySnapshotForSensor(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(description = "센서 일련번호", required = true) @PathVariable String serialNumber,
+            @Parameter(description = "스냅샷 생성 기준 시간 (YYYY-MM-DDTHH:MM:SS 형식, 미입력시 현재 시간 사용)",
+                    required = false, example = "2023-10-28T14:00:00")
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime snapshotTime) {
+
+        // 권한 확인
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            // 시간이 지정되지 않은 경우 현재 시간 사용
+            LocalDateTime targetTime = snapshotTime != null ? snapshotTime : LocalDateTime.now();
+
+            // 특정 센서에 대한 스냅샷 생성 서비스 호출
+            // SnapshotService에 새로운 메서드 createHourlySnapshotForSensor를 구현해야 함
+            snapshotService.createHourlySnapshotForSensor(serialNumber, targetTime);
+
+            // 응답 생성
+            LocalDateTime truncatedTime = targetTime.truncatedTo(ChronoUnit.HOURS);
+            return ResponseEntity.ok(serialNumber + " 센서의 " + truncatedTime + " 기준 시간별 스냅샷이 성공적으로 생성되었습니다.");
+        } catch (Exception e) {
+            log.error("센서 {} 스냅샷 생성 중 오류 발생: {}", serialNumber, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("스냅샷 생성 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
 }
