@@ -223,7 +223,7 @@ public class ThinQService {
         DeviceStateResponseDto state = objectMapper.readValue(statusResponse, DeviceStateResponseDto.class); // 디바이스 상태 DTO로 변환
         String currentMode = state.getResponse().getOperation().getAirFanOperationMode(); // 현재 모드 가져오기
         String newMode = currentMode.equals("POWER_ON") ? "POWER_OFF" : "POWER_ON"; // 전원 상태 반전
-        if( enforeON ) {
+        if(enforeON) {
             newMode = "POWER_ON"; // 강제 켜기
         }
         Map<String, Object> requestBody = Map.of(

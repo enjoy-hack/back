@@ -92,9 +92,9 @@ public class UserSatisfactionService {
 
         UserSatisfaction us = optional.get();
 
-        if (!us.getUserId().equals(user.getId())) {
-            throw new CustomException(INVALID_REQUEST, "사용자가 해당 만족도를 수정할 권한이 없습니다.");
-        }
+//        if (!us.getUserId().equals(user.getId())) {
+//            throw new CustomException(INVALID_REQUEST, "사용자가 해당 만족도를 수정할 권한이 없습니다.");
+//        }
 
         us.setSatisfaction(newSatisfaction);
         userSatisfactionRepository.save(us);
@@ -109,9 +109,9 @@ public class UserSatisfactionService {
 
         UserSatisfaction us = optional.get();
 
-        if (!us.getUserId().equals(user.getId())) {
-            throw new CustomException(INVALID_REQUEST, "사용자가 해당 만족도를 삭제할 권한이 없습니다.");
-        }
+//        if (!us.getUserId().equals(user.getId())) {
+//            throw new CustomException(INVALID_REQUEST, "사용자가 해당 만족도를 삭제할 권한이 없습니다.");
+//        }
 
         userSatisfactionRepository.delete(us);
     }

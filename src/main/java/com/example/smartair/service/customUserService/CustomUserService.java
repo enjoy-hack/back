@@ -30,9 +30,9 @@ public class CustomUserService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "roomId에 맞는 방이 없습니다."));
 
-        if (!room.getOwner().equals(user)) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 사용자는 방에 대한 권한이 없습니다.");
-        }
+//        if (!room.getOwner().equals(user)) {
+//            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 사용자는 방에 대한 권한이 없습니다.");
+//        }
 
         room.setTemperature(customTemp);
         roomRepository.save(room);
@@ -41,9 +41,9 @@ public class CustomUserService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, String.format("roomId에 맞는 방이 없습니다.", roomId)));
 
-        if (!room.getOwner().equals(user)) {
-            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 사용자는 방에 대한 권한이 없습니다.");
-        }
+//        if (!room.getOwner().equals(user)) {
+//            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 사용자는 방에 대한 권한이 없습니다.");
+//        }
 
         room.setMoisture(customMoi);
         roomRepository.save(room);
