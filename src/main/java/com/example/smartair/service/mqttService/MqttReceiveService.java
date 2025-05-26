@@ -52,7 +52,7 @@ public class MqttReceiveService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final int MAX_QUEUE_SIZE = 300;
-    private static final int HOURLY_LIMIT_PER_SENSOR = 100;
+    private static final int HOURLY_LIMIT_PER_SENSOR = 1500;
     private static final Duration INACTIVITY_THRESHOLD = Duration.ofHours(2); //2시간 이상 데이터 없으면 센서 작동 상태 비활성화 처리
     private final Map<Long, AtomicInteger> sensorMessageCounters = new ConcurrentHashMap<>();
     private final Map<Long, LocalDateTime> sensorLastResetTimes = new ConcurrentHashMap<>();
