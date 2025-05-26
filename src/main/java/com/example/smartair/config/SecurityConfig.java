@@ -77,7 +77,7 @@ public class SecurityConfig {
 
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/sensorMappingWithRoom").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/anomaly").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reports/anomaly").permitAll()
                         .requestMatchers(HttpMethod.POST, "/predictedAirQuality").permitAll()
                         .anyRequest().authenticated() //개발 중
                 );

@@ -59,7 +59,7 @@ public class AnomalyReportService {
         Sensor sensor = sensorRepository.findBySerialNumber(dto.getSensorSerialNumber())
                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, String.format("시리얼 번호 %s에 맞는 센서가 존재하지 않습니다.", dto.getSensorSerialNumber())));
 
-        LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER);
+//        LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER);
 
 //        HourlySensorAirQualitySnapshot hourlySnapshot = hourlyDeviceAirQualitySnapshotRepository
 //                .findBySensorAndSnapshotHour(sensor, anomalyDate)
@@ -73,14 +73,14 @@ public class AnomalyReportService {
                 dto.getPollutant(),
                 dto.getPollutantValue(),
                 dto.getPredictedValue(),
-                dto.getAnomalyTimestamp()
+                dto.getAnomalyTimestamp().toString()
         );
         log.info("Anomaly report description: {}", description);
 
         // 이상치 보고서 생성
         AnomalyReport anomalyReport = AnomalyReport.builder()
                 .sensor(sensor)
-                .anomalyTimestamp(LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER))
+                .anomalyTimestamp(dto.getAnomalyTimestamp())
                 .pollutant(Pollutant.valueOf(dto.getPollutant()))
                 .pollutantValue(dto.getPollutantValue())
                 .description(description)
