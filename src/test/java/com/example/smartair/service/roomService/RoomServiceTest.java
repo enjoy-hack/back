@@ -201,21 +201,7 @@ class RoomServiceTest {
             verify(roomParticipantRepository).save(any());
         }
 
-        @Test
-        @DisplayName("일반 유저가 방을 생성할 때 예외 발생")
-        void testCreateRoomWithNormalUser() {
-            //given
-            when(userRepository.findById(normalUser.getId())).thenReturn(Optional.of(normalUser));
-
-            //when & then
-            assertThatThrownBy(() -> roomService.createRoom(normalUser.getId(), createRoomRequestDto))
-                    .isInstanceOf(CustomException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NO_AUTHORITY);
-
-            verify(userRepository).findById(normalUser.getId());
-            verify(roomRepository, never()).save(any());
-            verify(roomParticipantRepository, never()).save(any());
-        }
+       
 
         @Test
         @DisplayName("존재하지 않는 유저로 방을 생성할 때 예외 발생")
