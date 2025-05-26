@@ -56,10 +56,11 @@ public class AnomalyReportService {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public String setAnomalyReport(AnomalyReportDto dto) throws Exception {
+        //log.info(String.valueOf(dto.getAnomalyTimestamp()));
         Sensor sensor = sensorRepository.findBySerialNumber(dto.getSensorSerialNumber())
                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, String.format("시리얼 번호 %s에 맞는 센서가 존재하지 않습니다.", dto.getSensorSerialNumber())));
 
-        LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER);
+//        LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER);
 
 //        HourlySensorAirQualitySnapshot hourlySnapshot = hourlyDeviceAirQualitySnapshotRepository
 //                .findBySensorAndSnapshotHour(sensor, anomalyDate)
@@ -80,7 +81,7 @@ public class AnomalyReportService {
         // 이상치 보고서 생성
         AnomalyReport anomalyReport = AnomalyReport.builder()
                 .sensor(sensor)
-                .anomalyTimestamp(LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER))
+                .anomalyTimestamp(dto.getAnomalyTimestamp())
                 .pollutant(Pollutant.valueOf(dto.getPollutant()))
                 .pollutantValue(dto.getPollutantValue())
                 .description(description)
@@ -135,7 +136,7 @@ public class AnomalyReportService {
         }
     }
 
-    public String generateDescription(String pollutant, double actual, double predicted, String anomalyTimestamp) {
+    public String generateDescription(String pollutant, double actual, double predicted, LocalDateTime anomalyTimestamp) {
         double errorRate = Math.abs(actual - predicted) / (predicted == 0 ? 1 : predicted); // 오차율 계산, 예측값이 0일 경우 1로 나누기
 
         // 오염물질별 기본 임계값
@@ -153,7 +154,7 @@ public class AnomalyReportService {
         }
 
         // 시간대별 가중치 설정
-        int hour = LocalDateTime.parse(anomalyTimestamp, ANOMALY_TIMESTAMP_FORMATTER).getHour();
+        int hour =anomalyTimestamp.getHour();
         double timeFactor;
         if (hour < 6) {
             timeFactor = 0.8;  // 새벽
