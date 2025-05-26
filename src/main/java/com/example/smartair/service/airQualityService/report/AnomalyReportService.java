@@ -61,13 +61,13 @@ public class AnomalyReportService {
 
         LocalDateTime anomalyDate = LocalDateTime.parse(dto.getAnomalyTimestamp(), ANOMALY_TIMESTAMP_FORMATTER);
 
-        HourlySensorAirQualitySnapshot hourlySnapshot = hourlyDeviceAirQualitySnapshotRepository
-                .findBySensorAndSnapshotHour(sensor, anomalyDate)
-                .orElseThrow(() -> new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND, String.format("해당 센서의 시간별 스냅샷을 찾을 수 없습니다. 시리얼 번호: %s, 날짜: %s", sensor.getSerialNumber(), anomalyDate)));
-
-        DailySensorAirQualityReport dailyReport = dailySensorAirQualityReportRepository
-                .findBySensorAndReportDate(sensor, LocalDate.from(anomalyDate))
-                .orElseThrow(() -> new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND, String.format("해당 센서의 일일 보고서를 찾을 수 없습니다. 시리얼 번호: %s, 날짜: %s", sensor.getSerialNumber(), LocalDate.from(anomalyDate))));
+//        HourlySensorAirQualitySnapshot hourlySnapshot = hourlyDeviceAirQualitySnapshotRepository
+//                .findBySensorAndSnapshotHour(sensor, anomalyDate)
+//                .orElseThrow(() -> new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND, String.format("해당 센서의 시간별 스냅샷을 찾을 수 없습니다. 시리얼 번호: %s, 날짜: %s", sensor.getSerialNumber(), anomalyDate)));
+//
+//        DailySensorAirQualityReport dailyReport = dailySensorAirQualityReportRepository
+//                .findBySensorAndReportDate(sensor, LocalDate.from(anomalyDate))
+//                .orElseThrow(() -> new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND, String.format("해당 센서의 일일 보고서를 찾을 수 없습니다. 시리얼 번호: %s, 날짜: %s", sensor.getSerialNumber(), LocalDate.from(anomalyDate))));
 
         String description = generateDescription(
                 dto.getPollutant(),
@@ -84,8 +84,10 @@ public class AnomalyReportService {
                 .pollutant(Pollutant.valueOf(dto.getPollutant()))
                 .pollutantValue(dto.getPollutantValue())
                 .description(description)
-                .relatedHourlySnapshot(hourlySnapshot)
-                .relatedDailyReport(dailyReport)
+                .relatedDailyReport(null)
+                .relatedHourlySnapshot(null)
+                //.relatedHourlySnapshot(hourlySnapshot)
+                //.relatedDailyReport(dailyReport)
                 .build();
         anomalyReportRepository.save(anomalyReport);
         log.info("Anomaly report saved: {}", anomalyReport.getId());
