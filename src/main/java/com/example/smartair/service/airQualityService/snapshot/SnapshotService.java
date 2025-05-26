@@ -33,6 +33,36 @@ public class SnapshotService {
     private final AirQualityCalculator airQualityCalculator;
 
     /**
+     * 특정 센서의 특정 시간대에 대한 스냅샷을 생성합니다.
+     */
+    @Transactional
+    public void createHourlySnapshotForSensor(String serialNumber, LocalDateTime snapshotHourBase) {
+        // 시간 단위로 절삭
+        snapshotHourBase = snapshotHourBase.truncatedTo(ChronoUnit.HOURS);
+
+        // 센서 조회
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND,
+                        "Sensor serialNumber: " + serialNumber));
+
+        // 해당 센서의 시간별 데이터를 DB에서 조회
+        List<SensorAirQualityData> airQualityDataList = airQualityDataRepository.findBySensorAndCreatedAtBetweenOrderByCreatedAtAsc(
+                sensor,
+                snapshotHourBase,
+                snapshotHourBase.plusHours(1));
+
+        if (airQualityDataList.isEmpty()) {
+            throw new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND,
+                    "해당 시간에 대한 센서 데이터가 없습니다. Sensor: " + serialNumber);
+        }
+
+        // 스냅샷 생성
+        createSensorSnapshot(sensor.getId(), airQualityDataList);
+
+        log.info("센서 일련번호: {}의 {} 시간 스냅샷 생성 완료", serialNumber, snapshotHourBase);
+    }
+
+    /**
      * 센서별로 특정 시간대에 대한 스냅샷을 생성합니다.
      */
     @Transactional
@@ -272,4 +302,6 @@ public class SnapshotService {
                 .average()
                 .orElse(0.0);
     }
+
+
 }
