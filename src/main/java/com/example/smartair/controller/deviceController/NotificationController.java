@@ -32,7 +32,7 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
-    @PutMapping
+    @PutMapping()
     public ResponseEntity<?> markNotificationAsRead(@AuthenticationPrincipal CustomUserDetails userDetails, Long notificationId) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
