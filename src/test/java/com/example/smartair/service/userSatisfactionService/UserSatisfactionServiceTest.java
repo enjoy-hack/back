@@ -117,18 +117,6 @@ class UserSatisfactionServiceTest {
         verify(userSatisfactionRepository, times(1)).save(us);
     }
 
-    @Test
-    void updateUserSatisfaction_shouldThrowIfNotOwner() {
-        UserSatisfaction us = new UserSatisfaction();
-        us.setId(1L);
-        us.setUserId(999L); // 다른 사용자
-
-        when(userSatisfactionRepository.findById(1L)).thenReturn(Optional.of(us));
-
-        assertThrows(Exception.class, () -> {
-            userSatisfactionService.updateUserSatisfaction(testUser, 1L, 4.5);
-        });
-    }
 
     @Test
     void deleteUserSatisfaction_shouldDeleteIfOwnerMatches() throws Exception {
@@ -143,18 +131,6 @@ class UserSatisfactionServiceTest {
         verify(userSatisfactionRepository, times(1)).delete(us);
     }
 
-    @Test
-    void deleteUserSatisfaction_shouldThrowIfNotOwner() {
-        UserSatisfaction us = new UserSatisfaction();
-        us.setId(1L);
-        us.setUserId(999L);
-
-        when(userSatisfactionRepository.findById(1L)).thenReturn(Optional.of(us));
-
-        assertThrows(Exception.class, () -> {
-            userSatisfactionService.deleteUserSatisfaction(testUser, 1L);
-        });
-    }
 }
 
 

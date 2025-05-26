@@ -7,6 +7,7 @@ import com.example.smartair.entity.airData.report.AnomalyReport;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
 import com.example.smartair.entity.device.Device;
+import com.example.smartair.entity.notification.Notification;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomParticipant.RoomParticipant;
 import com.example.smartair.entity.roomSensor.RoomSensor;
@@ -18,6 +19,7 @@ import com.example.smartair.repository.airQualityRepository.airQualityReportRepo
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.notificationRepository.NotificationRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
@@ -47,6 +49,7 @@ public class AnomalyReportService {
     private final ThinQService thinQService;
     private final RoomSensorRepository roomSensorRepository;
     private final DeviceRepository deviceRepository;
+    private final NotificationRepository notificationRepository;
 
 
     private static final DateTimeFormatter ANOMALY_TIMESTAMP_FORMATTER =
@@ -89,31 +92,40 @@ public class AnomalyReportService {
 
         Optional<RoomSensor> roomSensor = roomSensorRepository.findBySensor(sensor);
         if(roomSensor.isEmpty()){ // 방에 등록되지 않은 센서인 경우, 센서 주인에게만 알림만
-            return firebaseAlarm(sensor.getUser().getFcmToken(), description);
+            return firebaseAlarm(sensor.getUser().getFcmToken(), description, sensor.getUser());
         }else{
             Room room = roomSensor.get().getRoom();
-            List<String> targetTokens = new ArrayList<>();
-            targetTokens.add(room.getOwner().getFcmToken()); // 방 주인에게 알림
+
+            List<User> users = new ArrayList<>(); // 방 참여자들에게 알림을 보내기 위한 리스트
+            users.add(room.getOwner()); // 방 주인
             for (RoomParticipant participant: room.getParticipants()) { // 방 참여자들에게 알림
-                targetTokens.add(participant.getUser().getFcmToken());
+                users.add(participant.getUser());
             }
             // 알림 전송
-            for (String token : targetTokens) {
-                firebaseAlarm(token, description);
+            for (User user : users) {
+                firebaseAlarm(user.getFcmToken(), description, user);
             }
+
             Optional<Device> device = deviceRepository.findDeviceByRoomIdAndAlias(room.getId(), "에어로타워");
             if(device.isPresent()) thinQService.controlAirPurifierPower(room.getOwner(), device.get().getId(), true); // 공기청정기 켜기
 
             return "알림이 성공적으로 전송되었습니다.";
         }
     }
-    public String firebaseAlarm(String targetToken, String description) {
+    public String firebaseAlarm(String targetToken, String description, User user) {
         Message message = Message.builder()
                 .setToken(targetToken)
                 .putData("title", "이상치 발생 알림")
                 .putData("body", description)
                 .build();
         try {
+            Notification notification = Notification.builder()
+                    .title("이상치 발생 알림")
+                    .message(description)
+                    .readStatus(false)
+                    .user(user)
+                    .build();
+            notificationRepository.save(notification);
             return FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
             log.warn("FCM 전송 실패. 토큰: {}, 사유: {}", targetToken, e.getMessage());
@@ -122,7 +134,6 @@ public class AnomalyReportService {
     }
 
     public String generateDescription(String pollutant, double actual, double predicted, String anomalyTimestamp) {
-
         double errorRate = Math.abs(actual - predicted) / (predicted == 0 ? 1 : predicted); // 오차율 계산, 예측값이 0일 경우 1로 나누기
 
         // 오염물질별 기본 임계값

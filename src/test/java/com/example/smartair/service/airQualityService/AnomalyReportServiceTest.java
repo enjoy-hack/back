@@ -11,6 +11,7 @@ import com.example.smartair.repository.airQualityRepository.airQualityReportRepo
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
+import com.example.smartair.repository.notificationRepository.NotificationRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.service.airQualityService.report.AnomalyReportService;
@@ -47,6 +48,8 @@ class AnomalyReportServiceTest {
 
     @Mock
     private DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
+    @Mock
+    private NotificationRepository notificationRepository;
 
     @Mock
     private ThinQService thinQService;
@@ -67,7 +70,8 @@ class AnomalyReportServiceTest {
                 dailySensorAirQualityReportRepository,
                 thinQService,
                 roomSensorRepository,
-                deviceRepository
+                deviceRepository,
+                notificationRepository
 
         );
     }
