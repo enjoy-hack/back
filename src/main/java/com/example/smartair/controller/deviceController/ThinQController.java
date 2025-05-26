@@ -99,6 +99,7 @@ public class ThinQController implements ThinQControllerDocs {
         return ResponseEntity.ok(thinQService.controlAirPurifierPower(user, deviceId, false));
     }
 
+    // 사용자 권한 확인
     @GetMapping("/authentication/{roomId}")
     public ResponseEntity<?> authenticateThinQ(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                @PathVariable("roomId") Long roomId) throws Exception {
@@ -110,5 +111,19 @@ public class ThinQController implements ThinQControllerDocs {
         Boolean authentication = thinQService.getAuthentication(user, roomId);
 
         return ResponseEntity.ok(authentication);
+    }
+
+    // 디바이스 방 등록 해제
+    @DeleteMapping("/{deviceId}")
+    public ResponseEntity<?> deleteDevice(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                @PathVariable("deviceId") Long deviceId) throws Exception {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
+
+        User user = userDetails.getUser();
+
+        thinQService.deleteDeviceRoom(user, deviceId);
+        return ResponseEntity.ok("디바이스의 방 등록이 해제되었습니다.");
     }
 }

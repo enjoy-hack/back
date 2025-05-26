@@ -242,6 +242,28 @@ public class ThinQService {
             return false; // 권한이 없는 경우
         }
     }
+
+    public void deleteDeviceRoom(User user, Long deviceId) {
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND, "디바이스를 찾을 수 없습니다."));
+
+        Room room = device.getRoom();
+        if (room == null) {
+            throw new CustomException(ErrorCode.ROOM_NOT_FOUND, "디바이스가 방에 등록되어 있지 않습니다.");
+        }
+
+        if(validateAccess(user, room)) {
+            log.info("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 있습니다.", user.getId(), room.getId());
+        } else {
+            log.warn("사용자 ID {}가 방 ID {}에 대한 디바이스에 접근할 수 있는 권한이 없습니다.", user.getId(), room.getId());
+            throw new CustomException(ErrorCode.NO_AUTHORITY, "해당 방에 대한 접근 권한이 없습니다.");
+        }
+
+        device.setRoom(null);
+        device.setUser(null);
+        deviceRepository.save(device);
+        log.info("디바이스 {}가 방 {}에서 제거되었습니다.", device.getAlias(), room.getId());
+    }
     private PATEntity getPatEntityOrThrow(User user, Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND, "방을 찾을 수 없습니다."));

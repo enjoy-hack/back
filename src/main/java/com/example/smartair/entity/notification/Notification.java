@@ -4,8 +4,14 @@ import com.example.smartair.entity.user.User;
 import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.util.BaseEntity;
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
+@Setter
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Notification extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,8 +24,4 @@ public class Notification extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "sensor_air_quality_data_id")
-    private SensorAirQualityData airQualityData;
 }
