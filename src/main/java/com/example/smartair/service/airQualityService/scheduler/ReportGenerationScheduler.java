@@ -36,7 +36,7 @@ public class ReportGenerationScheduler {
      * 매시간 정각에 실행되어, 각 활성 센서에 대해 이전 시간의 시간별 공기질 스냅샷을 생성합니다.
      * 예: 14:00에 실행되면, 13:00의 스냅샷을 생성 (13:00:00 ~ 13:59:59 데이터 기반).
      */
-//    @Scheduled(cron = "0 0 * * * *") // 매시간 정각
+    @Scheduled(cron = "0 0 * * * *") // 매시간 정각
     public void generateHourlySnapshots() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime snapshotHourBase = now.minusHours(1).truncatedTo(ChronoUnit.HOURS);
@@ -54,7 +54,7 @@ public class ReportGenerationScheduler {
     /**
      * 매일 자정에 실행되어, 전날 데이터가 있는 모든 센서에 대해 이전 날짜의 일별 공기질 리포트를 생성/업데이트합니다.
      */
-//    @Scheduled(cron = "0 0 0 * * *") // 매일 자정
+    @Scheduled(cron = "0 0 0 * * *") // 매일 자정
     public void generateDailyReports() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
         log.info("일별 공기질 리포트 생성을 시작합니다. 대상 날짜: {}", yesterday);
@@ -88,7 +88,7 @@ public class ReportGenerationScheduler {
     /**
      * 매주 월요일 자정에 실행되어, 이전 주의 데이터가 있는 센서들에 대해 이전 주의 주간 공기질 리포트를 생성/업데이트합니다.
      */
-//    @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 자정
+    @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 자정
     public void generateWeeklyReports() {
         LocalDate lastWeekDate = LocalDate.now().minusWeeks(1);
         int yearOfLastWeek = lastWeekDate.get(WeekFields.ISO.weekBasedYear());
