@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface HourlyDeviceAirQualitySnapshotRepository extends JpaRepository<HourlySensorAirQualitySnapshot, Long> {
+public interface HourlySensorAirQualitySnapshotRepository extends JpaRepository<HourlySensorAirQualitySnapshot, Long> {
     Optional<HourlySensorAirQualitySnapshot> findBySensorAndSnapshotHour(Sensor sensor, LocalDateTime snapshotHour);
 
     @Query("SELECT DISTINCT h.sensor FROM HourlySensorAirQualitySnapshot h " +
@@ -30,4 +30,6 @@ public interface HourlyDeviceAirQualitySnapshotRepository extends JpaRepository<
             @Param("sensor") Sensor sensor,
             @Param("startHour") LocalDateTime startHour,
             @Param("endHour") LocalDateTime endHour);
+
+    List<HourlySensorAirQualitySnapshot> findAllBySensor_Id(Long sensorId);
 }

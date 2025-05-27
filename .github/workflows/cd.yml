@@ -1,11 +1,8 @@
 name: CD for main
 
 on:
-  workflow_run:
-    workflows: ["CI for main"]  # CI 워크플로우 이름과 정확히 일치해야 함
+  push:
     branches: [main]
-    types:
-      - completed
   workflow_dispatch:
     inputs:
       branch:

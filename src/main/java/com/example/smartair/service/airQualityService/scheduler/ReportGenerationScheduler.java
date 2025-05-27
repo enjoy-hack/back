@@ -1,9 +1,7 @@
 package com.example.smartair.service.airQualityService.scheduler;
 
-import com.example.smartair.entity.airData.report.WeeklySensorAirQualityReport;
 import com.example.smartair.entity.sensor.Sensor;
-import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
-import com.example.smartair.repository.sensorRepository.SensorRepository;
+import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlySensorAirQualitySnapshotRepository;
 import com.example.smartair.service.airQualityService.snapshot.SnapshotService;
 import com.example.smartair.service.airQualityService.report.DailyReportService;
 import com.example.smartair.service.airQualityService.report.WeeklyReportService;
@@ -17,8 +15,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
-import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 @Component
@@ -26,11 +22,10 @@ import java.util.Set;
 @Slf4j
 public class ReportGenerationScheduler {
 
-    private final SensorRepository sensorRepository;
     private final SnapshotService snapshotService;
     private final DailyReportService dailyReportService;
     private final WeeklyReportService weeklyReportService;
-    private final HourlyDeviceAirQualitySnapshotRepository hourlyDeviceAirQualitySnapshotRepository;
+    private final HourlySensorAirQualitySnapshotRepository hourlySensorAirQualitySnapshotRepository;
 
     /**
      * 매시간 정각에 실행되어, 각 활성 센서에 대해 이전 시간의 시간별 공기질 스냅샷을 생성합니다.
@@ -60,7 +55,7 @@ public class ReportGenerationScheduler {
         log.info("일별 공기질 리포트 생성을 시작합니다. 대상 날짜: {}", yesterday);
 
         // 어제 하루동안 데이터가 있는 센서들 조회
-        Set<Sensor> sensorsWithData = hourlyDeviceAirQualitySnapshotRepository
+        Set<Sensor> sensorsWithData = hourlySensorAirQualitySnapshotRepository
                 .findDistinctSensorsBySnapshotHourBetween(
                         yesterday.atStartOfDay(),
                         yesterday.atTime(23, 59, 59)
@@ -106,7 +101,7 @@ public class ReportGenerationScheduler {
                 .withMinute(59)
                 .withSecond(59);
 
-        Set<Sensor> sensorsWithData = hourlyDeviceAirQualitySnapshotRepository
+        Set<Sensor> sensorsWithData = hourlySensorAirQualitySnapshotRepository
                 .findDistinctSensorsBySnapshotHourBetween(weekStart, weekEnd);
 
         if (sensorsWithData.isEmpty()) {

@@ -39,4 +39,6 @@ public interface SensorAirQualityScoreRepository extends JpaRepository<SensorAir
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
 
+    List<SensorAirQualityScore> findAllBySensorAirQualityDataId(Long sensorAirQualityDataId);
+
 }

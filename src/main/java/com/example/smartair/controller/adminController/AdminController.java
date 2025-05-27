@@ -92,4 +92,14 @@ public class AdminController implements AdminControllerDocs {
         Page<SensorDetailDto> sensors = adminDeviceService.getAllSensorsDetailForAdmin(pageable);
         return ResponseEntity.ok(sensors);
     }
+
+    // 센서 활성 상태 지정
+    @Override
+    @PatchMapping("/sensors/{serialNumber}/active")
+    public ResponseEntity<String> setSensorActiveStatus(
+            @PathVariable String serialNumber,
+            @RequestParam boolean active) {
+        adminDeviceService.setSensorActiveStatus(serialNumber, active);
+        return ResponseEntity.ok("센서 활성 상태가 성공적으로 변경되었습니다.");
+    }
 } 

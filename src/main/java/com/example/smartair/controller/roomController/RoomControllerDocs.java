@@ -25,7 +25,7 @@ import java.util.List;
 @Tag(name = "Room API", description = "방 관련 API 명세")
 public interface RoomControllerDocs {
 
-    @Operation(summary = "방 생성", description = "새로운 방을 생성합니다. 시스템 관리자(ADMIN) 또는 매니저(MANAGER) 권한의 사용자만 생성 가능하며, 생성한 사용자가 방의 소유자(MANAGER)가 됩니다.",
+    @Operation(summary = "방 생성", description = "새로운 방을 생성합니다. 생성한 사용자가 방의 소유자(MANAGER)가 됩니다.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "방 생성 요청 정보", required = true,
                     content = @Content(schema = @Schema(implementation = CreateRoomRequestDto.class))))
     @ApiResponses(value = {
