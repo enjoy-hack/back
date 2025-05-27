@@ -84,6 +84,7 @@ public interface SensorControllerDocs {
         ## 센서 삭제
 
         사용자가 등록한 센서를 삭제합니다.
+        관련된 SensorAirQualityData, PredictedAirQualityData, Fineparticlesdata, DailyReport, WeeklyReport, HourlySnapshot도 삭제됩니다.
 
         ---
 
