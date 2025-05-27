@@ -18,6 +18,6 @@ public interface PredictedAirQualityRepository extends JpaRepository<PredictedAi
 
     List<PredictedAirQualityData> findBySensorSerialNumberOrderByTimestamp(String sensorSerialNumber);
 
-    List<PredictedAirQualityData> findBySensorSerialNumber(String sensorSerialNumber);
+    List<PredictedAirQualityData> findAllBySensorSerialNumber(String sensorSerialNumber);
     Optional<PredictedAirQualityData> findBySensorSerialNumberAndTimestamp(String sensorSerialNumber, LocalDateTime timestamp);
 }
