@@ -7,7 +7,8 @@ import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
-import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.SensorAirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.SensorAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataPt2Repository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
@@ -45,7 +46,7 @@ class AirQualityDataServiceTest {
     private RoomSensorRepository roomSensorRepository;
 
     @Mock
-    private AirQualityDataRepository airQualityDataRepository;
+    private SensorAirQualityDataRepository sensorAirQualityDataRepository;
 
     @Mock
     private RecentAirQualityDataCache recentAirQualityDataCache;
@@ -121,7 +122,7 @@ class AirQualityDataServiceTest {
 
         when(sensorRepository.findById(TEST_SENSOR_ID)).thenReturn(Optional.of(sensor));
         when(roomSensorRepository.findBySensor(sensor)).thenReturn(Optional.of(roomSensor));
-        when(airQualityDataRepository.save(any(SensorAirQualityData.class))).thenAnswer(invocation -> {
+        when(sensorAirQualityDataRepository.save(any(SensorAirQualityData.class))).thenAnswer(invocation -> {
             SensorAirQualityData savedData = invocation.getArgument(0);
             savedData.setId(100L);
             return savedData;
@@ -135,7 +136,7 @@ class AirQualityDataServiceTest {
         assertEquals(29.47, data.getTemperature());
         assertEquals(38.22, data.getHumidity());
         verify(fineParticlesDataRepository).save(any(FineParticlesData.class));
-        verify(airQualityDataRepository).save(any(SensorAirQualityData.class));
+        verify(sensorAirQualityDataRepository).save(any(SensorAirQualityData.class));
         verify(recentAirQualityDataCache).put(eq(sensor.getId()), any(SensorAirQualityData.class));
     }
 
@@ -152,7 +153,7 @@ class AirQualityDataServiceTest {
         assertEquals(ErrorCode.SENSOR_NOT_FOUND, exception.getErrorCode());
 
         verify(fineParticlesDataRepository, never()).save(any());
-        verify(airQualityDataRepository, never()).save(any());
+        verify(sensorAirQualityDataRepository, never()).save(any());
         verify(recentAirQualityDataCache, never()).put(any(), any());
     }
 
@@ -169,7 +170,7 @@ class AirQualityDataServiceTest {
         when(sensorRepository.findById(TEST_SENSOR_ID)).thenReturn(Optional.of(sensor));
         when(roomSensorRepository.findBySensor(sensor)).thenReturn(Optional.empty());
         when(fineParticlesDataRepository.save(any(FineParticlesData.class))).thenReturn(mockSavedFineParticles);
-        when(airQualityDataRepository.save(any(SensorAirQualityData.class))).thenAnswer(invocation -> {
+        when(sensorAirQualityDataRepository.save(any(SensorAirQualityData.class))).thenAnswer(invocation -> {
             SensorAirQualityData savedData = invocation.getArgument(0);
             savedData.setId(100L);
             return savedData;

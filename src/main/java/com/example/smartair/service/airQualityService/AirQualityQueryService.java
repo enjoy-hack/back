@@ -2,24 +2,16 @@ package com.example.smartair.service.airQualityService;
 
 import com.example.smartair.dto.airQualityScoreDto.AverageScoreDto;
 import com.example.smartair.dto.airQualityScoreDto.SensorAirQualityScoreDto;
-import com.example.smartair.dto.airQualityScoreDto.PlaceAirQualityScoreDto;
 import com.example.smartair.dto.airQualityScoreDto.RoomAirQualityScoreDto;
-import com.example.smartair.entity.airData.airQualityData.SensorAirQualityData;
 import com.example.smartair.entity.airScore.airQualityScore.SensorAirQualityScore;
-import com.example.smartair.entity.airScore.airQualityScore.PlaceAirQualityScore;
 import com.example.smartair.entity.airScore.airQualityScore.RoomAirQualityScore;
 import com.example.smartair.entity.sensor.Sensor;
-import com.example.smartair.entity.place.Place;
 import com.example.smartair.entity.room.Room;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.SensorAirQualityScoreRepository;
-import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.PlaceAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
-import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.SensorAirQualityScoreRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
-import com.example.smartair.repository.placeRepository.PlaceRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +29,10 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class AirQualityQueryService { //공기질 점수 조회
 
-    private final SensorAirQualityScoreRepository sensorAirQualityScoreRepository;
     private final RoomAirQualityScoreRepository roomAirQualityScoreRepository;
     private final SensorRepository sensorRepository;
     private final RoomRepository roomRepository;
-    private final AirQualityDataRepository airQualityDataRepository;
+    private final SensorAirQualityScoreRepository sensorAirQualityScoreRepository;
     private final AirQualityScoreService airQualityScoreService;
 
     /**

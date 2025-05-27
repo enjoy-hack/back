@@ -10,7 +10,7 @@ import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.infrastructure.RecentAirQualityDataCache;
-import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.SensorAirQualityDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataPt2Repository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataRepository;
@@ -29,18 +29,18 @@ public class AirQualityDataService {
 
     private final SensorRepository sensorRepository;
     private final RoomSensorRepository roomSensorRepository;
-    private final AirQualityDataRepository airQualityDataRepository;
     private final FineParticlesDataRepository fineParticlesDataRepository;
     private final RecentAirQualityDataCache recentAirQualityDataCache;
     private final FineParticlesDataPt2Repository fineParticlesDataPt2Repository;
     private final AirQualityScoreService airQualityScoreService;
+    private final SensorAirQualityDataRepository sensorAirQualityDataRepository;
 
     @Transactional
-    public AirQualityPayloadDto processAirQualityData(Long deviceId, Long roomId, AirQualityPayloadDto dto) {
+    public AirQualityPayloadDto processAirQualityData(Long sensorId, Long roomId, AirQualityPayloadDto dto) {
         try {
-            // 1. Device 추출
-            Sensor sensor = sensorRepository.findById(deviceId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor Id: " + deviceId));
+            // 1. Sensor 추출
+            Sensor sensor = sensorRepository.findById(sensorId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor Id: " + sensorId));
 
             // 2. Room 정보는 옵셔널하게 처리
             Room room = null;
@@ -49,7 +49,7 @@ public class AirQualityDataService {
                         .map(RoomSensor::getRoom)
                         .orElse(null);
                 if (room != null) {
-                    log.info("센서 ID {}가 방 ID {}에 매핑되어 있습니다.", deviceId, room.getId());
+                    log.info("센서 ID {}가 방 ID {}에 매핑되어 있습니다.", sensorId, room.getId());
                 }
             }
 
@@ -75,7 +75,7 @@ public class AirQualityDataService {
                     .build();
 
             // 5. AirQualityData 저장
-            SensorAirQualityData savedAirQualityData = airQualityDataRepository.save(airQualityData);
+            SensorAirQualityData savedAirQualityData = sensorAirQualityDataRepository.save(airQualityData);
 
             // 즉시 점수 계산
             airQualityScoreService.calculateAndSaveDeviceScore(savedAirQualityData);
@@ -103,12 +103,12 @@ public class AirQualityDataService {
             // 1. 캐시에서 먼저 조회
             Optional<SensorAirQualityData> cachedData = recentAirQualityDataCache.get(sensorId);
             if (cachedData.isPresent()) {
-                log.debug("Cache hit for device ID: {}", sensorId);
+                log.debug("Cache hit for sensor ID: {}", sensorId);
                 return cachedData.get();
             }
 
             // 2. 캐시에 없는 경우 DB에서 최신 데이터 조회
-            SensorAirQualityData latestData = airQualityDataRepository.findTopBySensorIdOrderByCreatedAtDesc(sensorId)
+            SensorAirQualityData latestData = sensorAirQualityDataRepository.findTopBySensorIdOrderByCreatedAtDesc(sensorId)
                     .orElseThrow(() -> {
                         log.warn("Device ID {}의 최근 데이터를 찾을 수 없습니다.", sensorId);
                         return new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor ID {}" + sensorId);
@@ -116,7 +116,7 @@ public class AirQualityDataService {
 
             // 3. 조회된 데이터를 캐시에 저장
             updateCache(sensorId, latestData);
-            log.debug("Latest data cached for device ID: {}", sensorId);
+            log.debug("Latest data cached for sensor ID: {}", sensorId);
 
             return latestData;
         } catch (CustomException ce) {

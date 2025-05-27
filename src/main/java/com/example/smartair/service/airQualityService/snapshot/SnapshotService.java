@@ -7,8 +7,8 @@ import com.example.smartair.entity.airScore.airQualityScore.SensorAirQualityScor
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
-import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.SensorAirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlySensorAirQualitySnapshotRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.service.airQualityService.calculator.AirQualityCalculator;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +28,9 @@ import java.util.stream.Collectors;
 public class SnapshotService {
 
     private final SensorRepository sensorRepository;
-    private final AirQualityDataRepository airQualityDataRepository;
-    private final HourlyDeviceAirQualitySnapshotRepository snapshotRepository;
+    private final HourlySensorAirQualitySnapshotRepository snapshotRepository;
     private final AirQualityCalculator airQualityCalculator;
+    private final SensorAirQualityDataRepository sensorAirQualityDataRepository;
 
     /**
      * 특정 센서의 특정 시간대에 대한 스냅샷을 생성합니다.
@@ -46,7 +46,7 @@ public class SnapshotService {
                         "Sensor serialNumber: " + serialNumber));
 
         // 해당 센서의 시간별 데이터를 DB에서 조회
-        List<SensorAirQualityData> airQualityDataList = airQualityDataRepository.findBySensorAndCreatedAtBetweenOrderByCreatedAtAsc(
+        List<SensorAirQualityData> airQualityDataList = sensorAirQualityDataRepository.findBySensorAndCreatedAtBetweenOrderByCreatedAtAsc(
                 sensor,
                 snapshotHourBase,
                 snapshotHourBase.plusHours(1));
@@ -71,7 +71,7 @@ public class SnapshotService {
         snapshotHourBase = snapshotHourBase.truncatedTo(ChronoUnit.HOURS);
 
         //시간별 데이터를 DB에서 조회
-        List<SensorAirQualityData> airQualityDataList = airQualityDataRepository.findByCreatedAtBetween(
+        List<SensorAirQualityData> airQualityDataList = sensorAirQualityDataRepository.findByCreatedAtBetween(
                 snapshotHourBase,
                 snapshotHourBase.plusHours(1));
 
@@ -87,7 +87,7 @@ public class SnapshotService {
     public void createSensorSnapshot(Long sensorId, List<SensorAirQualityData> hourlyRawDataList) {
         try {
             if (hourlyRawDataList.isEmpty()) {
-                log.warn("Device ID: {} 의 {} 시간 스냅샷에 대한 데이터가 없어 스냅샷 생성을 건너뜁니다.",
+                log.warn("Sensor ID: {} 의 {} 시간 스냅샷에 대한 데이터가 없어 스냅샷 생성을 건너뜁니다.",
                         sensorId, hourlyRawDataList.get(0).getCreatedAt());
                 return;
             }
@@ -171,7 +171,7 @@ public class SnapshotService {
     @Transactional
     public HourlySensorAirQualitySnapshot updateHourlySnapshot(HourlySensorAirQualitySnapshot snapshot) {
         // 기존 스냅샷의 시간 범위에 해당하는 DeviceAirQualityData 리스트 조회
-        List<SensorAirQualityData> dataList = airQualityDataRepository
+        List<SensorAirQualityData> dataList = sensorAirQualityDataRepository
                 .findBySensorAndCreatedAtBetweenOrderByCreatedAtAsc(snapshot.getSensor(),
                         snapshot.getSnapshotHour(), snapshot.getSnapshotHour().plusHours(1));
 
@@ -225,7 +225,7 @@ public class SnapshotService {
     public SensorAirQualityData getLatestAirQualityData(String serialNumber) {
         Sensor sensor = sensorRepository.findBySerialNumber(serialNumber).orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor serialNumber: " + serialNumber));
 
-        return airQualityDataRepository.findTopBySensor_SerialNumberOrderByCreatedAtDesc(serialNumber)
+        return sensorAirQualityDataRepository.findTopBySensor_SerialNumberOrderByCreatedAtDesc(serialNumber)
                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor serialNumber {}" + serialNumber));
     }
 
