@@ -6,7 +6,7 @@ import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
-import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
+import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlySensorAirQualitySnapshotRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class DailyReportService {
 
     private final SensorRepository sensorRepository;
-    private final HourlyDeviceAirQualitySnapshotRepository snapshotRepository;
+    private final HourlySensorAirQualitySnapshotRepository snapshotRepository;
     private final DailySensorAirQualityReportRepository dailyReportRepository;
 
     /**

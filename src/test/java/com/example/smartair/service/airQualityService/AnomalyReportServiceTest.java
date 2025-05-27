@@ -1,5 +1,4 @@
 package com.example.smartair.service.airQualityService;
-import com.example.smartair.domain.enums.Pollutant;
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportDto;
 import com.example.smartair.dto.airQualityDataDto.AnomalyReportResponseDto;
 import com.example.smartair.entity.airData.report.AnomalyReport;
@@ -9,7 +8,7 @@ import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.AnomalyReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
-import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlyDeviceAirQualitySnapshotRepository;
+import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlySensorAirQualitySnapshotRepository;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.repository.notificationRepository.NotificationRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
@@ -17,8 +16,6 @@ import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.service.airQualityService.report.AnomalyReportService;
 import com.example.smartair.service.deviceService.ThinQService;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +41,7 @@ class AnomalyReportServiceTest {
     private SensorRepository sensorRepository;
 
     @Mock
-    private HourlyDeviceAirQualitySnapshotRepository hourlyDeviceAirQualitySnapshotRepository;
+    private HourlySensorAirQualitySnapshotRepository hourlySensorAirQualitySnapshotRepository;
 
     @Mock
     private DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
@@ -66,7 +63,7 @@ class AnomalyReportServiceTest {
         anomalyReportService = new AnomalyReportService(
                 anomalyReportRepository,
                 sensorRepository,
-                hourlyDeviceAirQualitySnapshotRepository,
+                hourlySensorAirQualitySnapshotRepository,
                 dailySensorAirQualityReportRepository,
                 thinQService,
                 roomSensorRepository,
@@ -93,7 +90,7 @@ class AnomalyReportServiceTest {
         sensor.getUser().setFcmToken("fake_fcm_token");
 
         when(sensorRepository.findBySerialNumber("ABC123")).thenReturn(Optional.of(sensor));
-        when(hourlyDeviceAirQualitySnapshotRepository.findBySensorAndSnapshotHour(sensor, time))
+        when(hourlySensorAirQualitySnapshotRepository.findBySensorAndSnapshotHour(sensor, time))
                 .thenReturn(Optional.of(mock(HourlySensorAirQualitySnapshot.class)));
         when(dailySensorAirQualityReportRepository.findBySensorAndReportDate(sensor, LocalDate.parse("2025-05-21")))
                 .thenReturn(Optional.of(mock(DailySensorAirQualityReport.class)));
