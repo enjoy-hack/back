@@ -9,30 +9,24 @@ import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
-import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.SensorAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
-import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.PlaceAirQualityScoreRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
-import com.example.smartair.repository.roomRepository.RoomRepository;
-import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.service.airQualityService.calculator.AirQualityCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AirQualityScoreService { //스케줄러를 통해 자동으로 점수 계산 실행되는 서비스
+public class AirQualityScoreService {
 
     private final AirQualityCalculator airQualityCalculator;
-    private final AirQualityDataRepository airQualityDataRepository;
     private final SensorAirQualityScoreRepository sensorAirQualityScoreRepository;
     private final RoomAirQualityScoreRepository roomAirQualityScoreRepository;
     private final RoomSensorRepository roomSensorRepository;
@@ -71,7 +65,6 @@ public class AirQualityScoreService { //스케줄러를 통해 자동으로 점�
         }
         });
 }
-
 
 
     public void updateRoomAverageScore(Room room) { //방 평균 점수 업데이트
@@ -262,27 +255,34 @@ public class AirQualityScoreService { //스케줄러를 통해 자동으로 점�
 
    @Transactional
     public void calculateHourlyRoomScore(Room room){ //시간별 방 점수 계산
-       log.info("Calculating hourly average score for Room ID: {}", room.getId());
+       log.info("===Scheduling : Calculating hourly average score for Room ID: {}===", room.getId());
        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
 
-       // 1. 각 센서의 최근 1시간 데이터 처리
        List<Sensor> sensors = roomSensorRepository.findAllSensorByRoom(room);
+       List<SensorAirQualityScore> hourlyScores = new ArrayList<>();
        for (Sensor sensor : sensors) {
            try {
-               // 센서의 최근 1시간 내 데이터 중 가장 최신 데이터 조회
-               Optional<SensorAirQualityData> latestData = airQualityDataRepository
-                       .findFirstBySensorAndCreatedAtAfterOrderByCreatedAtDesc(sensor, oneHourAgo);
-
-               // 최신 데이터가 있다면 점수 계산
-               latestData.ifPresent(this::calculateAndSaveDeviceScore);
+               List<SensorAirQualityScore> hourlyData = sensorAirQualityScoreRepository
+                       .findScoresBySensorSerialNumberAndTimeRange(sensor.getSerialNumber(), oneHourAgo, LocalDateTime.now());
+               hourlyScores.addAll(hourlyData);
            } catch (Exception e) {
-               log.error("Failed to process data for Sensor ID {}: {}", sensor.getId(), e.getMessage());
+               log.error("Scheduling : Failed to process data for Sensor ID {}: {}", sensor.getId(), e.getMessage());
            }
        }
-
-       // 2. 기존 updateRoomAverageScore 메서드 활용하여 방 평균 계산 및 저장
-       updateRoomAverageScore(room);
-       log.info("Completed hourly room score calculation for Room ID: {}", room.getId());
+       if (!hourlyScores.isEmpty()){
+           AverageScoreDto averageScoreDto = calculateAverageDeviceScore(hourlyScores);
+           RoomAirQualityScore roomAirQualityScore = RoomAirQualityScore.builder()
+                   .room(room)
+                   .overallScore(averageScoreDto.getOverallScore())
+                   .pm10Score(averageScoreDto.getPm10Score())
+                   .pm25Score(averageScoreDto.getPm25Score())
+                   .eco2Score(averageScoreDto.getEco2Score())
+                   .tvocScore(averageScoreDto.getTvocScore())
+                   .build();
+           roomAirQualityScoreRepository.save(roomAirQualityScore);
+           log.info("Scheduling : Hourly average score saved for Room ID: {}, Score ID: {}", room.getId(), roomAirQualityScore.getId());
+       }
+       log.info("Scheduling : Completed hourly room score calculation for Room ID: {}", room.getId());
    }
 }
 
