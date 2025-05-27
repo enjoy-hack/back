@@ -14,18 +14,9 @@ public class SensorRequestDto {
             String name
     ){}
 
-    public record deleteSensorDto(
-            String serialNumber,
-            Long roomId
-    ){}
-
     public record addSensorToRoomDto(
             String serialNumber,
             Long roomId
     ){}
 
-    public record unregisterSensorFromRoomDto(
-            String serialNumber,
-            Long roomId
-    ){}
 }
