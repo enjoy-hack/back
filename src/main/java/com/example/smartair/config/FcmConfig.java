@@ -22,14 +22,16 @@ public class FcmConfig {
 
     @PostConstruct
     public void initializeFirebase() throws IOException {
-        InputStream serviceAccountStream = firebaseConfigResource.getInputStream(); // Resource 사용
+        try {
+            InputStream serviceAccountStream = firebaseConfigResource.getInputStream(); // Resource 사용
 
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccountStream))
-                .build();
-
-        if (FirebaseApp.getApps().isEmpty()) { // 이미 초기화됐는지 확인
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccountStream))
+                    .build();
             FirebaseApp.initializeApp(options);
+            log.info("fcm 설정 완료");
+        }catch (IOException e){
+            e.printStackTrace();
         }
     }
 }
