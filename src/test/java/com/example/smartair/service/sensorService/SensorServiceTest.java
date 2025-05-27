@@ -5,12 +5,13 @@ import com.example.smartair.entity.room.Room;
 import com.example.smartair.entity.roomSensor.RoomSensor;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.entity.user.User;
-import com.example.smartair.exception.CustomException;
-import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.AirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.SensorAirQualityDataRepository;
+import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.SensorAirQualityScoreRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataPt2Repository;
 import com.example.smartair.repository.airQualityRepository.airQualityDataRepository.FineParticlesDataRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.DailySensorAirQualityReportRepository;
 import com.example.smartair.repository.airQualityRepository.airQualityReportRepository.WeeklySensorAirQualityReportRepository;
+import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlySensorAirQualitySnapshotRepository;
 import com.example.smartair.repository.airQualityRepository.predictedAirQualityRepository.PredictedAirQualityRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
@@ -21,7 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,7 +46,7 @@ class SensorServiceTest {
     private FineParticlesDataPt2Repository fineParticlesDataPt2Repository;
 
     @Mock
-    private AirQualityDataRepository airQualityDataRepository;
+    private SensorAirQualityScoreRepository sensorAirQualityScoreRepository;
 
     @Mock
     private DailySensorAirQualityReportRepository dailySensorAirQualityReportRepository;
@@ -56,6 +57,11 @@ class SensorServiceTest {
     @Mock
     private PredictedAirQualityRepository predictedAirQualityRepository;
 
+    @Mock
+    private SensorAirQualityDataRepository sensorAirQualityDataRepository;
+
+    @Mock
+    private HourlySensorAirQualitySnapshotRepository hourlySensorAirQualitySnapshotRepository;
     @InjectMocks
     private SensorService sensorService;
 
@@ -122,22 +128,21 @@ class SensorServiceTest {
 
     @Test
     void deleteSensor_성공() throws Exception {
-        SensorRequestDto.deleteSensorDto dto = new SensorRequestDto.deleteSensorDto("12345", 1L);
 
         RoomSensor roomSensor = RoomSensor.builder()
                 .sensor(testSensor)
                 .room(testRoom)
                 .build();
 
-        when(roomRepository.findRoomById(dto.roomId())).thenReturn(Optional.of(testRoom));
+        when(sensorRepository.findBySerialNumber(testSensor.getSerialNumber())).thenReturn(Optional.of(testSensor));
+        when(roomRepository.findRoomById(anyLong())).thenReturn(Optional.of(testRoom));
         when(roomRepository.existsByIdAndParticipants_User(testRoom.getId(), testUser)).thenReturn(true);
-        when(roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(dto.serialNumber(), dto.roomId()))
-                .thenReturn(Optional.of(roomSensor));
+        when(roomSensorRepository.findAllBySensor_Id(testSensor.getId())).thenReturn(Collections.singletonList(roomSensor));
 
-        sensorService.deleteSensor(testUser, dto);
+        sensorService.deleteSensor(testUser, testSensor.getSerialNumber());
 
         verify(sensorRepository, times(1)).delete(testSensor);
-        verify(roomSensorRepository, times(1)).delete(roomSensor);
+        verify(roomSensorRepository, times(1)).deleteAll(Collections.singletonList(roomSensor));
     }
 
     @Test
@@ -148,5 +153,21 @@ class SensorServiceTest {
 
         assertFalse(status);
         verify(sensorRepository, times(1)).findBySerialNumber(testSensor.getSerialNumber());
+    }
+
+    @Test
+    void unregitsterSensorFromRoom_성공() throws Exception {
+        RoomSensor roomSensor = RoomSensor.builder()
+                .sensor(testSensor)
+                .room(testRoom)
+                .build();
+
+        when(roomRepository.findRoomById(anyLong())).thenReturn(Optional.of(testRoom));
+        when(roomSensorRepository.findBySensor_SerialNumberAndRoom_Id(testSensor.getSerialNumber(), testRoom.getId()))
+                .thenReturn(Optional.of(roomSensor));
+
+        sensorService.unregisterSensorFromRoom(testUser, testSensor.getSerialNumber(), testRoom.getId());
+
+        verify(roomSensorRepository, times(1)).delete(roomSensor);
     }
 }
