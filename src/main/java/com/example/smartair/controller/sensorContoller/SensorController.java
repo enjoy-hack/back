@@ -10,6 +10,7 @@ import com.example.smartair.entity.user.User;
 import com.example.smartair.exception.CustomException;
 import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.service.sensorService.SensorService;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -57,15 +58,15 @@ public class SensorController implements SensorControllerDocs {
     @Override
     @DeleteMapping("/sensor")
     public ResponseEntity<?> deleteSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                          @RequestBody SensorRequestDto.deleteSensorDto deviceDto) throws Exception {
+                                          @RequestParam String serialNumber) throws Exception {
         if(userDetails == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User user = userDetails.getUser();
 
-        sensorService.deleteSensor(user, deviceDto);
+        sensorService.deleteSensor(user, serialNumber);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("센서가 성공적으로 삭제되었습니다.");
     }
 
     @Override
@@ -79,21 +80,22 @@ public class SensorController implements SensorControllerDocs {
 
         Boolean status = sensorService.getSensorStatus(deviceSerialNumber);
 
-        return ResponseEntity.ok("device"+ deviceSerialNumber + " running state: " + status);
+        return ResponseEntity.ok("sensor"+ deviceSerialNumber + " running state: " + status);
     }
 
     @Override
     @DeleteMapping("/sensor/room")
     public ResponseEntity<?> unregisterSensorFromRoom(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody SensorRequestDto.unregisterSensorFromRoomDto request) throws Exception {
+            @RequestParam String serialNumber,
+            @RequestParam Long roomId) throws Exception {
         if(userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User user = userDetails.getUser();
 
-        sensorService.unregisterSensorFromRoom(user, request);
-        return ResponseEntity.noContent().build();
+        sensorService.unregisterSensorFromRoom(user, serialNumber, roomId);
+        return ResponseEntity.ok("센서가 방에서 성공적으로 등록 해제되었습니다.");
     }
 
     @Override
@@ -129,6 +131,21 @@ public class SensorController implements SensorControllerDocs {
         List<SensorResponseDto> sensors = sensorService.getUserSensors(user);
 
         return ResponseEntity.ok(sensors);
+    }
+
+    @Override
+    @GetMapping("/sensor/find/{serialNumber}")
+    public ResponseEntity<SensorResponseDto> getSensorBySerialNumber(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable String serialNumber) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userDetails.getUser();
+
+        SensorResponseDto sensorDto = sensorService.getSensorBySerialNumber(serialNumber);
+
+        return ResponseEntity.ok(sensorDto);
     }
 
 }
