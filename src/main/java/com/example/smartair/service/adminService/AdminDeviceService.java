@@ -2,8 +2,11 @@ package com.example.smartair.service.adminService;
 
 import com.example.smartair.dto.deviceDto.DeviceDetailDto;
 import com.example.smartair.dto.sensorDto.SensorDetailDto;
+import com.example.smartair.dto.sensorDto.SensorResponseDto;
 import com.example.smartair.entity.device.Device;
 import com.example.smartair.entity.sensor.Sensor;
+import com.example.smartair.exception.CustomException;
+import com.example.smartair.exception.ErrorCode;
 import com.example.smartair.repository.deviceRepository.DeviceRepository;
 import com.example.smartair.repository.sensorRepository.SensorRepository;
 import com.example.smartair.repository.roomRepository.RoomRepository;
@@ -16,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AdminDeviceService {
 
     private final DeviceRepository deviceRepository;
@@ -56,5 +58,14 @@ public class AdminDeviceService {
         Page<Sensor> sensorPage = sensorRepository.findAll(pageable);
         // SensorDetailDto.from() 이 Device 및 Room 정보를 잘 가져온다고 가정
         return sensorPage.map(SensorDetailDto::from);
+    }
+
+    public void setSensorActiveStatus(String serialNumber, boolean active) {
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND));
+        sensor.setRunningStatus(active);
+
+        // 상태 변경 후 저장
+        sensorRepository.save(sensor);
     }
 } 

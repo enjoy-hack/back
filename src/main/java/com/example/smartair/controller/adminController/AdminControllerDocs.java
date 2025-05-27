@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Tag(name = "Admin API", description = "관리자 기능 관련 API 명세")
 public interface AdminControllerDocs {
 
-    @Operation(summary = "전체 방 현황 조회 (관리자)", description = "시스템의 모든 방 목록을 페이징하여 조회합니다. 관리자 권한이 필요합니다.")
+    @Operation(summary = "전체 방 현황 조회 (관리자)", description = "시스템의 모든 방 목록을 페이징하여 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "전체 방 목록 조회 성공",
                     content = @Content(schema = @Schema(implementation = Page.class))), // 실제론 Page<RoomDetailResponseDto> 형태
@@ -35,7 +35,7 @@ public interface AdminControllerDocs {
                     "  \"sort\": \"id,desc\")",
                     schema = @Schema(implementation = Pageable.class)) Pageable pageable);
 
-    @Operation(summary = "특정 방 상세 조회 (관리자)", description = "특정 방의 상세 정보를 조회합니다. 관리자 권한이 필요합니다.")
+    @Operation(summary = "특정 방 상세 조회 (관리자)", description = "특정 방의 상세 정보를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "방 상세 정보 조회 성공",
                     content = @Content(schema = @Schema(implementation = RoomDetailResponseDto.class))),
@@ -47,7 +47,7 @@ public interface AdminControllerDocs {
             @Parameter(name = "roomId", description = "조회할 방의 ID", required = true, in = ParameterIn.PATH)
             @PathVariable Long roomId);
 
-    @Operation(summary = "방 정보 수정 (관리자)", description = "특정 방의 정보를 수정합니다. 관리자 권한이 필요합니다.",
+    @Operation(summary = "방 정보 수정 (관리자)", description = "특정 방의 정보를 수정합니다.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "방 수정 요청 정보", required = true,
                     content = @Content(schema = @Schema(implementation = CreateRoomRequestDto.class))))
     @ApiResponses(value = {
@@ -63,7 +63,7 @@ public interface AdminControllerDocs {
             @PathVariable Long roomId,
             @RequestBody CreateRoomRequestDto requestDto);
 
-    @Operation(summary = "방 삭제 (관리자)", description = "특정 방을 삭제합니다. 관리자 권한이 필요합니다.")
+    @Operation(summary = "방 삭제 (관리자)", description = "특정 방을 삭제합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "방 삭제 성공 (No Content)"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
@@ -74,7 +74,7 @@ public interface AdminControllerDocs {
             @Parameter(name = "roomId", description = "삭제할 방의 ID", required = true, in = ParameterIn.PATH)
             @PathVariable Long roomId);
 
-    @Operation(summary = "전체 사용자 현황 조회 (관리자)", description = "시스템의 모든 사용자 목록을 페이징하여 조회합니다. 관리자 권한이 필요합니다.")
+    @Operation(summary = "전체 사용자 현황 조회 (관리자)", description = "시스템의 모든 사용자 목록을 페이징하여 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "전체 사용자 목록 조회 성공",
                     content = @Content(schema = @Schema(implementation = Page.class))), // 실제론 Page<UserDetailResponseDto> 형태
@@ -85,7 +85,7 @@ public interface AdminControllerDocs {
             @Parameter(description = "페이지네이션 정보 (예 : \"page\": 0,\n" + "  \"size\": 10,\n" +
                     "  \"sort\": \"id,desc\")", schema = @Schema(implementation = Pageable.class)) Pageable pageable);
 
-    @Operation(summary = "전체 기기 현황 조회 (관리자)", description = "시스템의 모든 기기 목록을 페이징하여 조회합니다. 관리자 권한이 필요합니다.")
+    @Operation(summary = "전체 기기 현황 조회 (관리자)", description = "시스템의 모든 기기 목록을 페이징하여 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "전체 기기 목록 조회 성공",
                     content = @Content(schema = @Schema(implementation = Page.class))), // 실제론 Page<DeviceDetailDto> 형태
@@ -97,7 +97,7 @@ public interface AdminControllerDocs {
                     "  \"size\": 10,\n" +
                     "  \"sort\": \"id,desc\")", schema = @Schema(implementation = Pageable.class)) Pageable pageable);
 
-    @Operation(summary = "전체 센서 현황 조회 (관리자)", description = "시스템의 모든 센서 목록을 페이징하여 조회합니다. 관리자 권한이 필요합니다.")
+    @Operation(summary = "전체 센서 현황 조회 (관리자)", description = "시스템의 모든 센서 목록을 페이징하여 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "전체 센서 목록 조회 성공",
                     content = @Content(schema = @Schema(implementation = Page.class))), // 실제론 Page<SensorDetailDto> 형태
@@ -108,4 +108,18 @@ public interface AdminControllerDocs {
             @Parameter(description = "페이지네이션 정보 (예 : \"page\": 0,\n" +
                     "  \"size\": 10,\n" +
                     "  \"sort\": \"id,desc\")", schema = @Schema(implementation = Pageable.class)) Pageable pageable);
+
+    @Operation(summary = "센서 활성 상태 지정 (관리자)", description = "특정 센서의 활성 상태를 지정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "센서 활성 상태 지정 성공",
+                    content = @Content(schema = @Schema(implementation = SensorDetailDto.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음")
+    })
+    ResponseEntity<String> setSensorActiveStatus(
+            @Parameter(name = "serialNumber", description = "활성 상태를 지정할 센서의 일련번호", required = true, in = ParameterIn.PATH)
+            @PathVariable String serialNumber,
+            @RequestBody boolean isActive);
 } 
