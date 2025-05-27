@@ -18,7 +18,6 @@ env:
 
 jobs:
   build-and-docker-operations:
-    if : ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.generate_tag.outputs.tag }}
