@@ -89,11 +89,7 @@ public interface SensorControllerDocs {
 
         **요청 정보**
         - 인증 정보는 `@AuthenticationPrincipal` 을 통해 자동 주입됩니다.
-
-        **요청 본문 (`RequestBody`)**
-        - `deviceDto` (Object): 삭제할 센서 정보
-          - `serialNumber` (Long): 센서의 일련번호
-          - `roomId` (Long): 삭제할 센서가 등록된 방의 ID
+        - 'serialNumber' (String): 삭제할 센서의 일련번호
 
         ---
 
@@ -103,7 +99,7 @@ public interface SensorControllerDocs {
         """
     )
     ResponseEntity<?> deleteSensor(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                   @RequestBody SensorRequestDto.deleteSensorDto deviceDto) throws Exception;
+                                   @RequestParam String serialNumber) throws Exception;
 
     @Operation(
             summary = "센서 상태 조회",
@@ -140,7 +136,8 @@ public interface SensorControllerDocs {
     })
     ResponseEntity<?> unregisterSensorFromRoom(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody SensorRequestDto.unregisterSensorFromRoomDto request) throws Exception;
+            @RequestParam String serialNumber,
+            @RequestParam Long roomId) throws Exception;
 
     @GetMapping("/sensor/{sensorId}")
     @Operation(summary = "센서 ID로 센서 정보 조회", description = "센서 ID를 기반으로 센서 정보를 조회합니다.")
@@ -161,4 +158,15 @@ public interface SensorControllerDocs {
             @ApiResponse(responseCode = "401", description = "인증 실패")
     })
     ResponseEntity<List<SensorResponseDto>> getUserSensors(@AuthenticationPrincipal CustomUserDetails userDetails);
+
+    @GetMapping("/sensor/find/{serialNumber}")
+    @Operation(summary = "일련번호로 센서 정보 조회", description = "센서의 일련번호를 기반으로 센서 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "센서 정보 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "404", description = "해당 일련번호의 센서를 찾을 수 없음")
+    })
+    ResponseEntity<SensorResponseDto> getSensorBySerialNumber(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(description = "센서 일련번호", required = true) String serialNumber);
 }
