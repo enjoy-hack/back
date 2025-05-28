@@ -11,6 +11,7 @@ import com.example.smartair.repository.sensorRepository.SensorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
@@ -33,7 +34,7 @@ public class WeeklyReportService {
      * 특정 장치의 특정 연도, 주차에 대한 주간 보고서를 생성하거나 업데이트합니다.
      */
     @Transactional
-    public void createOrUpdateWeeklyReport(Long sensorId, int year, int weekOfYear) {
+    public WeeklySensorAirQualityReport createOrUpdateWeeklyReport(Long sensorId, int year, int weekOfYear) {
         Sensor sensor = sensorRepository.findById(sensorId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + sensorId));
 
@@ -48,55 +49,89 @@ public class WeeklyReportService {
         LocalDate lastDayOfWeek = firstDayOfWeek.plusDays(6);
 
         // 해당 주의 일별 보고서 목록을 수집
-        List<DailySensorAirQualityReport> dailyReportsForWeek = collectDailyReports(sensorId, firstDayOfWeek, lastDayOfWeek);
+        List<DailySensorAirQualityReport> dailyReportsForWeek = collectDailyReports(sensor, firstDayOfWeek, lastDayOfWeek);
 
-        // 일별 보고서가 없는 경우 처리
-        if (dailyReportsForWeek.isEmpty()) {
+        // 유효한 일별 보고서가 2개 미만인 경우 처리
+        if (dailyReportsForWeek.size() < 2) {
             handleEmptyDailyReports(sensor.getSerialNumber(), year, weekOfYear, existingReportOpt);
         }
 
+        WeeklySensorAirQualityReport result;
+
         // 기존 보고서가 있으면 업데이트, 없으면 새로 생성
         if (existingReportOpt.isPresent()) {
+            result = existingReportOpt.get();
             updateWeeklyReport(existingReportOpt.get(), dailyReportsForWeek, firstDayOfWeek, lastDayOfWeek);
         } else {
-            createNewWeeklyReport(sensor, year, weekOfYear, firstDayOfWeek, lastDayOfWeek, dailyReportsForWeek);
+            result = createNewWeeklyReport(sensor, year, weekOfYear, firstDayOfWeek, lastDayOfWeek, dailyReportsForWeek);
         }
+
+        return result;
     }
 
-    private List<DailySensorAirQualityReport> collectDailyReports(Long sensorId, LocalDate firstDayOfWeek, LocalDate lastDayOfWeek) {
-        List<DailySensorAirQualityReport> dailyReports = new ArrayList<>();
+    @Transactional
+    public WeeklySensorAirQualityReport generateWeeklyReportManually(String serialNumber, LocalDate weekStartDate){
+        log.info("센서 {}의 {} 시작 주에 대한 주간 보고서를 수동으로 생성합니다.", serialNumber, weekStartDate);
 
-        Sensor sensor = sensorRepository.findById(sensorId)
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + sensorId));
+        // 입력된 날짜가 월요일인지 확인하고, 월요일로 조정
+        if (weekStartDate.getDayOfWeek() != DayOfWeek.MONDAY) {
+           weekStartDate = weekStartDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        }
+
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor serialNumber: " + serialNumber));
+
+        return createOrUpdateWeeklyReport(sensor.getId(),
+                weekStartDate.getYear(),
+                weekStartDate.get(WeekFields.ISO.weekOfWeekBasedYear()));
+    }
+
+    @Transactional(readOnly = true)
+    public List<DailySensorAirQualityReport> collectDailyReports(Sensor sensor, LocalDate firstDayOfWeek, LocalDate lastDayOfWeek) {
+        List<DailySensorAirQualityReport> dailyReports = new ArrayList<>();
 
         for (LocalDate date = firstDayOfWeek; !date.isAfter(lastDayOfWeek); date = date.plusDays(1)) {
             try {
                 DailySensorAirQualityReport dailyReport = dailyReportService.getDailyReport(sensor.getSerialNumber(), date);
                 dailyReports.add(dailyReport);
             } catch (CustomException e) {
-                if (e.getErrorCode() == ErrorCode.REPORT_NOT_FOUND) {
-                    log.warn("주간 보고서 생성 중 Sensor SerialNumber: {}의 {} 날짜에 대한 일별 보고서가 없습니다.",
-                            sensor.getSerialNumber(), date);
-                } else {
-                    log.error("주간 보고서 생성 중 예상치 못한 오류 발생: {}", e.getMessage());
-                }
+                // REPORT_NOT_FOUND를 포함한 모든 예외를 상위로 전파
+                throw new CustomException(ErrorCode.INSUFFICIENT_DAILY_REPORTS,
+                        String.format("Sensor SerialNumber: %s의 %s부터 %s까지의 일별 보고서 7개가 모두 필요합니다.",
+                                sensor.getSerialNumber(), firstDayOfWeek, lastDayOfWeek));
             }
+        }
+
+        // 7개가 아닌 경우 예외 발생
+        if (dailyReports.size() != 7) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_DAILY_REPORTS,
+                    String.format("Sensor SerialNumber: %s의 %s부터 %s까지의 일별 보고서는 7개여야 합니다. (현재: %d개)",
+                            sensor.getSerialNumber(), firstDayOfWeek, lastDayOfWeek, dailyReports.size()));
         }
 
         return dailyReports;
     }
 
-    private void handleEmptyDailyReports(String serialNumber, int year, int weekOfYear, Optional<WeeklySensorAirQualityReport> existingReportOpt) {
-        String errorMessage = String.format("Sensor SerialNumber: %s의 %d년 %d주차에 유효한 일별 보고서가 없어 주간 보고서를 생성할 수 없습니다.", serialNumber, year, weekOfYear);
-        if (existingReportOpt.isEmpty()) {
-            log.warn(errorMessage);
-            throw new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND, errorMessage);
+    public void handleEmptyDailyReports(String serialNumber, int year, int weekOfYear, Optional<WeeklySensorAirQualityReport> existingReportOpt) {
+        String errorMessage;
+
+        // 기존 보고서 존재 여부에 따른 메시지 생성
+        if (existingReportOpt.isPresent()) {
+            errorMessage = String.format(
+                    "Sensor SerialNumber: %s의 %d년 %d주차에 대한 일별 보고서가 2개 미만이므로 주간 보고서를 업데이트할 수 없습니다. (기존 보고서 ID:%d)",
+                    serialNumber, year, weekOfYear, existingReportOpt.get().getId());
+        } else {
+            errorMessage = String.format(
+                    "Sensor SerialNumber: %s의 %d년 %d주차에 대한 일별 보고서가 2개 미만이므로 주간 보고서를 생성할 수 없습니다.",
+                    serialNumber, year, weekOfYear);
         }
-        log.warn(errorMessage + " (기존 보고서 ID:{})", existingReportOpt.get().getId());
-        throw new CustomException(ErrorCode.NO_DAILY_REPORTS_FOUND, errorMessage);
+
+        log.warn(errorMessage);
+        throw new CustomException(ErrorCode.INSUFFICIENT_DAILY_REPORTS, errorMessage);
     }
 
-    private void updateWeeklyReport(WeeklySensorAirQualityReport report, List<DailySensorAirQualityReport> dailyReports,
+
+    public void updateWeeklyReport(WeeklySensorAirQualityReport report, List<DailySensorAirQualityReport> dailyReports,
                                     LocalDate firstDayOfWeek, LocalDate lastDayOfWeek) {
         log.info("Sensor SerialNumber: {}의 {}년 {}주차에 대한 기존 주간 보고서(ID:{})를 업데이트합니다.",
                 report.getSensor().getSerialNumber(), report.getYearOfWeek(), report.getWeekOfYear(), report.getId());
@@ -107,7 +142,8 @@ public class WeeklyReportService {
         weeklyReportRepository.save(report);
     }
 
-    private void createNewWeeklyReport(Sensor sensor, int year, int weekOfYear,
+
+    public WeeklySensorAirQualityReport createNewWeeklyReport(Sensor sensor, int year, int weekOfYear,
                                         LocalDate firstDayOfWeek, LocalDate lastDayOfWeek,
                                         List<DailySensorAirQualityReport> dailyReports) {
         log.info("Sensor SerialNumber: {}의 {}년 {}주차에 대한 새 주간 보고서를 생성합니다.", sensor.getSerialNumber(), year, weekOfYear);
@@ -118,15 +154,15 @@ public class WeeklyReportService {
                 .weekOfYear(weekOfYear)
                 .startDateOfWeek(firstDayOfWeek)
                 .endDateOfWeek(lastDayOfWeek)
-                .dailyReports(dailyReports)
                 .build();
 
-        calculateAndSetWeeklyStatistics(newReport, dailyReports);
+        updateReportStatistics(newReport, dailyReports);
         weeklyReportRepository.save(newReport);
+        return newReport;
     }
 
+
     public void updateReportStatistics (WeeklySensorAirQualityReport report, List<DailySensorAirQualityReport> dailyReports) {
-        report.setDailyReports(dailyReports);
         report.setValidDailyReportCount(dailyReports.size());
         report.setTotalDataPointCount(dailyReports.stream()
                 .mapToInt(dr -> dr.getValidDataPointCount() != null ? dr.getValidDataPointCount() : 0)
@@ -239,11 +275,6 @@ public class WeeklyReportService {
 
 
     private void calculateAndSetWeeklyStatistics(WeeklySensorAirQualityReport report, List<DailySensorAirQualityReport> dailyReports) {
-        if (dailyReports == null || dailyReports.isEmpty()) {
-            setDefaultWeeklyStatistics(report); // 일별 보고서가 없으면 기본값 설정
-            return;
-        }
-
         // 주간 평균 온도
         DoubleSummaryStatistics tempStats = dailyReports.stream()
                 .map(DailySensorAirQualityReport::getDailyAvgTemperature)
@@ -301,11 +332,6 @@ public class WeeklyReportService {
     }
 
     private void calculateAndSetWeeklyTrends(WeeklySensorAirQualityReport report, List<DailySensorAirQualityReport> dailyReports) {
-        if (dailyReports == null || dailyReports.stream().filter(dr -> dr != null).count() < 2) { // 유효한 일별 보고서가 2개 미만인 경우
-            setDefaultTrends(report);
-            return;
-        }
-
         List<Double> dailyAvgTemperatures = dailyReports.stream()
                 .map(dr -> dr != null ? dr.getDailyAvgTemperature() : null)
                 .collect(Collectors.toList());

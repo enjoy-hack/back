@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -55,6 +56,32 @@ public interface AirQualityReportControllerDocs {
             @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate);
 
+    @Operation(summary = "일별 공기질 리포트 수동 생성",
+            description = "특정 센서의 지정된 날짜에 대한 일별 공기질 리포트를 생성합니다. " +
+                    "지정 날짜의 시간별 스냅샷 데이터가 최소 한 개 이상 존재해야 합니다." ,
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "일별 리포트 생성 성공",
+                            content = @Content(schema = @Schema(implementation = DailyReportResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음",
+                            content = @Content(schema = @Schema(hidden = true)))
+            })
+    ResponseEntity<DailyReportResponseDto> generateDailyReportManually(
+            @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
+            @Parameter(description = "생성할 리포트의 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-28")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date);
+
+    @Operation(summary = "특정 센서의 지정된 일별 공기질 리포트 삭제",
+            description = "지정된 센서의 특정 날짜에 대한 일별 공기질 리포트를 삭제합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "삭제 성공 (No Content)"),
+                    @ApiResponse(responseCode = "404", description = "삭제할 리포트를 찾을 수 없음",
+                            content = @Content(schema = @Schema(hidden = true)))
+            })
+    ResponseEntity<Void> deleteDailyReportBySerialNumber(
+            @Parameter(description = "삭제할 일별 리포트의 센서 일련번호", required = true, example = "1") String serialNumber,
+            @Parameter(description = "삭제할 리포트의 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-28")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date);
+
     @Operation(summary = "특정 연도 및 주차의 주간 공기질 리포트 조회",
             description = "특정 센서의 지정된 연도와 주차(ISO 8601 기준)에 대한 주간 공기질 리포트를 조회합니다.",
             responses = {
@@ -85,6 +112,20 @@ public interface AirQualityReportControllerDocs {
             @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate);
 
+    @Operation(summary = "주간 공기질 리포트 수동 생성",
+            description = "특정 센서의 지정된 주(날짜)에 대한 주간 공기질 리포트를 수동으로 생성합니다. " +
+                    "시작일은 자동으로 월요일로 조정됩니다." ,
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "주간 리포트 생성 성공",
+                            content = @Content(schema = @Schema(implementation = WeeklyReportResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음",
+                            content = @Content(schema = @Schema(hidden = true)))
+            })
+    ResponseEntity<WeeklyReportResponseDto> generateWeeklyReportManually(
+            @Parameter(description = "센서 일련번호", required = true, example = "1") String serialNumber,
+            @Parameter(description = "생성할 리포트의 시작일(YYYY-MM-DD 형식)", required = true, example = "2023-10-23")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStartDate);
+
     @Operation(summary = "특정 ID의 일별 리포트 삭제",
             description = "지정된 리포트 ID에 해당하는 일별 공기질 리포트를 삭제합니다.",
             responses = {
@@ -98,7 +139,7 @@ public interface AirQualityReportControllerDocs {
     @Operation(summary = "특정 센서의 모든 일별 리포트 삭제",
             description = "지정된 센서 일련번호와 관련된 모든 일별 공기질 리포트를 삭제하고, 삭제된 리포트의 수를 반환합니다. " ,
             responses = {
-                    @ApiResponse(responseCode = "200", description = "삭제 성공 및 삭제된 리포트 수 반환",
+                    @ApiResponse(responseCode = "204", description = "삭제 성공 및 삭제된 리포트 수 반환",
                             content = @Content(schema = @Schema(type = "integer", format = "int32", example = "5"))),
                     @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음 (삭제할 리포트가 없는 경우도 0을 반환)",
                             content = @Content(schema = @Schema(hidden = true)))
@@ -114,7 +155,7 @@ public interface AirQualityReportControllerDocs {
                             content = @Content(schema = @Schema(hidden = true)))
             })
     ResponseEntity<Integer> deleteOldDailyReports(
-            @Parameter(description = "삭제할 일별 리포트의 ID", required = true, example = "100") Integer days);
+            @Parameter(description = "N일", required = true, example = "100") Integer days);
 
     @Operation(summary = "특정 ID의 주간 리포트 삭제",
             description = "지정된 리포트 ID에 해당하는 주간 공기질 리포트를 삭제합니다.",
@@ -139,7 +180,7 @@ public interface AirQualityReportControllerDocs {
     @Operation(summary = "특정 센서의 모든 주간 리포트 삭제",
             description = "지정된 센서 일련번호와 관련된 모든 주간 공기질 리포트를 삭제하고, 삭제된 리포트의 수를 반환합니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "삭제 성공 및 삭제된 리포트 수 반환",
+                    @ApiResponse(responseCode = "204", description = "삭제 성공 및 삭제된 리포트 수 반환",
                             content = @Content(schema = @Schema(type = "integer", format = "int32", example = "5"))),
                     @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음 (삭제할 리포트가 없는 경우도 0을 반환)",
                             content = @Content(schema = @Schema(hidden = true)))

@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cglib.core.Local;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -33,22 +35,23 @@ public class AirQualitySnapshotController implements AirQualitySnapshotControlle
     private final SnapshotService snapshotService;
 
     @Override
-    @GetMapping("/{serialNumber}/{startTime}/{endTime}")
-    @Operation(summary = "특정 센서의 시간별 스냅샷 조회", description = "특정 센서의 지정된 시간 범위(YYYY-MM-DDTHH:MM:SS 형식)에 해당하는 시간별 대기질 스냅샷 리스트를 조회합니다.")
+    @GetMapping("/{serialNumber}")
     public ResponseEntity <List<HourlySensorAirQualitySnapshotResponse>> getHourlySnapshots(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "센서 일련번호", required = true) @PathVariable String serialNumber,
-            @Parameter(description = "조회 시작 시간 (YYYY-MM-DDTHH:MM:SS 형식)", required = true, example = "2023-10-28T14:00:00")
-            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startTime,
-            @Parameter(description = "조회 종료 시간 (YYYY-MM-DDTHH:MM:SS 형식)", required = true, example = "2023-10-28T18:00:00")
-            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endTime) {
+            @PathVariable String serialNumber,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endTime) {
 
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime targetStartTime = startTime != null ? startTime : now.minusDays(1);
+        LocalDateTime targetEndTime = endTime != null ? endTime : now;
+
         // snapshotHour의 분, 초, 나노초를 0으로 설정하여 정시 기준으로 만듭니다.
-        List<HourlySensorAirQualitySnapshot> snapshot = snapshotService.getHourlySnapshots(serialNumber, startTime, endTime);
+        List<HourlySensorAirQualitySnapshot> snapshot = snapshotService.getHourlySnapshots(serialNumber, targetStartTime, targetEndTime);
         List<HourlySensorAirQualitySnapshotResponse> responses = snapshot.stream()
                 .map(HourlySensorAirQualitySnapshotResponse::from)
                 .collect(Collectors.toList());
@@ -58,10 +61,9 @@ public class AirQualitySnapshotController implements AirQualitySnapshotControlle
 
     @Override
     @GetMapping("/latest/{serialNumber}")
-    @Operation(summary = "특정 센서의 최신 대기질 데이터 조회", description = "특정 센서의 가장 최신의 대기질 데이터를 조회합니다.")
     public ResponseEntity<AirQualityDataResponse> getLatestSensorAirQualityData(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "센서 일련번호", required = true) @PathVariable String serialNumber) {
+            @PathVariable String serialNumber) {
 
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -71,13 +73,11 @@ public class AirQualitySnapshotController implements AirQualitySnapshotControlle
         return ResponseEntity.ok(AirQualityDataResponse.from(sensorAirQualityData));
     }
 
+    @Override
     @PostMapping("/hourly/create/{serialNumber}")
-    @Operation(summary = "특정 센서의 시간별 스냅샷 생성", description = "특정 센서의 특정 시간대(1시간 단위)에 해당하는 시간별 대기질 스냅샷을 생성합니다")
-    public ResponseEntity<String> createHourlySnapshotForSensor(
+    public ResponseEntity<HourlySensorAirQualitySnapshotResponse> createHourlySnapshotForSensor(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "센서 일련번호", required = true) @PathVariable String serialNumber,
-            @Parameter(description = "스냅샷 생성 기준 시간 (YYYY-MM-DDTHH:MM:SS 형식, 미입력시 현재 시간 사용)",
-                    required = false, example = "2023-10-28T14:00:00")
+            @PathVariable String serialNumber,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime snapshotTime) {
 
         // 권한 확인
@@ -90,17 +90,42 @@ public class AirQualitySnapshotController implements AirQualitySnapshotControlle
             LocalDateTime targetTime = snapshotTime != null ? snapshotTime : LocalDateTime.now();
 
             // 특정 센서에 대한 스냅샷 생성 서비스 호출
-            // SnapshotService에 새로운 메서드 createHourlySnapshotForSensor를 구현해야 함
-            snapshotService.createHourlySnapshotForSensor(serialNumber, targetTime);
-
-            // 응답 생성
-            LocalDateTime truncatedTime = targetTime.truncatedTo(ChronoUnit.HOURS);
-            return ResponseEntity.ok(serialNumber + " 센서의 " + truncatedTime + " 기준 시간별 스냅샷이 성공적으로 생성되었습니다.");
+            HourlySensorAirQualitySnapshot snapshot = snapshotService.createHourlySnapshotForSensor(serialNumber, targetTime);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(HourlySensorAirQualitySnapshotResponse.from(snapshot));
         } catch (Exception e) {
             log.error("센서 {} 스냅샷 생성 중 오류 발생: {}", serialNumber, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("스냅샷 생성 중 오류가 발생했습니다: " + e.getMessage());
+            throw e;
         }
+    }
+
+    @Override
+    @GetMapping("/raw/{serialNumber}")
+    public ResponseEntity<List<AirQualityDataResponse>> getAirQualityDataByDateRange(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable String serialNumber,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        LocalDate now = LocalDate.now();
+        LocalDate targetStartTime = startDate != null ? startDate : now.minusDays(1);
+        LocalDate targetEndTime = endDate != null ? endDate : now;
+
+        // 시간 단위로 변환
+        LocalDateTime startTime = targetStartTime.atStartOfDay();
+        LocalDateTime endTime = targetEndTime.atTime(23, 59, 59);
+
+        List<SensorAirQualityData> airQualityDataList = snapshotService.getAirQualityDataByDateRange(serialNumber, startTime, endTime);
+        List<AirQualityDataResponse> responseList = airQualityDataList.stream()
+                .map(AirQualityDataResponse::from)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseList);
     }
 
 }

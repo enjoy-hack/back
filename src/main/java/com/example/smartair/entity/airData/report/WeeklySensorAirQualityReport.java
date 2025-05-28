@@ -46,12 +46,6 @@ public class WeeklySensorAirQualityReport extends BaseEntity {
     @Column(name = "end_date_of_week", nullable = false)
     private LocalDate endDateOfWeek; // 해당 주의 종료일
 
-    // 일일 보고서들과의 관계 설정
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "weekly_report_id")
-    @OrderBy("reportDate ASC") // 날짜 순으로 정렬
-    private List<DailySensorAirQualityReport> dailyReports;
-
     // 주간 평균 데이터
     private Double weeklyAvgTemperature;
     private Double weeklyAvgHumidity;

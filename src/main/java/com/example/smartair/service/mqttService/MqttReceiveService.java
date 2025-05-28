@@ -82,7 +82,7 @@ public class MqttReceiveService {
         sensorLastResetTimes.keySet().removeIf(sensorId ->
                 !activeSensorIds.contains(sensorId) &&
                         sensorLastResetTimes.get(sensorId).isBefore(thresholdTime));
-        log.info("비활성 센서 데이터 정리 완료: {}개의 비활성 센서 데이터 삭제됨", activeSensorIds.size());
+        log.info("비활성 센서 카운터 정리 완료: {}개의 활성 센서만 유지됨", activeSensorIds.size());
     }
 
 

@@ -47,7 +47,7 @@ public interface AirQualityScoreControllerDocs {
             @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endTime
     );
 
-    @Operation(summary = "센서 공기질 점수 조회", description = "특정 센서의 시간대별 공기질 점수를 조회합니다.")
+    @Operation(summary = "센서 공기질 점수 이력 조회", description = "특정 센서의 지정된 기간 동안의 공기질 점수 이력을 페이지 단위로 조회합니다. 시작 시간과 종료 시간 사이의 모든 측정 데이터가 시간순으로 반환됩니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "센서를 찾을 수 없음")
@@ -61,7 +61,9 @@ public interface AirQualityScoreControllerDocs {
             @Parameter(description = "페이지네이션 정보 (예 : \"page\": 0, \"size\": 10, \"sort\": \"id,desc\")") Pageable pageable
     );
 
-    @Operation(summary = "방 공기질 점수 조회", description = "특정 방의 시간대별 공기질 점수를 조회합니다.")
+    @Operation(summary = "방 공기질 점수 이력 조회", description = "지정된 방의 공기질 점수 이력을 페이지 단위로 조회합니다. " +
+            "시작 시간과 종료 시간 사이의 모든 측정 데이터가 시간순으로 반환됩니다." +
+            "(기본: 최근 24시간 데이터)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "방을 찾을 수 없음")

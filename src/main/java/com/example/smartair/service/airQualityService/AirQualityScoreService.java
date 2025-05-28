@@ -13,6 +13,7 @@ import com.example.smartair.repository.airQualityRepository.airQualityScoreRepos
 import com.example.smartair.repository.airQualityRepository.airQualityScoreRepository.RoomAirQualityScoreRepository;
 import com.example.smartair.repository.roomSensorRepository.RoomSensorRepository;
 import com.example.smartair.service.airQualityService.calculator.AirQualityCalculator;
+import com.example.smartair.util.BaseEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,7 @@ public class AirQualityScoreService {
         });
 }
 
-
+    @Transactional
     public void updateRoomAverageScore(Room room) { //방 평균 점수 업데이트
         log.info("Updating average score for Room ID: {}", room.getId());
         List<SensorAirQualityScore> airQualityScoreList = new ArrayList<>();
@@ -91,7 +92,7 @@ public class AirQualityScoreService {
         // 방에 존재하는 모든 디바이스 공기질 데이터의 평균 데이터 계산
         AverageScoreDto averageDeviceScoreDto = calculateAverageDeviceScore(airQualityScoreList);
 
-        // 기존 RoomAirQualityScore 조회
+        // 기존 가장 최신 한 건의 RoomAirQualityScore 조회
         Optional<RoomAirQualityScore> existingRoomScoreOptional = roomAirQualityScoreRepository.findFirstByRoomOrderByCreatedAtDesc(room);
         RoomAirQualityScore roomScoreToSave; // 저장할 객체 선언
 

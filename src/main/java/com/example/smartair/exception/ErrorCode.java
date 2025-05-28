@@ -55,6 +55,7 @@ public enum ErrorCode {
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "보고서를 찾을 수 없습니다."),
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "유효하지 않은 날짜 범위입니다."),
     NO_DAILY_REPORTS_FOUND(HttpStatus.NO_CONTENT, "해당 날짜에 대한 일일 보고서가 없습니다."),
+    INSUFFICIENT_DAILY_REPORTS(HttpStatus.BAD_REQUEST, "일일 보고서가 충분하지 않습니다. 최소 1개의 보고서가 필요합니다."),
 
     // === Room 관련 오류 코드 ===
     INVALID_ROOM_PASSWORD(HttpStatus.UNAUTHORIZED, "방 비밀번호가 일치하지 않습니다."),

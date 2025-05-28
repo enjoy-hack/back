@@ -16,11 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.DoubleSummaryStatistics;
-import java.util.IntSummaryStatistics;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,17 +25,17 @@ import java.util.stream.Collectors;
 public class DailyReportService {
 
     private final SensorRepository sensorRepository;
-    private final HourlySensorAirQualitySnapshotRepository snapshotRepository;
     private final DailySensorAirQualityReportRepository dailyReportRepository;
+    private final HourlySensorAirQualitySnapshotRepository snapshotRepository;
 
     /**
      * 특정 장치의 특정 날짜에 대한 일별 보고서를 생성하거나 업데이트합니다.
      * 이미 보고서가 존재하면 업데이트하고, 없으면 새로 생성합니다.
      */
     @Transactional
-    public DailySensorAirQualityReport createOrUpdateDailyReport(Long deviceId, LocalDate date) {
-        Sensor sensor = sensorRepository.findById(deviceId)
-                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + deviceId));
+    public DailySensorAirQualityReport createOrUpdateDailyReport(Long sensorId, LocalDate date) {
+        Sensor sensor = sensorRepository.findById(sensorId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor id: " + sensorId));
 
         Optional<DailySensorAirQualityReport> existingReportOpt =
                 dailyReportRepository.findBySensorAndReportDate(sensor, date);
@@ -50,36 +46,56 @@ public class DailyReportService {
         List<HourlySensorAirQualitySnapshot> hourlySnapshots =
                 snapshotRepository.findBySensorAndSnapshotHourBetweenOrderBySnapshotHourAsc(sensor, startOfDay, endOfDay);
 
-        // 스냅샷이 없으면 보고서를 생성하거나 업데이트할 수 없습니다.
         if (hourlySnapshots.isEmpty()) {
-            // 기존 보고서도 없고 스냅샷도 없으면 생성 불가
-            if (!existingReportOpt.isPresent()) {
-                log.warn("Sensor SerialNumber: {}의 {} 날짜에 스냅샷이 없어 일별 보고서를 생성할 수 없습니다.", sensor.getSerialNumber(), date);
-                throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND, "Sensor ID: {}의 {} 날짜에 스냅샷이 없어 일별 보고서를 생성할 수 없습니다." + deviceId + date);
-            }
-            // 기존 보고서는 있는데 스냅샷이 없는 경우 (예: 스냅샷이 삭제된 경우)
-            // 이 경우 기존 보고서를 유지
-            return existingReportOpt.get();
+            throw new CustomException(ErrorCode.SNAPSHOT_NOT_FOUND, "해당 날짜에 대한 HourlySensorAirQualitySnapshot이 없습니다.");
         }
 
-        DailySensorAirQualityReport report = existingReportOpt.orElseGet(() -> {
-            log.info("Sensor SerialNumber: {}의 {} 날짜에 대한 새 일별 보고서를 생성합니다.", sensor.getSerialNumber(), date);
-            return DailySensorAirQualityReport.builder()
+        DailySensorAirQualityReport report;
+        if (existingReportOpt.isPresent()){
+            //업데이트
+            report = existingReportOpt.get();
+            log.info("Sensor SerialNumber: {}의 {} 날짜에 대한 기존 일별 보고서를 업데이트합니다.",
+                    sensor.getSerialNumber(), date);
+        }
+        else{
+            //새로 생성
+            log.info("Sensor SerialNumber: {}의 {} 날짜에 대한 새로운 일별 보고서를 생성합니다.",
+                    sensor.getSerialNumber(), date);
+            report = DailySensorAirQualityReport.builder()
                     .sensor(sensor)
                     .reportDate(date)
                     .build();
-        });
-
-        if(existingReportOpt.isPresent()){
-            log.info("Sensor SerialNumber: {}의 {} 날짜에 대한 기존 일별 보고서(ID:{})를 업데이트합니다.",
-                    sensor.getSerialNumber(), date, report.getId());
         }
 
-        report.setHourlySnapshots(hourlySnapshots); // 연관된 스냅샷 설정 (JPA가 FK 관리)
         report.setValidDataPointCount(hourlySnapshots.size());
         calculateAndSetDailyStatistics(report, hourlySnapshots);
+        report = dailyReportRepository.save(report);
 
-        return dailyReportRepository.save(report);
+        return report;
+    }
+
+    @Transactional
+    public DailySensorAirQualityReport generateDailyReportManually(String serialNumber, LocalDate date) {
+        log.info("센서 {}의 {} 날짜에 대한 일별 보고서를 수동으로 생성합니다.", serialNumber, date);
+
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor serialNumber: " + serialNumber));
+
+        return createOrUpdateDailyReport(sensor.getId(), date);
+    }
+
+    @Transactional
+    public void deleteDailyReportBySerialNumber(String serialNumber, LocalDate date) {
+        log.info("센서 serialNumber {}의 {} 날짜에 대한 일별 보고서를 삭제합니다.", serialNumber, date);
+
+        Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "sensor serialNumber: " + serialNumber));
+
+        DailySensorAirQualityReport report = dailyReportRepository.findBySensorAndReportDate(sensor, date)
+                .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND, "report not found with SensorId: " + serialNumber + ", date: " + date));
+
+        dailyReportRepository.delete(report);
+        log.info("센서 {}의 {} 날짜에 대한 일별 보고서 삭제 완료", serialNumber, date);
     }
 
     /**
@@ -109,7 +125,7 @@ public class DailyReportService {
 
     /**
      * 특정 ID의 일별 보고서를 삭제합니다.
-     * cascade 설정에 따라 연관된 HourlySnapshot도 삭제될 수 있습니다.
+     *
      */
     @Transactional
     public void deleteDailyReport(Long reportId) {
@@ -163,11 +179,6 @@ public class DailyReportService {
 
 
     private void calculateAndSetDailyStatistics(DailySensorAirQualityReport report, List<HourlySensorAirQualitySnapshot> snapshots) {
-        if (snapshots == null || snapshots.isEmpty()) {
-            setDefaultDailyStatistics(report); // 스냅샷이 없으면 기본값 설정
-            return;
-        }
-
         // 온도 통계
         DoubleSummaryStatistics tempStats = snapshots.stream()
                 .map(HourlySensorAirQualitySnapshot::getHourlyAvgTemperature)

@@ -1,5 +1,6 @@
 package com.example.smartair.dto.airQualityDataDto.dailyReportDto;
 
+import com.example.smartair.dto.airQualityDataDto.HourlySensorAirQualitySnapshotResponse;
 import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Builder
 @Getter
@@ -19,7 +21,6 @@ public class DailyReportResponseDto {
     private Long sensorId; // 센서 ID
     private String serialNumber; // 센서 일련번호
     private LocalDate reportDate; // 보고서 날짜
-    private List<HourlySensorAirQualitySnapshot> hourlySnapshots;
     // 일일 평균 데이터
     private Double dailyAvgTemperature;
     private Double dailyAvgHumidity;
@@ -52,7 +53,6 @@ public class DailyReportResponseDto {
                 .sensorId(report.getSensor().getId())
                 .serialNumber(report.getSensor().getSerialNumber())
                 .reportDate(report.getReportDate())
-                .hourlySnapshots(report.getHourlySnapshots())
                 .dailyAvgTemperature(report.getDailyAvgTemperature())
                 .dailyAvgHumidity(report.getDailyAvgHumidity())
                 .dailyAvgTvoc(report.getDailyAvgTvoc())
