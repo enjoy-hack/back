@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +37,7 @@ public class SnapshotService {
      * 특정 센서의 특정 시간대에 대한 스냅샷을 생성합니다.
      */
     @Transactional
-    public void createHourlySnapshotForSensor(String serialNumber, LocalDateTime snapshotHourBase) {
+    public HourlySensorAirQualitySnapshot createHourlySnapshotForSensor(String serialNumber, LocalDateTime snapshotHourBase) {
         // 시간 단위로 절삭
         snapshotHourBase = snapshotHourBase.truncatedTo(ChronoUnit.HOURS);
 
@@ -44,6 +45,10 @@ public class SnapshotService {
         Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND,
                         "Sensor serialNumber: " + serialNumber));
+
+        // 기존 스냅샷 확인
+        HourlySensorAirQualitySnapshot existingSnapshot = snapshotRepository.findBySensorAndSnapshotHour(sensor, snapshotHourBase)
+                .orElse(null);
 
         // 해당 센서의 시간별 데이터를 DB에서 조회
         List<SensorAirQualityData> airQualityDataList = sensorAirQualityDataRepository.findBySensorAndCreatedAtBetweenOrderByCreatedAtAsc(
@@ -53,13 +58,16 @@ public class SnapshotService {
 
         if (airQualityDataList.isEmpty()) {
             throw new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND,
-                    "해당 시간에 대한 센서 데이터가 없습니다. Sensor: " + serialNumber);
+                    "해당 시간에 대한 센서 데이터가 없습니다. Sensor serialNumber: " + serialNumber);
+        }
+
+        if (existingSnapshot != null){
+            // 업데이트
+            return updateHourlySnapshot(existingSnapshot);
         }
 
         // 스냅샷 생성
-        createSensorSnapshot(sensor.getId(), airQualityDataList);
-
-        log.info("센서 일련번호: {}의 {} 시간 스냅샷 생성 완료", serialNumber, snapshotHourBase);
+        return createSensorSnapshot(sensor.getId(), airQualityDataList);
     }
 
     /**
@@ -69,27 +77,47 @@ public class SnapshotService {
     public void createHourlySnapshot(LocalDateTime snapshotHourBase) {
         // 시간 단위로 절삭
         snapshotHourBase = snapshotHourBase.truncatedTo(ChronoUnit.HOURS);
+        final LocalDateTime finalSnapshotHourBase = snapshotHourBase;
 
         //시간별 데이터를 DB에서 조회
         List<SensorAirQualityData> airQualityDataList = sensorAirQualityDataRepository.findByCreatedAtBetween(
                 snapshotHourBase,
                 snapshotHourBase.plusHours(1));
 
-
         //센서별로 그룹화하여 스냅샷 생성
         Map<Long, List<SensorAirQualityData>> sensorDataMap = airQualityDataList.stream()
                 .collect(Collectors.groupingBy(data -> data.getSensor().getId()));
 
-        //각 센서별로 평균값 계산하여 스냅샷 저장
-        sensorDataMap.forEach(this::createSensorSnapshot);
+        //각 센서별로 스냅샷 생성 전 기존 스냅샷 확인 후 처리
+        sensorDataMap.forEach((sensorId, dataList) ->{
+            try{
+                Sensor sensor = sensorRepository.findById(sensorId)
+                        .orElseThrow(()-> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor ID: " + sensorId));
+
+                Optional<HourlySensorAirQualitySnapshot> existingSnapshot = snapshotRepository
+                        .findBySensorAndSnapshotHour(sensor, finalSnapshotHourBase);
+
+                if (existingSnapshot.isPresent()) {
+                    log.info("===scheduling : 센서 ID: {}의 {} 시간 스냅샷이 이미 존재합니다. 업데이트를 시도합니다.",
+                            sensorId, finalSnapshotHourBase);
+                    updateHourlySnapshot(existingSnapshot.get());
+                }
+                else{
+                    createSensorSnapshot(sensorId, dataList);
+                }
+            }
+            catch(Exception e){
+                log.error("===scheduling : 센서 ID: {}의 {} 시간 스냅샷 생성 중 오류 발생: {}",
+                        sensorId, finalSnapshotHourBase, e.getMessage(), e);
+            }
+        });
     }
 
-    public void createSensorSnapshot(Long sensorId, List<SensorAirQualityData> hourlyRawDataList) {
+    public HourlySensorAirQualitySnapshot createSensorSnapshot(Long sensorId, List<SensorAirQualityData> hourlyRawDataList) {
         try {
             if (hourlyRawDataList.isEmpty()) {
                 log.warn("Sensor ID: {} 의 {} 시간 스냅샷에 대한 데이터가 없어 스냅샷 생성을 건너뜁니다.",
                         sensorId, hourlyRawDataList.get(0).getCreatedAt());
-                return;
             }
 
             Sensor sensor = sensorRepository.findById(sensorId)
@@ -134,9 +162,11 @@ public class SnapshotService {
                     .build();
 
             snapshotRepository.save(snapshot);
-            log.info("센서 ID: {}의 {} 시간 스냅샷 생성/업데이트 완료", sensorId, snapshotHour);
+            log.info("센서 ID: {}의 {} 시간 스냅샷 생성 완료", sensorId, snapshotHour);
+            return snapshot;
         } catch (Exception e) {
             log.error("센서 ID: {}의 스냅샷 생성 중 오류 발생: {}", sensorId, e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -170,13 +200,13 @@ public class SnapshotService {
      */
     @Transactional
     public HourlySensorAirQualitySnapshot updateHourlySnapshot(HourlySensorAirQualitySnapshot snapshot) {
-        // 기존 스냅샷의 시간 범위에 해당하는 DeviceAirQualityData 리스트 조회
+        // 기존 스냅샷의 시간 범위에 해당하는 SensorAirQualityData 리스트 조회
         List<SensorAirQualityData> dataList = sensorAirQualityDataRepository
                 .findBySensorAndCreatedAtBetweenOrderByCreatedAtAsc(snapshot.getSensor(),
                         snapshot.getSnapshotHour(), snapshot.getSnapshotHour().plusHours(1));
 
         if (dataList.isEmpty()) {
-            log.warn("Device ID: {} 의 {} 시간 스냅샷에 대한 데이터가 없어 업데이트하지 않습니다.",
+            log.warn("Sensor ID: {} 의 {} 시간 스냅샷에 대한 데이터가 없어 업데이트하지 않습니다.",
                     snapshot.getSensor().getId(), snapshot.getSnapshotHour());
             throw new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND);
         }
@@ -211,8 +241,9 @@ public class SnapshotService {
         snapshot.setEco2Score(calculatedScores.getEco2Score());
         snapshot.setTvocScore(calculatedScores.getTvocScore());
 
+
         // 업데이트된 스냅샷 저장 및 반환
-        log.info("Device ID: {} 의 {} 시간 스냅샷 업데이트 완료",
+        log.info("Sensor ID: {} 의 {} 시간 스냅샷 업데이트 완료",
                 snapshot.getSensor().getId(), snapshot.getSnapshotHour());
         return snapshotRepository.save(snapshot);
     }
@@ -228,6 +259,33 @@ public class SnapshotService {
         return sensorAirQualityDataRepository.findTopBySensor_SerialNumberOrderByCreatedAtDesc(serialNumber)
                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor serialNumber {}" + serialNumber));
     }
+
+    /**
+     * 특정 센서의 지정 날짜 범위의 모든 대기질 데이터를 조회합니다.
+     * @param serialNumber
+     * @Param startDate
+     * @param endDate
+     * @return List<SensorAirQualityData>
+     */
+     public List<SensorAirQualityData> getAirQualityDataByDateRange(String serialNumber, LocalDateTime startDate, LocalDateTime endDate) {
+         Sensor sensor = sensorRepository.findBySerialNumber(serialNumber)
+                 .orElseThrow(() -> new CustomException(ErrorCode.SENSOR_NOT_FOUND, "Sensor serialNumber: " + serialNumber));
+
+         // 시간 범위의 데이터 조회
+         List<SensorAirQualityData> dataList = sensorAirQualityDataRepository.findBySensorAndCreatedAtBetweenOrderByCreatedAtAsc(
+                 sensor,
+                 startDate,
+                 endDate
+         );
+
+         if (dataList.isEmpty()) {
+                log.warn("Sensor serialNumber: {} 의 {} ~ {} 시간 범위에 대한 대기질 데이터가 존재하지 않습니다.",
+                        sensor.getSerialNumber(), startDate, endDate);
+                throw new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor serialNumber: " + serialNumber + "의 지정 기간 데이터가 없습니다.");
+         }
+
+         return dataList;
+     }
 
     /**
      * DeviceAirQualityData 리스트에서 Double 필드의 평균을 계산합니다.
