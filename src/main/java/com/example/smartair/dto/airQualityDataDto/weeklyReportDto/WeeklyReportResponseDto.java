@@ -23,7 +23,6 @@ public class WeeklyReportResponseDto {
     private Integer weekOfYear;
     private LocalDate startDateOfWeek;
     private LocalDate endDateOfWeek;
-    private List<DailySensorAirQualityReport> dailyReports;
 
     // 주간 평균 데이터
     private Double weeklyAvgTemperature;
@@ -70,7 +69,6 @@ public class WeeklyReportResponseDto {
                 .weekOfYear(report.getWeekOfYear())
                 .startDateOfWeek(report.getStartDateOfWeek())
                 .endDateOfWeek(report.getEndDateOfWeek())
-                .dailyReports(report.getDailyReports())
                 .weeklyAvgTemperature(report.getWeeklyAvgTemperature())
                 .weeklyAvgHumidity(report.getWeeklyAvgHumidity())
                 .weeklyAvgTvoc(report.getWeeklyAvgTvoc())

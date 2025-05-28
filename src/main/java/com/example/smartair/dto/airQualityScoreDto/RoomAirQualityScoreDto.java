@@ -22,6 +22,7 @@ public class RoomAirQualityScoreDto {
     private double tvocScore;
     private Long roomId;
     private String roomName;
+    private LocalDateTime modifiedAt;
 
     public static RoomAirQualityScoreDto fromEntity(RoomAirQualityScore roomAirQualityScore) {
         if (roomAirQualityScore == null) {
@@ -42,6 +43,7 @@ public class RoomAirQualityScoreDto {
                 .tvocScore(roomAirQualityScore.getTvocScore())
                 .roomId(roomAirQualityScore.getRoom().getId())
                 .roomName(roomAirQualityScore.getRoom().getName())
+                .modifiedAt(roomAirQualityScore.getModifiedAt())
                 .build();
     }
 }

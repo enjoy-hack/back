@@ -1,5 +1,6 @@
 package com.example.smartair.entity.airData.snapshot;
 
+import com.example.smartair.entity.airData.report.DailySensorAirQualityReport;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.util.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
