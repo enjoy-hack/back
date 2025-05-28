@@ -36,12 +36,6 @@ public class DailySensorAirQualityReport extends BaseEntity {
     @Column(name = "report_date", nullable = false)
     private LocalDate reportDate; // 리포트 날짜 (예: 2023-10-28)
 
-    // 해당 날짜의 시간별 스냅샷 목록 (최대 24개)
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "daily_report_id")
-    @OrderBy("snapshotHour ASC") // 시간 순으로 정렬
-    private List<HourlySensorAirQualitySnapshot> hourlySnapshots;
-
     // 일일 평균 데이터
     private Double dailyAvgTemperature;
     private Double dailyAvgHumidity;
