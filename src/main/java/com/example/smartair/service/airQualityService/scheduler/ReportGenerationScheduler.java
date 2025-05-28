@@ -1,5 +1,6 @@
 package com.example.smartair.service.airQualityService.scheduler;
 
+import com.example.smartair.entity.airData.snapshot.HourlySensorAirQualitySnapshot;
 import com.example.smartair.entity.sensor.Sensor;
 import com.example.smartair.repository.airQualityRepository.airQualitySnapshotRepository.HourlySensorAirQualitySnapshotRepository;
 import com.example.smartair.service.airQualityService.snapshot.SnapshotService;
@@ -35,7 +36,8 @@ public class ReportGenerationScheduler {
     public void generateHourlySnapshots() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime snapshotHourBase = now.minusHours(1).truncatedTo(ChronoUnit.HOURS);
-        log.info("시간별 공기질 스냅샷 생성을 시작합니다. 기준 시간: {}", snapshotHourBase);
+
+        log.info("===scheduling : 시간별 공기질 스냅샷 생성을 시작합니다. 기준 시간: {}===", snapshotHourBase);
 
         try{
             snapshotService.createHourlySnapshot(snapshotHourBase);
@@ -52,7 +54,7 @@ public class ReportGenerationScheduler {
     @Scheduled(cron = "0 0 0 * * *") // 매일 자정
     public void generateDailyReports() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        log.info("일별 공기질 리포트 생성을 시작합니다. 대상 날짜: {}", yesterday);
+        log.info("===scheduling : 일별 공기질 리포트 생성을 시작합니다. 대상 날짜: {}===", yesterday);
 
         // 어제 하루동안 데이터가 있는 센서들 조회
         Set<Sensor> sensorsWithData = hourlySensorAirQualitySnapshotRepository
@@ -89,7 +91,7 @@ public class ReportGenerationScheduler {
         int yearOfLastWeek = lastWeekDate.get(WeekFields.ISO.weekBasedYear());
         int weekOfLastWeek = lastWeekDate.get(WeekFields.ISO.weekOfWeekBasedYear());
 
-        log.info("주간 공기질 리포트 생성을 시작합니다. 대상 연도: {}, 주차: {}", yearOfLastWeek, weekOfLastWeek);
+        log.info("===scheduling : 주간 공기질 리포트 생성을 시작합니다. 대상 연도: {}, 주차: {}===", yearOfLastWeek, weekOfLastWeek);
 
         // 지난 주에 데이터가 있는 센서들 조회
         LocalDateTime weekStart = lastWeekDate
