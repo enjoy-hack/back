@@ -39,8 +39,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     @Override
     @GetMapping("/daily/{serialNumber}/{date}")
     public ResponseEntity<DailyReportResponseDto> getDailyReport(
-            @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
-            @Parameter(description = "조회할 날짜", required = true, example = "2023-10-28")
+            @PathVariable String serialNumber,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         DailySensorAirQualityReport report = dailyReportService.getDailyReport(serialNumber, date);
         return ResponseEntity.ok(DailyReportResponseDto.from(report));
@@ -49,10 +48,8 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     @Override
     @GetMapping("/daily/{serialNumber}")
     public ResponseEntity<List<DailyReportResponseDto>> getDailyReportsForPeriod(
-            @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
-            @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
+            @PathVariable String serialNumber,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         List<DailySensorAirQualityReport> reports = dailyReportService.getDailyReportsForPeriod(serialNumber, startDate, endDate);
         return ResponseEntity.ok(
@@ -63,9 +60,27 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     }
 
     @Override
+    @PostMapping("/daily/{serialNumber}/create")
+    public ResponseEntity<DailyReportResponseDto> generateDailyReportManually(
+            @PathVariable String serialNumber,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        DailySensorAirQualityReport report = dailyReportService.generateDailyReportManually(serialNumber, date);
+        return ResponseEntity.ok(DailyReportResponseDto.from(report));
+    }
+
+    @Override
+    @DeleteMapping("/daily/sensor/{serialNumber}/delete")
+    public ResponseEntity<Void> deleteDailyReportBySerialNumber(
+            @PathVariable String serialNumber,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        dailyReportService.deleteDailyReportBySerialNumber(serialNumber, date);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
     @DeleteMapping("/daily/{reportId}/delete")
     public ResponseEntity<Void> deleteDailyReport(
-            @Parameter(description = "삭제할 일별 리포트의 ID", required = true, example = "100") @PathVariable Long reportId) {
+            @PathVariable Long reportId) {
         dailyReportService.deleteDailyReport(reportId);
         return ResponseEntity.noContent().build();
     }
@@ -73,15 +88,15 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     @Override
     @DeleteMapping("/daily/{serialNumber}/deleteAll")
     public ResponseEntity<Integer> deleteDailyReportsByDeviceId(
-            @Parameter(description = "모든 일별 리포트를 삭제할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber) {
+            @PathVariable String serialNumber) {
         int deletedCount = dailyReportService.deleteDailyReportsByDeviceId(serialNumber);
         return ResponseEntity.ok(deletedCount);
     }
 
     @Override
-    @DeleteMapping("/old/daily/{reportId}/delete")
+    @DeleteMapping("/old/daily/delete")
     public ResponseEntity<Integer> deleteOldDailyReports(
-            @Parameter(description = "삭제할 일별 리포트의 ID", required = true, example = "100") @RequestParam Integer days) {
+            @RequestParam Integer days) {
         int deletedCount = dailyReportService.deleteOldDailyReports(days);
         return ResponseEntity.ok(deletedCount);
     }
@@ -90,9 +105,9 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     @Override
     @GetMapping("/weekly/{serialNumber}/{year}/{weekOfYear}")
     public ResponseEntity<WeeklyReportResponseDto> getWeeklyReport(
-            @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
-            @Parameter(description = "조회할 연도 (YYYY 형식)", required = true, example = "2023") @PathVariable Integer year,
-            @Parameter(description = "조회할 주차 (1-53 사이의 숫자, ISO 8601 기준)", required = true, example = "43") @PathVariable Integer weekOfYear) {
+            @PathVariable String serialNumber,
+            @PathVariable Integer year,
+            @PathVariable Integer weekOfYear) {
         WeeklySensorAirQualityReport report = weeklyReportService.getWeeklyReport(serialNumber, year, weekOfYear);
         return ResponseEntity.ok(WeeklyReportResponseDto.from(report));
     }
@@ -100,10 +115,8 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     @Override
     @GetMapping("/weekly/{serialNumber}")
     public ResponseEntity<List<WeeklyReportResponseDto>> getWeeklyReportsForPeriod(
-            @Parameter(description = "리포트를 조회할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber,
-            @Parameter(description = "조회 시작 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-01")
+            @PathVariable String serialNumber,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "조회 종료 날짜 (YYYY-MM-DD 형식)", required = true, example = "2023-10-31")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         List<WeeklySensorAirQualityReport> reports = weeklyReportService.getWeeklyReportsForPeriod(serialNumber, startDate, endDate);
         return ResponseEntity.ok(
@@ -114,9 +127,18 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     }
 
     @Override
+    @PostMapping("/weekly/{serialNumber}/create")
+    public ResponseEntity<WeeklyReportResponseDto> generateWeeklyReportManually(
+            @PathVariable String serialNumber,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStartDate) {
+        WeeklySensorAirQualityReport report = weeklyReportService.generateWeeklyReportManually(serialNumber, weekStartDate);
+        return ResponseEntity.ok(WeeklyReportResponseDto.from(report));
+    }
+
+    @Override
     @DeleteMapping("/weekly/{reportId}/delete")
     public ResponseEntity<Void> deleteWeeklyReport(
-            @Parameter(description = "삭제할 주간 리포트의 ID", required = true, example = "100") @PathVariable Long reportId) {
+            @PathVariable Long reportId) {
         weeklyReportService.deleteWeeklyReport(reportId);
         return ResponseEntity.noContent().build();
     }
@@ -124,7 +146,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     @Override
     @DeleteMapping("/old/weekly/delete")
     public ResponseEntity<Integer> deleteOldWeeklyReports(
-            @Parameter(description = "삭제할 주간 리포트의 ID", required = true, example = "100") @RequestParam Integer weeksOld) {
+            @RequestParam Integer weeksOld) {
         int deletedCount = weeklyReportService.deleteOldWeeklyReports(weeksOld);
         return ResponseEntity.ok(deletedCount);
     }
@@ -132,7 +154,7 @@ public class AirQualityReportController implements AirQualityReportControllerDoc
     @Override
     @DeleteMapping("/weekly/{serialNumber}/deleteAll")
     public ResponseEntity<Integer> deleteWeeklyReportsByDeviceId(
-            @Parameter(description = "모든 주간 리포트를 삭제할 센서의 일련번호", required = true, example = "1") @PathVariable String serialNumber) {
+            @PathVariable String serialNumber) {
         int deletedCount = weeklyReportService.deleteWeeklyReportsByDeviceId(serialNumber);
         return ResponseEntity.ok(deletedCount);
     }
