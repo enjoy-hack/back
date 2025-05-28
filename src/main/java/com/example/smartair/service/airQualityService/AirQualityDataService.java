@@ -110,7 +110,7 @@ public class AirQualityDataService {
             // 2. 캐시에 없는 경우 DB에서 최신 데이터 조회
             SensorAirQualityData latestData = sensorAirQualityDataRepository.findTopBySensorIdOrderByCreatedAtDesc(sensorId)
                     .orElseThrow(() -> {
-                        log.warn("Device ID {}의 최근 데이터를 찾을 수 없습니다.", sensorId);
+                        log.warn("Sensor ID {}의 최근 데이터를 찾을 수 없습니다.", sensorId);
                         return new CustomException(ErrorCode.SENSOR_AIR_DATA_NOT_FOUND, "Sensor ID {}" + sensorId);
                     });
 
@@ -122,7 +122,7 @@ public class AirQualityDataService {
         } catch (CustomException ce) {
             throw ce;
         } catch (Exception e) {
-            log.error("Device ID {}의 데이터 조회 중 오류 발생", sensorId, e);
+            log.error("Sensor ID {}의 데이터 조회 중 오류 발생", sensorId, e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, String.format("내부 서버 오류: %s", e.getMessage()));
         }
     }
