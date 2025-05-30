@@ -24,7 +24,7 @@ public class ReissueController implements ReissueControllerDocs {
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
 
-    private final long ACCESS_TOKEN_EXP = 1000L * 60 * 30; // 30분
+    private final long ACCESS_TOKEN_EXP = 10000L * 60 * 30; // 30분
     private final long REFRESH_TOKEN_EXP = 1000L * 60 * 60 * 24 * 7; // 7일
 
     public ReissueController(JWTUtil jwtUtil, RefreshRepository refreshRepository) {
