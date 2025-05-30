@@ -114,8 +114,10 @@ public class AnomalyReportService {
     public String firebaseAlarm(String targetToken, String description, User user) {
         Message message = Message.builder()
                 .setToken(targetToken)
-                .putData("title", "이상치 발생 알림")
-                .putData("body", description)
+                .setNotification(com.google.firebase.messaging.Notification.builder()
+                        .setTitle("이상치 발생 알림")
+                        .setBody(description)
+                        .build())
                 .build();
         try {
             Notification notification = Notification.builder()
