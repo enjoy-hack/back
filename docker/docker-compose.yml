@@ -1,16 +1,4 @@
 services:
-  mqtt:
-    image: eclipse-mosquitto
-    container_name: mqtt
-    ports:
-      - "1883:1883"
-      - "18080:8080"
-    volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - mqtt_data:/mosquitto/data
-    restart: always
-    networks:
-      - app-network
   app:
     container_name: app
     image: ${ECR_REGISTRY_URI}:${IMAGE_TAG}
