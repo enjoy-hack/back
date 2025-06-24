@@ -27,20 +27,7 @@ public class LoginController {
 
     private final LoginService loginService;
 
-    @PostMapping("/login/fcmToken")
-    public ResponseEntity<?> setFcmToken(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                         String fcmToken) {
-        if(fcmToken == null || fcmToken.isEmpty()) {
-            return ResponseEntity.badRequest().body("FCM token is required");
-        }
-        if(userDetails == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
 
-        log.info("Received FCM token: " + fcmToken);
-        loginService.setFcmToken(userDetails.getUser(), fcmToken);
-        return ResponseEntity.ok("FCM token updated successfully");
-    }
 
 //    @Operation(
 //            summary = "로그인",

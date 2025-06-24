@@ -23,11 +23,9 @@ public class UserDetailResponseDto {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .role(user.getRole()) 
                 .loginType(user.getLoginType()) 
                 .createdAt(user.getCreateDate())
                 .modifiedAt(user.getModifiedDate())
-                .participatedRoomCount(user.getRoomParticipants() != null ? user.getRoomParticipants().size() : 0)
                 .build();
     }
 } 

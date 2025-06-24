@@ -35,8 +35,8 @@ public class SwaggerConfig {
         prodServer.setDescription("Production server (HTTPS)");
 
         return new OpenAPI()
-                .info(new Info().title("SmartAir API")
-                        .description("SmartAir Application API Documentation")
+                .info(new Info().title("Enjoy Hack API")
+                        .description("EnjoyHack Application API Documentation")
                         .version("v1.0"))
                 .addSecurityItem(securityRequirement)  // Security Requirement 추가
                 .schemaRequirement("BearerAuth", securityScheme) // Security Scheme 추가

@@ -71,11 +71,4 @@ public class LoginService {
                 .build();
 
     }
-
-    @Transactional
-    public void setFcmToken(User user, String fcmToken) {
-        // FCM 토큰을 사용자에게 설정하는 로직
-        user.setFcmToken(fcmToken);
-        userRepository.save(user);
-    }
 }
