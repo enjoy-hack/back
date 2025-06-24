@@ -12,4 +12,5 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://${RDS_ENDPOINT}:${MYSQL_DB_PORT}/${MYSQL_DB_NAME}?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=${MYSQL_DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
     restart: always
