@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3307/${MYSQL_DB_NAME_FOR_TEST}
+    url: jdbc:mysql://localhost:3307/${MYSQL_DB_NAME}
     username: ${MYSQL_DB_USERNAME}
     password: ${MYSQL_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -47,36 +47,3 @@ logging:
     root: warn
     org.hibernate.SQL: info
 #    org.hibernate.tool.hbm2ddl: DEBUG
-
-mqtt:
-  url: ${MQTT_URL}
-  client-id: spring-client
-  username:
-  password:
-  topic: smartair/+/airquality
-
-firebase:
-  config:
-    path: ${FIREBASE_CONFIG_PATH}
-
-cloud:
-  aws:
-    credentials:
-      access-key: ${ENV_AWS_ACCESS_KEY}
-      secret-key: ${ENV_AWS_SECRET_KEY}
-    region:
-      static: ap-northeast-2
-    stack:
-      auto: false
-    s3:
-      bucket: ${ENV_S3_BUCKET}
-
-thinq:
-  api:
-    base-url: ${THINQ_API_BASE_URL}
-    api-key: ${THINQ_API_KEY}
-    country: ${THINQ_API_COUNTRY}
-    client-id-prefix: ${THINQ_API_CLIENT_ID_PREFIX}
-
-pat:
-  secret-key: ${PAT_SECRET_KEY}

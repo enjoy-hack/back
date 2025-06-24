@@ -47,38 +47,3 @@ spring:
 logging:
   level:
     root: info # 필요에 따라 warn 등으로 변경 가능
-
-mqtt:
-  # EC2에서 접속할 MQTT 브로커 주소로 변경
-  url: ${MQTT_URL_EC2_PROD} # 예: tcp://localhost:1883 또는 외부 브로커 주소
-  client-id: spring-client-prod # 운영 환경용 고유 ID 권장
-  username: ${MQTT_USERNAME_EC2_PROD} # 필요시 설정
-  password: ${MQTT_PASSWORD_EC2_PROD} # 필요시 설정 (환경 변수)
-  topic: ${MQTT_TOPIC}
-
-firebase:
-  config:
-    # EC2 파일 시스템 내의 실제 Firebase 키 파일 경로
-    path: ${FIREBASE_CONFIG_PATH} # 예: firebase/firebase.json (src/main/resources 기준) 또는 절대경로
-
-cloud:
-  aws:
-    s3:
-      bucket: ${S3_BUCKET_NAME} # EC2에 설정된 환경 변수
-    stack.auto: false
-    region.static: ap-northeast-2
-    credentials:
-      accessKey: ${AWS_S3_ACCESS_KEY_ID} # EC2에 설정된 환경 변수
-      secretKey: ${AWS_S3_SECRET_ACCESS_KEY} # EC2에 설정된 환경 변수
-
-thinq:
-  api:
-    base-url: ${SPRING_THINQ_API_BASE_URL}
-    api-key: ${SPRING_THINQ_API_KEY}
-    country: ${SPRING_THINQ_API_COUNTRY}
-    client-id-prefix: ${SPRING_THINQ_API_CLIENT_ID_PREFIX}
-
-pat:
-  secret-key: ${PAT_SECRET_KEY}
-
-
