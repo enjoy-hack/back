@@ -1,5 +1,6 @@
 services:
   app:
+    image: 867344478016.dkr.ecr.ap-northeast-2.amazonaws.com/enjoy-app:latest
     build:
       context: .
       dockerfile: Dockerfile
