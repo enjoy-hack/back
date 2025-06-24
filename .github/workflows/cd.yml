@@ -17,14 +17,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: SSH into Ubuntu server and deploy
+      - name: SSH into EC2 server and deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.UBUNTU_HOST }}
-          username: ubuntu
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/back
+            cd /home/ec2-user/back
             git pull origin main
             docker-compose down
             docker system prune -f
