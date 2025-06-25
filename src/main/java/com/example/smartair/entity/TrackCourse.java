@@ -1,8 +1,10 @@
 package com.example.smartair.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
+@Getter
 public class TrackCourse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
