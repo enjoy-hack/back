@@ -154,8 +154,27 @@ public class TrackService {
                 (course.getCourseAlias() != null && completedCourseNames.contains(course.getCourseAlias()));
     }
 
-    // favoriteScore 기준 1개, progressScore 기준 1개 트랙 추천
-    public List<TrackProgressDto> getTopTracksByFavoriteAndProgress(String studentId) {
+    public Track getTopTrackByProgressScore(String studentId) {
+        User user = userRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        List<TrackProgressDto> trackProgress = calculateTrackProgress(studentId);
+
+        TrackProgressDto topProgress = trackProgress.stream()
+                .max((a, b) -> Double.compare(
+                        (double) a.getCompletedCount() / a.getRequiredCount(),
+                        (double) b.getCompletedCount() / b.getRequiredCount()))
+                .orElse(null);
+
+        if (topProgress == null) {
+            return null;
+        }
+
+        return trackRepository.findByName(topProgress.getTrackName())
+                .orElse(null);
+    }
+
+    // 선호과목 기준 추천 트랙 1개 반환
+    public Track getTopTrackByFavoriteScore(String studentId) {
         User user = userRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         Set<String> favoriteCourses = favoriteCourseRepository.findAllByUser(user)
@@ -165,25 +184,18 @@ public class TrackService {
 
         List<TrackProgressDto> trackProgress = calculateTrackProgress(studentId);
 
-        // 1. favoriteScore 기준 최고 트랙
-        TrackProgressDto favoriteTop = trackProgress.stream()
+        TrackProgressDto topFavorite = trackProgress.stream()
                 .max((a, b) -> Double.compare(
                         calculateFavoriteScore(a, favoriteCourses),
                         calculateFavoriteScore(b, favoriteCourses)))
                 .orElse(null);
 
-        // 2. progressScore 기준 최고 트랙
-        TrackProgressDto progressTop = trackProgress.stream()
-                .max((a, b) -> Double.compare(
-                        (double) a.getCompletedCount() / a.getRequiredCount(),
-                        (double) b.getCompletedCount() / b.getRequiredCount()))
-                .orElse(null);
+        if (topFavorite == null) {
+            return null;
+        }
 
-        // 중복 제거 후 반환
-        return List.of(favoriteTop, progressTop).stream()
-                .filter(java.util.Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toList());
+        return trackRepository.findByName(topFavorite.getTrackName())
+                .orElse(null);
     }
 
     private double calculateFavoriteScore(TrackProgressDto track, Set<String> favoriteCourses) {

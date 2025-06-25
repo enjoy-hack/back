@@ -1,6 +1,7 @@
 package com.example.enjoy.controller;
 
 import com.example.enjoy.dto.TrackDetailDto;
+import com.example.enjoy.dto.TrackProgressDto;
 import com.example.enjoy.entity.Track;
 import com.example.enjoy.service.TrackService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,6 +54,28 @@ public class TrackController {
                 .map(track -> new TrackDetailDto().from(track))
                 .toList();
         return ResponseEntity.ok(trackDetails);
+    }
+
+    @Operation(summary = "진척률에 따른 추천 트랙 조회", description = "학생의 진척률에 따라 추천 트랙을 조회합니다.")
+    @GetMapping("/recommendations/progress")
+    public ResponseEntity<TrackDetailDto> getRecommendedTrackByProgress(@RequestParam String studentId) {
+        Track recommendedTrack = trackService.getTopTrackByProgressScore(studentId);
+        if (recommendedTrack == null) {
+            return ResponseEntity.noContent().build();
+        }
+        TrackDetailDto trackDetailDto = new TrackDetailDto().from(recommendedTrack);
+        return ResponseEntity.ok(trackDetailDto);
+    }
+
+    @Operation(summary = "선호 과목에 따른 추천 트랙 조회", description = "학생의 선호 과목에 따라 추천 트랙을 조회합니다.")
+    @GetMapping("/recommendations/preferred-courses")
+    public ResponseEntity<TrackDetailDto> getRecommendedTrackByPreferredCourses(@RequestParam String studentId) {
+        Track recommendedTrack = trackService.getTopTrackByFavoriteScore(studentId);
+        if (recommendedTrack == null) {
+            return ResponseEntity.noContent().build();
+        }
+        TrackDetailDto trackDetailDto = new TrackDetailDto().from(recommendedTrack);
+        return ResponseEntity.ok(trackDetailDto);
     }
 
 }
