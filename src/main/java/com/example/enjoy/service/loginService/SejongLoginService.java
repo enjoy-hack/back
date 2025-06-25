@@ -34,23 +34,29 @@ public class SejongLoginService {
     private final UserRepository userRepository;
 
     public MemberDto login(MemberCommand memberCommand){
+        boolean hasLoginHistory = userRepository.existsByStudentId(memberCommand.getSejongPortalId());
         SejongMemberInfo info = sejongPortalLoginService.getMemberAuthInfos(memberCommand.getSejongPortalId(), memberCommand.getSejongPortalPassword());
-        updateUserInfo(info.getStudentId(), info.getName(), info.getMajor(), info.getGrade(), info.getCompletedSemester()); //로그인 시 유저 정보 DB에 저장
+
+        // 로그인 성공 시 사용자 정보 저장 (첫 로그인인 경우)
+        if (!hasLoginHistory) {
+            User newUser = User.builder()
+                    .major(info.getMajor())
+                    .studentId(info.getStudentId())
+                    .username(info.getName())
+                    .grade(info.getGrade())
+                    .completedSemester(info.getCompletedSemester())
+                            .build();
+            userRepository.save(newUser);
+        }
+
         return MemberDto.builder()
                 .major(info.getMajor())
                 .studentIdString(info.getStudentId())
                 .studentName(info.getName())
                 .grade(info.getGrade())
                 .completedSemester(info.getCompletedSemester())
+                .hasLoginHistory(hasLoginHistory)
                 .build();
-    }
-
-    private void updateUserInfo(String studentId, String username, String major, String grade, String completedSemester) {
-        User user = userRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        user.updateUserInfo(studentId, username, major, grade, completedSemester);
-        userRepository.save(user);
     }
 
     public MemberDto getMemberAuthInfos(MemberCommand memberCommand) throws IOException {

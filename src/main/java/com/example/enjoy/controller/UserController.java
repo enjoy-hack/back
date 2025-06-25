@@ -117,5 +117,12 @@ public class UserController {
         userService.updateCourseStatus(studentId, courseName, newStatus);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "유저 정보 저장", description = "학생의 정보를 저장합니다.")
+    @PostMapping("/save")
+    public ResponseEntity<MemberDto> saveUserInfo(@Valid @RequestBody MemberDto memberDto) {
+        userService.saveUserInfo(memberDto);
+        return ResponseEntity.ok().build();
+    }
 }
 

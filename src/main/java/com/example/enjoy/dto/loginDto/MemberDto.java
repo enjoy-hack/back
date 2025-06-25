@@ -11,5 +11,5 @@ public class MemberDto {
     private String studentName;
     private String grade;
     private String completedSemester;
-
+    private boolean hasLoginHistory;  // 로그인 이력 여부
 }

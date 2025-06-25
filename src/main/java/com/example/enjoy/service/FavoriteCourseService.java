@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,22 +21,29 @@ public class FavoriteCourseService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void toggleFavoriteCourse(Long userId, Long trackCourseId) {
-        User user = userRepository.findById(userId)
+    public void addFavoriteCourse(String studentId, String courseName) {
+        User user = userRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        TrackCourse trackCourse = trackCourseRepository.findById(trackCourseId)
+
+
+        TrackCourse trackCourse = trackCourseRepository.findByCourseName(courseName)
                 .orElseThrow(() -> new RuntimeException("과목을 찾을 수 없습니다."));
 
-        Optional<FavoriteCourse> existingFavorite = favoriteCourseRepository
-                .findByUserAndTrackCourse(user, trackCourse);
+        // 이미 즐겨찾기한 과목인지 확인
+        boolean alreadyExists = favoriteCourseRepository
+                .findByUserAndCourseName(user, courseName)
+                .isPresent();
 
-        if (existingFavorite.isPresent()) {
-            favoriteCourseRepository.delete(existingFavorite.get());
-        } else {
-            FavoriteCourse favoriteCourse = new FavoriteCourse();
-            favoriteCourse.setUser(user);
-            favoriteCourse.setTrackCourse(trackCourse);
+        if (!alreadyExists) {
+            FavoriteCourse favoriteCourse = new FavoriteCourse(user, trackCourse.getCourseName());
             favoriteCourseRepository.save(favoriteCourse);
         }
+    }
+
+    public List<FavoriteCourse> getFavoriteCourses(String studentId) {
+        User user = userRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        return favoriteCourseRepository.findAllByUser(user);
     }
 }
