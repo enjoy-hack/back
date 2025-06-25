@@ -17,33 +17,6 @@ spring:
   swagger-ui:
     enabled: true # 필요에 따라 false로 변경 가능
 
-  jwt:
-    secret: ${JWT_SECRET} # EC2에 설정된 환경 변수
-
-  security:
-    oauth2:
-      client:
-        # provider 설정은 보통 동일하게 유지
-        provider:
-          kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me
-            user-name-attribute: id
-        registration:
-          kakao:
-            client-id: ${KAKAO_CLIENT_ID} # EC2에 설정된 환경 변수
-            client-secret: ${KAKAO_CLIENT_SECRET} # EC2에 설정된 환경 변수
-            # 중요! EC2의 실제 접속 가능한 리디렉션 URI로 변경
-            redirect-uri: ${KAKAO_REDIRECT_URI_EC2_PROD}
-            authorization-grant-type: authorization_code
-            client-authentication-method: POST
-            client-name: Kakao
-            scope:
-              - name
-              - profile_nickname
-              - account_email
-
 logging:
   level:
     root: info # 필요에 따라 warn 등으로 변경 가능
