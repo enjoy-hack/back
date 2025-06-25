@@ -124,5 +124,15 @@ public class UserController {
         userService.saveUserInfo(memberDto);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "학생이 이수 완료한 트랙 조회", description = "학생이 이수 완료한 트랙 목록을 조회합니다.")
+    @GetMapping("/{studentId}/tracks/completed")
+    public ResponseEntity<List<Track>> getCompletedTracks(@PathVariable String studentId) {
+        List<Track> completedTracks = userService.getCompletedTracks(studentId);
+        if (completedTracks.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(completedTracks);
+    }
 }
 

@@ -22,4 +22,5 @@ public interface TrackRepository extends JpaRepository<Track, Long> {
     Optional<Track> findByIdWithCourses(@Param("trackId") Long trackId);
 
     Optional<Track> findByName(String name);
+
 }
