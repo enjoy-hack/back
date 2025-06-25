@@ -1,11 +1,9 @@
-package com.example.smartair.entity.user;
+package com.example.enjoy.entity.user;
 
-import com.example.smartair.entity.BaseTimeEntity;
+import com.example.enjoy.entity.BaseTimeEntity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.Set;
 
 @Builder
 @Entity
@@ -29,8 +27,6 @@ public class User extends BaseTimeEntity {
     private String loginType; //로그인 타입
 
     private String providerId; //소셜 로그인 시 제공자 ID
-
-    private Role role;
 
 
 

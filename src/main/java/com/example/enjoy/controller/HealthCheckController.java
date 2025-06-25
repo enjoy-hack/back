@@ -1,4 +1,4 @@
-package com.example.smartair.controller;
+package com.example.enjoy.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
