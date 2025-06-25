@@ -17,13 +17,17 @@ import java.util.stream.Collectors;
 public class FavoriteCourseController {
     private final FavoriteCourseService favoriteCourseService;
 
-    @Operation(summary = "즐겨찾는 과목 추가", description = "학생의 즐겨찾는 과목을 추가합니다.")
+    @Operation(summary = "즐겨찾는 과목 추가", description = "학생의 즐겨찾는 과목을 최대 4개까지 한 번에 추가합니다.")
     @PostMapping("/add")
-    public ResponseEntity<Void> addFavoriteCourse(
-            @RequestParam String courseName,
+    public ResponseEntity<Void> addFavoriteCourses(
+            @RequestParam List<String> courseNames,
             @RequestParam String studentId) {
 
-        favoriteCourseService.addFavoriteCourse(studentId, courseName);
+        if (courseNames == null || courseNames.isEmpty() || courseNames.size() > 4) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        favoriteCourseService.addFavoriteCourses(studentId, courseNames);
         return ResponseEntity.ok().build();
     }
 
