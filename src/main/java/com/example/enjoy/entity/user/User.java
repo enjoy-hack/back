@@ -16,18 +16,27 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String studentId;
+
     @Column(nullable = false, unique = true)
     private String username;
 
-    private String password; // local 로그인 사용자만 저장
+    @Column(nullable = false)
+    private String major;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+    @Column(nullable = false)
+    private String grade;
 
-    private String loginType; //로그인 타입
+    @Column(nullable = false)
+    private String completedSemester;
 
-    private String providerId; //소셜 로그인 시 제공자 ID
-
-
+    public void updateUserInfo(String studentId, String username, String major, String grade, String completedSemester) {
+        this.studentId = studentId;
+        this.username = username;
+        this.major = major;
+        this.grade = grade;
+        this.completedSemester = completedSemester;
+    }
 
 }
