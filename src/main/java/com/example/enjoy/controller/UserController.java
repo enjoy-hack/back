@@ -74,4 +74,4 @@ public class UserController {
         userService.updateCourseStatus(studentId, courseName, newStatus);
         return ResponseEntity.ok().build();
     }
-}
+
