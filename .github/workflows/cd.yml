@@ -17,16 +17,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: 867344478016.dkr.ecr.ap-northeast-2.amazonaws.com/enjoy-app:latest
+
       - name: SSH into EC2 server and deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          timeout: 300s
           script: |
             cd /home/ec2-user/back
-            git pull origin main
             docker-compose down
+            docker pull 867344478016.dkr.ecr.ap-northeast-2.amazonaws.com/enjoy-app:latest
             docker system prune -f
-            docker build -t enjoy-app .
             docker-compose up -d
