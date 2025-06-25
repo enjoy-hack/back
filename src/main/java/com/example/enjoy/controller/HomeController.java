@@ -5,9 +5,8 @@ import com.example.enjoy.service.TrackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
@@ -19,10 +18,8 @@ public class HomeController {
     private final TrackService trackService;
 
     @Operation(summary = "트랙 진행률 조회", description = "현재 학생의 전체 트랙 진행률을 조회합니다.")
-    @GetMapping("/home")
-    public List<TrackProgressDto> showMyProgress() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentStudentId = authentication.getName();
-        return trackService.calculateTrackProgress(currentStudentId);
+    @GetMapping("/home/{studentId}")
+    public List<TrackProgressDto> showMyProgress(@PathVariable String studentId) {
+        return trackService.calculateTrackProgress(studentId);
     }
 }

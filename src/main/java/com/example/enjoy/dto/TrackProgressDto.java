@@ -1,5 +1,6 @@
 package com.example.enjoy.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
  */
 @Getter
 @Setter
+@AllArgsConstructor
 public class TrackProgressDto {
 
     private String trackName;           // 트랙 이름 (예: "AI 콘텐츠")

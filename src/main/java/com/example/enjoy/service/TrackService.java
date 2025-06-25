@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,73 +25,38 @@ public class TrackService {
     private final TrackRepository trackRepository;
     private final StudentCourseRepository studentCourseRepository; // 기존 기능
 
-    /**
-     * 모든 트랙 정보를 학과별로 그룹화하여 반환하는 메서드
-     */
-    public Map<String, List<Track>> getAllTracksGroupedByDepartment() {
-        // 1. DB에서 모든 트랙과 관련 과목들을 한번에 조회
-        List<Track> allTracks = trackRepository.findAllWithCourses();
-
-        // 2. 조회된 트랙 리스트를 '학과' 이름으로 그룹화하여 Map으로 변환 후 반환
-        return allTracks.stream()
-                .collect(Collectors.groupingBy(Track::getDepartment));
-    }
-
-    /**
-     * 학생이 이수한 과목 이름을 Set으로 반환하는 private 메서드
-     */
     public List<TrackProgressDto> calculateTrackProgress(String studentId) {
-        // 1. 학생의 이수 과목 목록 조회
-        Set<String> completedCourseNames = studentCourseRepository.findByStudentId(studentId)
-                .stream()
-                .map(StudentCourse::getCourseName)
-                .collect(Collectors.toSet());
+        Set<String> completedCourseNames = getCompletedCourseNames(studentId); // 이수 과목명 목록
 
-        // 2. 모든 트랙 정보 조회
-        List<Track> allTracks = trackRepository.findAllWithCourses();
+        List<Track> allTracks = trackRepository.findAll();
 
-        List<TrackProgressDto> progressList = new ArrayList<>();
+        return allTracks.stream().map(track -> {
+            List<TrackCourse> courses = track.getCourses(); // 이 트랙의 모든 과목
+            List<CourseDto> completed = new ArrayList<>();
+            List<CourseDto> remaining = new ArrayList<>();
 
-        // 3. 각 트랙별로 진행 현황 계산
-        for (Track track : allTracks) {
-
-            // 현재 트랙에서 완료한 과목과 남은 과목을 담을 리스트 초기화
-            List<CourseDto> completedInThisTrack = new ArrayList<>();
-            List<CourseDto> remainingInThisTrack = new ArrayList<>();
-
-            // 현재 트랙에 속한 모든 교과목을 하나씩 확인
-            for (TrackCourse trackCourse : track.getCourses()) {
-
-                // 학생이 해당 과목을 이수했는지 확인 (현재 이름 또는 과거 이름으로 체크)
-                if (completedCourseNames.contains(trackCourse.getCourseName()) ||
-                        (trackCourse.getCourseAlias() != null && completedCourseNames.contains(trackCourse.getCourseAlias()))) {
-                    // 이수한 경우: 완료 리스트에 추가
-                    completedInThisTrack.add(new CourseDto(trackCourse.getCourseName(), trackCourse.getCourseAlias()));
+            for (TrackCourse course : courses) {
+                CourseDto dto = new CourseDto(course.getCourseName(), course.getCourseAlias());
+                if (isCourseCompleted(course, completedCourseNames)) {
+                    completed.add(dto);
                 } else {
-                    // 이수하지 않은 경우: 남은 과목 리스트에 추가
-                    remainingInThisTrack.add(new CourseDto(trackCourse.getCourseName(), trackCourse.getCourseAlias()));
+                    remaining.add(dto);
                 }
             }
 
-            // 최종 결과를 담을 DTO 객체 생성 및 데이터 세팅
-            TrackProgressDto progressDto = new TrackProgressDto();
-            progressDto.setTrackName(track.getName());
-            progressDto.setDepartment(track.getDepartment());
-
-            int completedCount = completedInThisTrack.size();
-            progressDto.setCompletedCount(completedCount);
-            progressDto.setRequiredCount(6); // 트랙 이수 요구 과목 수는 6개
-            progressDto.setCompleted(completedCount >= 6); // 6개 이상이면 true
-
-            progressDto.setCompletedCourses(completedInThisTrack);
-            progressDto.setRemainingCourses(remainingInThisTrack);
-
-            // 완성된 DTO를 최종 결과 리스트에 추가
-            progressList.add(progressDto);
-        }
-
-        return progressList;
+            return new TrackProgressDto(
+                    track.getName(),
+                    track.getDepartment(),
+                    completed.size(),
+                    courses.size(),
+                    completed.size() == courses.size(),
+                    completed,
+                    remaining
+            );
+        }).toList();
     }
+
+
 
     /**
      * 학생이 이수한 과목 이름을 Set으로 반환하는 메서드
