@@ -24,16 +24,32 @@ public class StudentDataService {
 
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
+
+            int rowIndex = 0;
             for (Row row : sheet) {
-                if (row.getRowNum() == 0) continue;
+                rowIndex++;
+                if (row.getRowNum() <= 1) continue;
 
-                Cell courseCell = row.getCell(4);  // 교과목명
-                Cell gradeCell = row.getCell(10);  // 등급
+                Cell courseCell = row.getCell(4);
+                Cell gradeCell = row.getCell(10);
 
-                if (courseCell == null || gradeCell == null) continue;
+                // 헤더 행 무시
+                if (courseCell != null && "교과목명".equals(courseCell.getStringCellValue().trim())) {
+                    continue;
+                }
+
+                // 완전 빈 행 무시
+                if ((courseCell == null || courseCell.getStringCellValue().trim().isEmpty()) &&
+                        (gradeCell == null || gradeCell.getStringCellValue().trim().isEmpty())) {
+                    continue;
+                }
 
                 String courseName = courseCell.getStringCellValue().trim();
                 String grade = gradeCell.getStringCellValue().trim();
+                System.out.println(">> row " + rowIndex + ": " + courseName + " / " + grade);
+                if (grade.isEmpty()) {
+                    throw new RuntimeException("엑셀 파일 파싱 실패: 등급이 비어있습니다.");
+                }
 
                 StudentCourseStatus status = mapGradeToStatus(grade);
 
