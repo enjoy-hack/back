@@ -14,4 +14,7 @@ public class CourseDto {
 
     private String courseName;  // 현재 과목명
     private String courseAlias; // 과거 과목명 (없으면 null)
+    private String courseCode;
+    private String academicYear;
+    private String academicSemester;
 }
