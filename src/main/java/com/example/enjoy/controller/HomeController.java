@@ -17,7 +17,7 @@ public class HomeController {
     @GetMapping("/home")
     public List<TrackProgressDto> getProgress() {
         // 1. 반환 타입을 List<TrackProgressDto>로 변경
-        Long currentStudentId = 1L;
+        String currentStudentId = "1";
         // 2. 서비스 호출 후 데이터를 바로 반환
         return trackService.calculateTrackProgress(currentStudentId);
     }
