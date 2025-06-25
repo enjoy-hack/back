@@ -5,8 +5,10 @@ import com.chuseok22.sejongportallogin.core.SejongMemberInfo;
 import com.chuseok22.sejongportallogin.infrastructure.SejongPortalLoginService;
 import com.example.enjoy.dto.loginDto.MemberCommand;
 import com.example.enjoy.dto.loginDto.MemberDto;
+import com.example.enjoy.entity.user.User;
 import com.example.enjoy.exception.CustomException;
 import com.example.enjoy.exception.ErrorCode;
+import com.example.enjoy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -29,9 +31,11 @@ import java.util.concurrent.TimeUnit;
 public class SejongLoginService {
 
     private final SejongPortalLoginService sejongPortalLoginService;
+    private final UserRepository userRepository;
 
     public MemberDto login(MemberCommand memberCommand){
         SejongMemberInfo info = sejongPortalLoginService.getMemberAuthInfos(memberCommand.getSejongPortalId(), memberCommand.getSejongPortalPassword());
+        updateUserInfo(info.getStudentId(), info.getName(), info.getMajor(), info.getGrade(), info.getCompletedSemester()); //로그인 시 유저 정보 DB에 저장
         return MemberDto.builder()
                 .major(info.getMajor())
                 .studentIdString(info.getStudentId())
@@ -39,6 +43,14 @@ public class SejongLoginService {
                 .grade(info.getGrade())
                 .completedSemester(info.getCompletedSemester())
                 .build();
+    }
+
+    private void updateUserInfo(String studentId, String username, String major, String grade, String completedSemester) {
+        User user = userRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        user.updateUserInfo(studentId, username, major, grade, completedSemester);
+        userRepository.save(user);
     }
 
     public MemberDto getMemberAuthInfos(MemberCommand memberCommand) throws IOException {
@@ -56,6 +68,8 @@ public class SejongLoginService {
             throw new CustomException(ErrorCode.SEJONG_AUTH_DATA_FETCH_ERROR);
         }
     }
+
+
 }
 
 

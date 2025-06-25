@@ -16,6 +16,7 @@ public class TrackCourse {
     private String academicYear;     // 이수 추천 학년 (DTO의 'year'에 해당)
     private String academicSemester; // 이수 추천 학기 (DTO의 'semester'에 해당)
 
+
     @ManyToOne
     @JoinColumn(name = "track_id")
     private Track track;
