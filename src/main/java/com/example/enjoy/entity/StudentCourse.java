@@ -27,7 +27,7 @@ public class StudentCourse extends BaseTimeEntity {
     @Column(nullable = false)
     private StudentCourseStatus status;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "`manual`")
     private boolean manual;
 
     @Column(nullable = false)

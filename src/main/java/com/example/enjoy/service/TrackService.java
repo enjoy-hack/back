@@ -56,8 +56,6 @@ public class TrackService {
         }).toList();
     }
 
-
-
     /**
      * 학생이 이수한 과목 이름을 Set으로 반환하는 메서드
      */
