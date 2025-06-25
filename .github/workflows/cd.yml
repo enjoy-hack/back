@@ -13,6 +13,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -25,21 +26,22 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push
+      - name: Build and push Docker image (single arch)
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64  # ⚡ 멀티 플랫폼 제거 → 빌드 속도 2~3배 향상
           push: true
           tags: 867344478016.dkr.ecr.ap-northeast-2.amazonaws.com/enjoy-app:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: SSH into EC2 server and deploy
+      - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -50,5 +52,4 @@ jobs:
             cd /home/ec2-user/back
             docker-compose down
             docker pull 867344478016.dkr.ecr.ap-northeast-2.amazonaws.com/enjoy-app:latest
-            docker system prune -f
             docker-compose up -d
