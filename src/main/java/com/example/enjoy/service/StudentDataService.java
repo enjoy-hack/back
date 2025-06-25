@@ -79,4 +79,8 @@ public class StudentDataService {
             default -> throw new IllegalArgumentException("잘못된 등급값: " + grade);
         };
     }
+
+    public boolean hasUploadedHistory(String studentId) {
+        return studentCourseRepository.existsByStudentId(studentId);
+    }
 }

@@ -23,11 +23,12 @@ import java.util.stream.Collectors;
 public class TrackService {
 
     private final TrackRepository trackRepository;
-    private final StudentCourseRepository studentCourseRepository; // 기존 기능
+    private final StudentCourseRepository studentCourseRepository;
 
     public List<TrackProgressDto> calculateTrackProgress(String studentId) {
-        Set<String> completedCourseNames = getCompletedCourseNames(studentId); // 이수 과목명 목록
 
+        boolean hasUploaded = studentCourseRepository.existsByStudentId(studentId);
+        Set<String> completedCourseNames = getCompletedCourseNames(studentId); // 이수 과목명 목록
         List<Track> allTracks = trackRepository.findAll();
 
         return allTracks.stream().map(track -> {
@@ -51,7 +52,8 @@ public class TrackService {
                     courses.size(),
                     completed.size() == courses.size(),
                     completed,
-                    remaining
+                    remaining,
+                    hasUploaded
             );
         }).toList();
     }

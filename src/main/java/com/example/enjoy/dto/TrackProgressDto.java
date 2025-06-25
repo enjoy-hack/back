@@ -21,4 +21,6 @@ public class TrackProgressDto {
 
     private List<CourseDto> completedCourses; // 이수한 과목 목록
     private List<CourseDto> remainingCourses; // 이수해야 할 남은 과목 목록
+
+    private boolean hasUploadedHistory;         // 트랙 업로드 여부
 }
