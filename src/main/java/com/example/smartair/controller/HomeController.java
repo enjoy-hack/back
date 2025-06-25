@@ -1,4 +1,4 @@
-package com.example.smartair.controller.homecontroller;
+package com.example.smartair.controller;
 
 import ch.qos.logback.core.model.Model;
 import com.example.smartair.dto.TrackProgressDto;
