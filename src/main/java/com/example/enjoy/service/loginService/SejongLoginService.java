@@ -35,7 +35,7 @@ public class SejongLoginService {
 
     public MemberDto login(MemberCommand memberCommand){
         SejongMemberInfo info = sejongPortalLoginService.getMemberAuthInfos(memberCommand.getSejongPortalId(), memberCommand.getSejongPortalPassword());
-        updateUserInfo(info.getStudentId(), info.getName(), info.getMajor(), info.getGrade(), info.getCompletedSemester()); //로그인 시 유저 정보 DB에 저장
+
         return MemberDto.builder()
                 .major(info.getMajor())
                 .studentIdString(info.getStudentId())
@@ -43,14 +43,6 @@ public class SejongLoginService {
                 .grade(info.getGrade())
                 .completedSemester(info.getCompletedSemester())
                 .build();
-    }
-
-    private void updateUserInfo(String studentId, String username, String major, String grade, String completedSemester) {
-        User user = userRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        user.updateUserInfo(studentId, username, major, grade, completedSemester);
-        userRepository.save(user);
     }
 
     public MemberDto getMemberAuthInfos(MemberCommand memberCommand) throws IOException {
