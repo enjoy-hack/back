@@ -1,7 +1,6 @@
 package com.example.smartair.entity;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
 
 @Entity
 public class TrackCourse {
