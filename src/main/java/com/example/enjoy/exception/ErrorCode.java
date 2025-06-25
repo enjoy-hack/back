@@ -17,6 +17,7 @@ public enum ErrorCode {
     SEJONG_AUTH_CREDENTIALS_INVALID(HttpStatus.UNAUTHORIZED, "세종대학교 인증 정보가 유효하지 않습니다"),
     SEJONG_AUTH_DATA_FETCH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "세종대학교 인증 데이터 가져오기 실패");
 
+
     private final String message;
     private final int status;
 

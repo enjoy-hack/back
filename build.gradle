@@ -21,6 +21,14 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven {
+		name = 'chuseok22NexusRelease'
+		url = uri('https://nexus.chuseok22.com/repository/maven-releases/')
+		metadataSources {
+			mavenPom()
+			artifact()
+		}
+	}
 }
 
 dependencies {
@@ -51,6 +59,12 @@ dependencies {
 	implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.11.0'  // 추가
 	// Jsoup (HTML 파싱)
 	implementation 'org.jsoup:jsoup:1.18.1'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'com.chuseok22:sejong-portal-login:1.0.0'
 
 }
 

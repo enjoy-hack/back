@@ -29,7 +29,7 @@ public class LoginController {
     public ResponseEntity<MemberDto> loginAndGetUserInfo(@RequestBody @Valid MemberCommand command) {
         try {
             log.info("세종대 포털 로그인 요청: {}", command.getSejongPortalId());
-            MemberDto memberInfo = sejongLoginService.getMemberAuthInfos(command);
+            MemberDto memberInfo = sejongLoginService.login(command);
             log.info("사용자 정보 조회 성공: {}", memberInfo.getStudentName());
             return ResponseEntity.ok(memberInfo);
         } catch (Exception e) {

@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,8 +40,17 @@ public class UserService {
                 .courseName(request.getCourseName())
                 .status(request.getStatus())
                 .manual(true)
+                .createdAt(LocalDateTime.now())
                 .build();
         studentCourseRepository.save(sc);
+    }
+
+    public List<StudentCourse> getManualCourses(String studentId) { //수동 등록 과목 조회
+        List<StudentCourse> manualCourses = studentCourseRepository.findAllByStudentIdAndManualIsTrue(studentId);
+        if (manualCourses.isEmpty()) {
+            throw new IllegalArgumentException("수동 등록된 과목이 없습니다.");
+        }
+        return manualCourses;
     }
 
 
@@ -64,6 +74,16 @@ public class UserService {
                 track -> calculateTrackProgress(track, completedCourses)
         ));
     }
+
+    public List<StudentCourse> getPlannedCourses(String studentId) { //수강 예정 과목 조회
+        return studentCourseRepository.findAllByStudentIdAndStatus(studentId, StudentCourseStatus.PLANNED);
+    }
+
+    public List<StudentCourse> getInProgressCourses(String studentId) { //수강 중인 과목 조회
+        return studentCourseRepository.findAllByStudentIdAndStatus(studentId, StudentCourseStatus.IN_PROGRESS);
+    }
+
+
 
     private double calculateTrackProgress(Track track, List<StudentCourse> completedCourses) {
         List<TrackCourse> trackCourses = trackCourseRepository.findAllByTrack(track);
