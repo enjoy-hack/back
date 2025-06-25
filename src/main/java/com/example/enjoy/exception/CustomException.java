@@ -1,4 +1,4 @@
-package com.example.smartair.exception;
+package com.example.enjoy.exception;
 
 import lombok.Getter;
 
