@@ -1,4 +1,4 @@
-package com.example.enjoy.controller.userController;
+package com.example.enjoy.controller;
 
 import com.example.enjoy.dto.loginDto.MemberCommand;
 import com.example.enjoy.dto.loginDto.MemberDto;

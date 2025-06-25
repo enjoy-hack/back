@@ -1,6 +1,6 @@
-package com.example.smartair.repository;
+package com.example.enjoy.repository;
 
-import com.example.smartair.entity.StudentCourse;
+import com.example.enjoy.entity.StudentCourse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 

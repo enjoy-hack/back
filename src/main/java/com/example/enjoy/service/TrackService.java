@@ -1,12 +1,12 @@
-package com.example.smartair.service;
+package com.example.enjoy.service;
 
-import com.example.smartair.dto.CourseDto;
-import com.example.smartair.dto.TrackProgressDto;
-import com.example.smartair.entity.StudentCourse;
-import com.example.smartair.entity.Track;
-import com.example.smartair.entity.TrackCourse;
-import com.example.smartair.repository.StudentCourseRepository;
-import com.example.smartair.repository.TrackRepository;
+import com.example.enjoy.dto.CourseDto;
+import com.example.enjoy.dto.TrackProgressDto;
+import com.example.enjoy.entity.StudentCourse;
+import com.example.enjoy.entity.Track;
+import com.example.enjoy.entity.TrackCourse;
+import com.example.enjoy.repository.StudentCourseRepository;
+import com.example.enjoy.repository.TrackRepository;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 

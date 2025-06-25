@@ -1,4 +1,4 @@
-package com.example.smartair.entity;
+package com.example.enjoy.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

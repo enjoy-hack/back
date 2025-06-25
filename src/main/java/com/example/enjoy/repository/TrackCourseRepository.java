@@ -1,6 +1,6 @@
-package com.example.smartair.repository;
+package com.example.enjoy.repository;
 
-import com.example.smartair.entity.TrackCourse;
+import com.example.enjoy.entity.TrackCourse;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TrackCourseRepository extends JpaRepository<TrackCourse, Long> {

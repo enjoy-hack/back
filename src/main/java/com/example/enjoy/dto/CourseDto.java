@@ -1,4 +1,4 @@
-package com.example.smartair.dto;
+package com.example.enjoy.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
