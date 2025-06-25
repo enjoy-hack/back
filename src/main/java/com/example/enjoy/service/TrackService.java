@@ -37,7 +37,7 @@ public class TrackService {
                 .collect(Collectors.groupingBy(Track::getDepartment));
     }
 
-    public List<TrackProgressDto> calculateTrackProgress(Long studentId) {
+    public List<TrackProgressDto> calculateTrackProgress(String studentId) {
         // 1. 학생의 이수 과목 목록 조회
         Set<String> completedCourseNames = studentCourseRepository.findByStudentId(studentId)
                 .stream()

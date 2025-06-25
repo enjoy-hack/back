@@ -20,7 +20,7 @@ public class HomeController {
     @GetMapping("/home")
     public String showMyProgress(Model model) { // 1. Model 객체를 파라미터로 추가
         // TODO: 추후 Spring Security 등과 연동하여 실제 로그인한 사용자 ID를 가져와야 함
-        Long currentStudentId = 1L; // 2. 테스트용 임시 학생 ID 사용
+        String currentStudentId = "1"; // 2. 테스트용 임시 학생 ID 사용
 
         // 3. 학생의 이수 현황을 계산하는 새로운 서비스 메서드 호출
         List<TrackProgressDto> progressData = trackService.calculateTrackProgress(currentStudentId);
