@@ -126,4 +126,16 @@ public class UserService {
 
         course.updateStatus(newStatus);
     }
+
+    public List<Track> getCompletedTracks (String studentId) {
+        List<StudentCourse> completedCourses = getCompletedCourses(studentId);
+        List<TrackCourse> trackCourses = trackCourseRepository.findAll();
+
+        return trackCourses.stream()
+                .filter(trackCourse -> completedCourses.stream()
+                        .anyMatch(course -> course.getCourseName().equals(trackCourse.getCourseName())))
+                .map(TrackCourse::getTrack)
+                .distinct()
+                .collect(Collectors.toList());
+    }
 }

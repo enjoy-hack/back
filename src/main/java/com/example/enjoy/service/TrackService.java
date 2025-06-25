@@ -1,14 +1,19 @@
 package com.example.enjoy.service;
 
+import ch.qos.logback.core.joran.sanity.Pair;
 import com.example.enjoy.dto.CourseDto;
 import com.example.enjoy.dto.CourseStatusDto;
 import com.example.enjoy.dto.TrackDetailDto;
 import com.example.enjoy.dto.TrackProgressDto;
+import com.example.enjoy.entity.FavoriteCourse;
 import com.example.enjoy.entity.StudentCourse;
 import com.example.enjoy.entity.Track;
 import com.example.enjoy.entity.TrackCourse;
+import com.example.enjoy.entity.user.User;
+import com.example.enjoy.repository.FavoriteCourseRepository;
 import com.example.enjoy.repository.StudentCourseRepository;
 import com.example.enjoy.repository.TrackRepository;
+import com.example.enjoy.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +29,10 @@ public class TrackService {
 
     private final TrackRepository trackRepository;
     private final StudentCourseRepository studentCourseRepository; // 기존 기능
+    private final FavoriteCourseRepository favoriteCourseRepository;
+    private final UserRepository userRepository;
 
+    //진척률 계산
     public List<TrackProgressDto> calculateTrackProgress(String studentId) {
         Set<String> completedCourseNames = getCompletedCourseNames(studentId); // 이수 과목명 목록
 
@@ -60,13 +68,13 @@ public class TrackService {
      * 학생이 이수한 과목 이름을 Set으로 반환하는 메서드
      */
     @Transactional(readOnly = true)
-    public TrackDetailDto getTrackDetails(String studentId, Long trackId) {
+    public TrackDetailDto getTrackDetails(String studentId, String trackName) {
 
         // 1. [리팩토링] 학생 이수 과목 조회 로직을 private 메서드로 호출
         Set<String> completedCourseNames = getCompletedCourseNames(studentId);
 
-        // 2. ID로 트랙 정보와 소속 과목들을 한번에 조회
-        Track track = trackRepository.findByIdWithCourses(trackId)
+        // 2. 트랙 정보와 소속 과목들을 한번에 조회
+        Track track = trackRepository.findByName(trackName)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 트랙입니다."));
 
         // 3. 트랙의 과목 목록을 CourseStatusDto 리스트로 변환
@@ -101,6 +109,33 @@ public class TrackService {
         return trackDetailDto;
     }
 
+    public TrackDetailDto getTrackDetailsByName(String trackName) {
+        Track track = trackRepository.findByName(trackName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 트랙입니다."));
+
+        // 트랙의 과목 목록을 CourseStatusDto 리스트로 변환
+        List<CourseStatusDto> courseStatusList = track.getCourses().stream()
+                .map(trackCourse -> {
+                    CourseStatusDto dto = new CourseStatusDto();
+                    dto.setTitle(trackCourse.getCourseName());
+                    dto.setCode(trackCourse.getCourseCode());
+                    dto.setYear(trackCourse.getAcademicYear());
+                    dto.setSemester(trackCourse.getAcademicSemester());
+                    dto.setStatus("NONE"); // 기본값 설정, 이수 여부는 별도로 처리
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        // 최종적으로 TrackDetailDto를 조립하여 반환
+        TrackDetailDto trackDetailDto = new TrackDetailDto();
+        trackDetailDto.setTrackId(track.getId());
+        trackDetailDto.setTrackName(track.getName());
+        trackDetailDto.setDepartment(track.getDepartment());
+        trackDetailDto.setCourses(courseStatusList);
+
+        return trackDetailDto;
+    }
+
     /**
      * 학생 ID로 해당 학생이 이수한 모든 과목명을 조회합니다.
      */
@@ -117,5 +152,56 @@ public class TrackService {
     private boolean isCourseCompleted(TrackCourse course, Set<String> completedCourseNames) {
         return completedCourseNames.contains(course.getCourseName()) ||
                 (course.getCourseAlias() != null && completedCourseNames.contains(course.getCourseAlias()));
+    }
+
+    // favoriteScore 기준 1개, progressScore 기준 1개 트랙 추천
+    public List<TrackProgressDto> getTopTracksByFavoriteAndProgress(String studentId) {
+        User user = userRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        Set<String> favoriteCourses = favoriteCourseRepository.findAllByUser(user)
+                .stream()
+                .map(FavoriteCourse::getCourseName)
+                .collect(Collectors.toSet());
+
+        List<TrackProgressDto> trackProgress = calculateTrackProgress(studentId);
+
+        // 1. favoriteScore 기준 최고 트랙
+        TrackProgressDto favoriteTop = trackProgress.stream()
+                .max((a, b) -> Double.compare(
+                        calculateFavoriteScore(a, favoriteCourses),
+                        calculateFavoriteScore(b, favoriteCourses)))
+                .orElse(null);
+
+        // 2. progressScore 기준 최고 트랙
+        TrackProgressDto progressTop = trackProgress.stream()
+                .max((a, b) -> Double.compare(
+                        (double) a.getCompletedCount() / a.getRequiredCount(),
+                        (double) b.getCompletedCount() / b.getRequiredCount()))
+                .orElse(null);
+
+        // 중복 제거 후 반환
+        return List.of(favoriteTop, progressTop).stream()
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private double calculateFavoriteScore(TrackProgressDto track, Set<String> favoriteCourses) {
+        List<CourseDto> allCourses = new ArrayList<>();
+        allCourses.addAll(track.getCompletedCourses());
+        allCourses.addAll(track.getRemainingCourses());
+
+        long matchCount = allCourses.stream()
+                .filter(course ->
+                        (course.getCourseName() != null && favoriteCourses.contains(course.getCourseName())) ||
+                                (course.getCourseAlias() != null && favoriteCourses.contains(course.getCourseAlias()))
+                )
+                .count();
+
+        return allCourses.isEmpty() ? 0.0 : (double) matchCount / allCourses.size();
+    }
+
+    public List<Track> getAllTracks() {
+        return trackRepository.findAll();
     }
 }

@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface FavoriteCourseRepository extends JpaRepository<FavoriteCourse, Long> {
     Optional<FavoriteCourse> findByUserAndCourseName(User user, String courseName);
     List<FavoriteCourse> findAllByUser(User user);
+
 }
