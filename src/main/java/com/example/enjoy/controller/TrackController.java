@@ -24,7 +24,7 @@ public class TrackController {
     public TrackDetailDto getTrackDetailsById(@PathVariable Long trackId) {
 
         // TODO: 추후 Spring Security 연동 후 실제 로그인한 학생 ID를 가져와야 함
-        Long currentStudentId = 1L;
+        String currentStudentId = "1";
 
         // 5. 서비스의 메서드를 호출하여 결과를 받아온 후, 그대로 반환
         return trackService.getTrackDetails(currentStudentId, trackId);
