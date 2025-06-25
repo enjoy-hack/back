@@ -3,12 +3,15 @@ package com.example.enjoy.service.userService;
 import com.amazonaws.services.cloudformation.model.AlreadyExistsException;
 import com.example.enjoy.dto.AddManualCourseRequest;
 import com.example.enjoy.dto.StudentCourseStatus;
+import com.example.enjoy.dto.loginDto.MemberDto;
 import com.example.enjoy.entity.StudentCourse;
 import com.example.enjoy.entity.Track;
 import com.example.enjoy.entity.TrackCourse;
+import com.example.enjoy.entity.user.User;
 import com.example.enjoy.repository.StudentCourseRepository;
 import com.example.enjoy.repository.TrackCourseRepository;
 import com.example.enjoy.repository.TrackRepository;
+import com.example.enjoy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,7 @@ public class UserService {
     private final StudentCourseRepository studentCourseRepository;
     private final TrackRepository trackRepository;
     private final TrackCourseRepository trackCourseRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public void addManualCourse(AddManualCourseRequest request) { //수동으로 과목 등록
@@ -52,6 +56,23 @@ public class UserService {
         }
         return manualCourses;
     }
+
+    @Transactional
+    public void saveUserInfo(MemberDto memberDto) {
+        User user = userRepository.findByStudentId(memberDto.getStudentIdString())
+                .orElse(new User());
+
+        user.updateUserInfo(
+               memberDto.getStudentIdString(),
+                memberDto.getStudentName(),
+                memberDto.getMajor(),
+                memberDto.getGrade(),
+                memberDto.getCompletedSemester()
+        );
+
+        userRepository.save(user);
+    }
+
 
 
     @Transactional

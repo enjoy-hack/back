@@ -34,7 +34,20 @@ public class SejongLoginService {
     private final UserRepository userRepository;
 
     public MemberDto login(MemberCommand memberCommand){
+        boolean hasLoginHistory = userRepository.existsByStudentId(memberCommand.getSejongPortalId());
         SejongMemberInfo info = sejongPortalLoginService.getMemberAuthInfos(memberCommand.getSejongPortalId(), memberCommand.getSejongPortalPassword());
+
+        // 로그인 성공 시 사용자 정보 저장 (첫 로그인인 경우)
+        if (!hasLoginHistory) {
+            User newUser = User.builder()
+                    .major(info.getMajor())
+                    .studentId(info.getStudentId())
+                    .username(info.getName())
+                    .grade(info.getGrade())
+                    .completedSemester(info.getCompletedSemester())
+                            .build();
+            userRepository.save(newUser);
+        }
 
         return MemberDto.builder()
                 .major(info.getMajor())
@@ -42,6 +55,7 @@ public class SejongLoginService {
                 .studentName(info.getName())
                 .grade(info.getGrade())
                 .completedSemester(info.getCompletedSemester())
+                .hasLoginHistory(hasLoginHistory)
                 .build();
     }
 
