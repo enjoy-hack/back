@@ -1,8 +1,9 @@
-package com.example.smartair.controller;
+package com.example.enjoy.controller;
+
 
 import ch.qos.logback.core.model.Model;
-import com.example.smartair.dto.TrackProgressDto;
-import com.example.smartair.service.TrackService;
+import com.example.enjoy.dto.TrackProgressDto;
+import com.example.enjoy.service.TrackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

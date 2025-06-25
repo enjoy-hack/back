@@ -1,6 +1,6 @@
-package com.example.smartair.repository;
+package com.example.enjoy.repository;
 
-import com.example.smartair.entity.Track;
+import com.example.enjoy.entity.Track;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import java.util.List;
