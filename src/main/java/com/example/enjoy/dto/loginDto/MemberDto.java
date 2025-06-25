@@ -9,7 +9,7 @@ public class MemberDto {
     private String major;
     private String studentIdString;
     private String studentName;
-    private String academicYear;
-    private String enrollmentStatus;
+    private String grade;
+    private String completedSemester;
 
 }

@@ -1,6 +1,7 @@
 package com.example.enjoy.controller;
 
 import com.example.enjoy.dto.AddManualCourseRequest;
+import com.example.enjoy.dto.StudentCourseResponse;
 import com.example.enjoy.dto.StudentCourseStatus;
 import com.example.enjoy.dto.loginDto.MemberCommand;
 import com.example.enjoy.dto.loginDto.MemberDto;
@@ -31,7 +32,7 @@ public class UserController {
     }
 
     @Operation(summary = "학생 정보 조회", description = "세종대학교 포털 인증을 통해 학생 정보를 조회합니다.")
-    @GetMapping("/detail")
+    @PostMapping("/detail")
     public ResponseEntity<MemberDto> getStudentDetail(@RequestBody MemberCommand command) throws IOException {
         MemberDto memberInfo = sejongLoginService.getMemberAuthInfos(command);
         return ResponseEntity.ok(memberInfo);
@@ -42,6 +43,48 @@ public class UserController {
     public ResponseEntity<Void> addManualCourse(@Valid @RequestBody AddManualCourseRequest request) {
         userService.addManualCourse(request);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "수동 과목 조회", description = "학생이 수동으로 등록한 과목 목록을 조회합니다.")
+    @GetMapping("/{studentId}/courses/manual")
+    public ResponseEntity<List<StudentCourseResponse>> getManualCourses(@PathVariable String studentId) {
+        List<StudentCourse> manualCourses = userService.getManualCourses(studentId);
+        if (manualCourses.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(
+                manualCourses.stream()
+                        .map(course -> new StudentCourseResponse(course.getCourseName(), course.getStatus()))
+                        .toList()
+        );
+    }
+
+    @Operation(summary = "진행 예정 과목 조회", description = "학생이 수강 예정인 과목 목록을 조회합니다.")
+    @GetMapping("/{studentId}/courses/planned")
+    public ResponseEntity<List<StudentCourseResponse>> getPlannedCourses(@PathVariable String studentId) {
+        List<StudentCourse> plannedCourses = userService.getPlannedCourses(studentId);
+        if (plannedCourses.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(
+                plannedCourses.stream()
+                        .map(course -> new StudentCourseResponse(course.getCourseName(), course.getStatus()))
+                        .toList()
+        );
+    }
+
+    @Operation(summary = "수강 중인 과목 조회", description = "학생이 현재 수강 중인 과목 목록을 조회합니다.")
+    @GetMapping("/{studentId}/courses/inprogress")
+    public ResponseEntity<List<StudentCourseResponse>> getInProgressCourses(@PathVariable String studentId) {
+        List<StudentCourse> inProgressCourses = userService.getInProgressCourses(studentId);
+        if (inProgressCourses.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(
+                inProgressCourses.stream()
+                        .map(course -> new StudentCourseResponse(course.getCourseName(), course.getStatus()))
+                        .toList()
+        );
     }
 
     @Operation(summary = "수동 과목 삭제", description = "수동으로 등록한 과목을 삭제합니다.")
