@@ -1,10 +1,11 @@
 package com.example.enjoy.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 
 @Entity
-@Getter
+@Data
 public class TrackCourse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

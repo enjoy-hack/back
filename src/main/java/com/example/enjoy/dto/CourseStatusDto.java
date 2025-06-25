@@ -1,5 +1,6 @@
 package com.example.enjoy.dto;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,8 +8,8 @@ import lombok.Setter;
  * 과목 정보 DTO
  * (title, year, semester, code, status)
  */
-@Getter
-@Setter
+
+@Data
 public class CourseStatusDto {
 
     private String title;    // 과목명 (기존 courseName)
