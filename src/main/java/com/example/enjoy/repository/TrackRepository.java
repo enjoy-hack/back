@@ -20,4 +20,6 @@ public interface TrackRepository extends JpaRepository<Track, Long> {
      */
     @Query("SELECT t FROM Track t JOIN FETCH t.courses WHERE t.id = :trackId")
     Optional<Track> findByIdWithCourses(@Param("trackId") Long trackId);
+
+    Optional<Track> findByName(String name);
 }

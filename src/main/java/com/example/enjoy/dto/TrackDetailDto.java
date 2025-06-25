@@ -1,5 +1,6 @@
 package com.example.enjoy.dto;
 
+import com.example.enjoy.entity.Track;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,4 +17,11 @@ public class TrackDetailDto {
     private String department;
     private String description; // 트랙에 대한 설명 추가
     private List<CourseStatusDto> courses; // 트랙에 포함된 과목 목록
+
+    public TrackDetailDto from (Track track) {
+        this.trackId = track.getId();
+        this.trackName = track.getName();
+        this.department = track.getDepartment();
+        return this;
+    }
 }

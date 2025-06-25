@@ -18,6 +18,16 @@ public class Track {
 
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL)
     private List<TrackCourse> courses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "track", cascade = CascadeType.ALL)
+    private List<UserTrack> userTracks = new ArrayList<>();
+
+    public void addUserTrack(UserTrack userTrack) {
+        userTracks.add(userTrack);
+        userTrack.setTrack(this);
+    }
+
+
 //    public void addCourse(TrackCourse course) {
 //        courses.add(course);
 //        course.setTrack(this);
