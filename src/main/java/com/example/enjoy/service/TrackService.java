@@ -1,6 +1,5 @@
 package com.example.enjoy.service;
 
-import ch.qos.logback.core.joran.sanity.Pair;
 import com.example.enjoy.dto.CourseDto;
 import com.example.enjoy.dto.CourseStatusDto;
 import com.example.enjoy.dto.TrackDetailDto;
@@ -32,7 +31,6 @@ public class TrackService {
     private final UserRepository userRepository;
     private final FavoriteCourseRepository favoriteCourseRepository;
 
-
     //진척률 계산
     public List<TrackProgressDto> calculateTrackProgress(String studentId) {
 
@@ -46,7 +44,8 @@ public class TrackService {
             List<CourseDto> remaining = new ArrayList<>();
 
             for (TrackCourse course : courses) {
-                CourseDto dto = new CourseDto(course.getCourseName(), course.getCourseAlias());
+                CourseDto dto = new CourseDto(course.getCourseName(), course.getCourseAlias(),
+                        course.getCourseCode(), course.getAcademicYear(), course.getAcademicSemester());
                 if (isCourseCompleted(course, completedCourseNames)) {
                     completed.add(dto);
                 } else {
@@ -86,7 +85,6 @@ public class TrackService {
                     // 4. [수정] DTO 객체 생성 및 실제 필드에 맞게 데이터 세팅
                     CourseStatusDto dto = new CourseStatusDto();
                     dto.setTitle(trackCourse.getCourseName());
-                    // (TrackCourse 엔티티에 getCourseCode, getYear, getSemester가 있다고 가정합니다)
                     dto.setCode(trackCourse.getCourseCode());
                     dto.setYear(trackCourse.getAcademicYear());
                     dto.setSemester(trackCourse.getAcademicSemester());
