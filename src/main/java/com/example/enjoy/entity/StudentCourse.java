@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class StudentCourse {
+public class StudentCourse { // 학생이 실제로 이수한 과목
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

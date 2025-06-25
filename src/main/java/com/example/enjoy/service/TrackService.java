@@ -1,6 +1,8 @@
 package com.example.enjoy.service;
 
 import com.example.enjoy.dto.CourseDto;
+import com.example.enjoy.dto.CourseStatusDto;
+import com.example.enjoy.dto.TrackDetailDto;
 import com.example.enjoy.dto.TrackProgressDto;
 import com.example.enjoy.entity.StudentCourse;
 import com.example.enjoy.entity.Track;
@@ -9,6 +11,7 @@ import com.example.enjoy.repository.StudentCourseRepository;
 import com.example.enjoy.repository.TrackRepository;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +26,6 @@ public class TrackService {
     private final TrackRepository trackRepository;
     private final StudentCourseRepository studentCourseRepository; // 기존 기능
 
-    // ... (기존의 saveStudentCoursesFromExcel, calculateTrackProgress 메서드) ...
-
     /**
      * 모든 트랙 정보를 학과별로 그룹화하여 반환하는 메서드
      */
@@ -37,6 +38,9 @@ public class TrackService {
                 .collect(Collectors.groupingBy(Track::getDepartment));
     }
 
+    /**
+     * 학생이 이수한 과목 이름을 Set으로 반환하는 private 메서드
+     */
     public List<TrackProgressDto> calculateTrackProgress(Long studentId) {
         // 1. 학생의 이수 과목 목록 조회
         Set<String> completedCourseNames = studentCourseRepository.findByStudentId(studentId)
@@ -88,5 +92,68 @@ public class TrackService {
         }
 
         return progressList;
+    }
+
+    /**
+     * 학생이 이수한 과목 이름을 Set으로 반환하는 메서드
+     */
+    @Transactional(readOnly = true)
+    public TrackDetailDto getTrackDetails(Long studentId, Long trackId) {
+
+        // 1. [리팩토링] 학생 이수 과목 조회 로직을 private 메서드로 호출
+        Set<String> completedCourseNames = getCompletedCourseNames(studentId);
+
+        // 2. ID로 트랙 정보와 소속 과목들을 한번에 조회
+        Track track = trackRepository.findByIdWithCourses(trackId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 트랙입니다."));
+
+        // 3. 트랙의 과목 목록을 CourseStatusDto 리스트로 변환
+        List<CourseStatusDto> courseStatusList = track.getCourses().stream()
+                .map(trackCourse -> {
+                    // 4. [수정] DTO 객체 생성 및 실제 필드에 맞게 데이터 세팅
+                    CourseStatusDto dto = new CourseStatusDto();
+                    dto.setTitle(trackCourse.getCourseName());
+                    // (TrackCourse 엔티티에 getCourseCode, getYear, getSemester가 있다고 가정합니다)
+                    dto.setCode(trackCourse.getCourseCode());
+                    dto.setYear(trackCourse.getAcademicYear());
+                    dto.setSemester(trackCourse.getAcademicSemester());
+
+                    // 5. [수정 & 리팩토링] 이수 여부를 판단하고, 그 결과에 따라 status(String) 값을 세팅
+                    if (isCourseCompleted(trackCourse, completedCourseNames)) {
+                        dto.setStatus("COMPLETED");
+                    } else {
+                        dto.setStatus("NONE");
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        // 6. 최종적으로 TrackDetailDto를 조립하여 반환
+        TrackDetailDto trackDetailDto = new TrackDetailDto();
+        trackDetailDto.setTrackId(track.getId());
+        trackDetailDto.setTrackName(track.getName());
+        trackDetailDto.setDepartment(track.getDepartment());
+        trackDetailDto.setCourses(courseStatusList);
+
+        return trackDetailDto;
+    }
+
+    /**
+     * 학생 ID로 해당 학생이 이수한 모든 과목명을 조회합니다.
+     */
+    private Set<String> getCompletedCourseNames(Long studentId) {
+        return studentCourseRepository.findByStudentId(studentId)
+                .stream()
+                .map(StudentCourse::getCourseName)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * 특정 과목이 이수 완료되었는지 확인합니다. (과목 별칭 포함)
+     */
+    private boolean isCourseCompleted(TrackCourse course, Set<String> completedCourseNames) {
+        return completedCourseNames.contains(course.getCourseName()) ||
+                (course.getCourseAlias() != null && completedCourseNames.contains(course.getCourseAlias()));
     }
 }
