@@ -29,6 +29,8 @@ public class TrackService {
 
     private final TrackRepository trackRepository;
     private final StudentCourseRepository studentCourseRepository;
+    private final UserRepository userRepository;
+    private final FavoriteCourseRepository favoriteCourseRepository;
 
 
     //진척률 계산

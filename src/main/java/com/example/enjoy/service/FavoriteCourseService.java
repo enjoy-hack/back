@@ -21,22 +21,22 @@ public class FavoriteCourseService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void addFavoriteCourse(String studentId, String courseName) {
+    public void addFavoriteCourses(String studentId, List<String> courseNames) {
         User user = userRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
+        for (String courseName : courseNames) {
+            TrackCourse trackCourse = trackCourseRepository.findByCourseName(courseName)
+                    .orElseThrow(() -> new RuntimeException("과목을 찾을 수 없습니다."));
 
-        TrackCourse trackCourse = trackCourseRepository.findByCourseName(courseName)
-                .orElseThrow(() -> new RuntimeException("과목을 찾을 수 없습니다."));
+            boolean alreadyExists = favoriteCourseRepository
+                    .findByUserAndCourseName(user, courseName)
+                    .isPresent();
 
-        // 이미 즐겨찾기한 과목인지 확인
-        boolean alreadyExists = favoriteCourseRepository
-                .findByUserAndCourseName(user, courseName)
-                .isPresent();
-
-        if (!alreadyExists) {
-            FavoriteCourse favoriteCourse = new FavoriteCourse(user, trackCourse.getCourseName());
-            favoriteCourseRepository.save(favoriteCourse);
+            if (!alreadyExists) {
+                FavoriteCourse favoriteCourse = new FavoriteCourse(user, trackCourse.getCourseName());
+                favoriteCourseRepository.save(favoriteCourse);
+            }
         }
     }
 
