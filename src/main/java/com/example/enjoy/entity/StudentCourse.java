@@ -1,17 +1,40 @@
 package com.example.enjoy.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Getter;
+import com.example.enjoy.dto.StudentCourseStatus;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
-public class StudentCourse { // 학생이 실제로 이수한 과목
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class StudentCourse extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long studentId; // 학생 ID (로그인 연동)
+
+    @Column(nullable = false)
+    private String studentId;
+
+    @Column(nullable = false)
     private String courseName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StudentCourseStatus status;
+
+    @Column(nullable = false)
+    private boolean manual;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    public void updateStatus(StudentCourseStatus status) {
+        this.status = status;
+    }
+
 }

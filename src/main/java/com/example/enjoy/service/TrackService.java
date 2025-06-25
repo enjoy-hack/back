@@ -41,7 +41,7 @@ public class TrackService {
     /**
      * 학생이 이수한 과목 이름을 Set으로 반환하는 private 메서드
      */
-    public List<TrackProgressDto> calculateTrackProgress(Long studentId) {
+    public List<TrackProgressDto> calculateTrackProgress(String studentId) {
         // 1. 학생의 이수 과목 목록 조회
         Set<String> completedCourseNames = studentCourseRepository.findByStudentId(studentId)
                 .stream()
@@ -98,7 +98,7 @@ public class TrackService {
      * 학생이 이수한 과목 이름을 Set으로 반환하는 메서드
      */
     @Transactional(readOnly = true)
-    public TrackDetailDto getTrackDetails(Long studentId, Long trackId) {
+    public TrackDetailDto getTrackDetails(String studentId, Long trackId) {
 
         // 1. [리팩토링] 학생 이수 과목 조회 로직을 private 메서드로 호출
         Set<String> completedCourseNames = getCompletedCourseNames(studentId);
@@ -142,7 +142,7 @@ public class TrackService {
     /**
      * 학생 ID로 해당 학생이 이수한 모든 과목명을 조회합니다.
      */
-    private Set<String> getCompletedCourseNames(Long studentId) {
+    private Set<String> getCompletedCourseNames(String studentId) {
         return studentCourseRepository.findByStudentId(studentId)
                 .stream()
                 .map(StudentCourse::getCourseName)

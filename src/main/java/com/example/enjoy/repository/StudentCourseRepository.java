@@ -8,8 +8,7 @@ import java.util.List;
 
 public interface StudentCourseRepository extends JpaRepository<StudentCourse, Long> {
 
-    List<StudentCourse> findByStudentId(Long studentId);
+    List<StudentCourse> findByStudentId(String studentId);
 
-    @Transactional
-    void deleteByStudentId(Long studentId); // 학생 ID로 이수과목 한번에 삭제
+
 }
