@@ -22,14 +22,6 @@ configurations {
 
 repositories {
 	mavenCentral()
-	maven {
-		name = 'chuseok22NexusRelease'
-		url = uri('https://nexus.chuseok22.com/repository/maven-releases/')
-		metadataSources {
-			mavenPom()
-			artifact()
-		}
-	}
 }
 
 dependencies {
@@ -40,9 +32,16 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
-	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
-	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
-	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	//Http
+	implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+	implementation 'org.jsoup:jsoup:1.15.3'
+
+	//JavaNetCookieJar
+	implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.9.3'
+	//HttpLogginInterceptor
+	implementation 'com.squareup.okhttp3:logging-interceptor:4.9.3'
+
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
@@ -57,16 +56,10 @@ dependencies {
 
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws-messaging:2.2.6.RELEASE'
 
-	implementation 'com.squareup.okhttp3:okhttp:4.11.0'
-	implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.11.0'  // 추가
-	// Jsoup (HTML 파싱)
-	implementation 'org.jsoup:jsoup:1.18.1'
-
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation 'com.chuseok22:sejong-portal-login:1.0.0'
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
 	implementation 'org.apache.poi:poi-ooxml:5.2.3'

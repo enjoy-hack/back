@@ -5,9 +5,10 @@ import com.example.enjoy.dto.StudentCourseResponse;
 import com.example.enjoy.dto.StudentCourseStatus;
 import com.example.enjoy.dto.loginDto.MemberCommand;
 import com.example.enjoy.dto.loginDto.MemberDto;
+import com.example.enjoy.dto.loginDto.SejongMemberInfo;
 import com.example.enjoy.entity.StudentCourse;
 import com.example.enjoy.entity.Track;
-import com.example.enjoy.service.loginService.SejongLoginService;
+import com.example.enjoy.service.loginService.SejongPortalLoginService;
 import com.example.enjoy.service.userService.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -23,10 +24,10 @@ import java.util.Map;
 @RequestMapping("/api/student")
 public class UserController {
 
-    private final SejongLoginService sejongLoginService;
+    private final SejongPortalLoginService sejongLoginService;
     private final UserService userService;
 
-    public UserController(SejongLoginService sejongLoginService, UserService userService) {
+    public UserController(SejongPortalLoginService sejongLoginService, UserService userService) {
         this.sejongLoginService = sejongLoginService;
         this.userService = userService;
     }
@@ -34,8 +35,9 @@ public class UserController {
     @Operation(summary = "학생 정보 조회", description = "세종대학교 포털 인증을 통해 학생 정보를 조회합니다.")
     @PostMapping("/detail")
     public ResponseEntity<MemberDto> getStudentDetail(@RequestBody MemberCommand command) throws IOException {
-        MemberDto memberInfo = sejongLoginService.getMemberAuthInfos(command);
-        return ResponseEntity.ok(memberInfo);
+        SejongMemberInfo memberInfo = sejongLoginService.getMemberAuthInfos(command);
+        MemberDto dto = MemberDto.fromSejongMemberInfo(memberInfo);
+        return ResponseEntity.ok(dto);
     }
 
     @Operation(summary = "수동 과목 등록", description = "학생이 직접 수강한 과목을 등록합니다.")
