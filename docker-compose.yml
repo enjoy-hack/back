@@ -1,6 +1,5 @@
 services:
   app:
-    image: 867344478016.dkr.ecr.ap-northeast-2.amazonaws.com/enjoy-app:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,8 +11,4 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://${RDS_ENDPOINT}:${MYSQL_DB_PORT}/${MYSQL_DB_NAME}?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=${MYSQL_DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_DB_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-      - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
-      - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
-      - KAKAO_REDIRECT_URI_EC2_PROD=${KAKAO_REDIRECT_URI_EC2_PROD}
     restart: always
