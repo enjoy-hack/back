@@ -38,10 +38,5 @@ out/
 
 ### infomation ###
 application.yml
-application-aws.yml
 
 .env
-
-/src/main/resources/firebase/
-
-/docker/.env
